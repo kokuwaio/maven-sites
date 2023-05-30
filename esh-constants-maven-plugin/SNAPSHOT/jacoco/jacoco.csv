@@ -1,2 +1,2 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-Eclipse Smarthome Constants generator Maven Plugin,io.kokuwa.edge.esh.constants.maven.plugin,GenerateConstantsMojo,54,594,1,5,13,115,1,29,0,27
+Eclipse Smarthome Constants generator Maven Plugin,io.kokuwa.edge.esh.constants.maven.plugin,GenerateConstantsMojo,49,599,0,6,12,116,0,30,0,27

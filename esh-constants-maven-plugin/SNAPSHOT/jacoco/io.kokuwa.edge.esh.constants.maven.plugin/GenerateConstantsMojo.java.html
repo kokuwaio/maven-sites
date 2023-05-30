@@ -137,8 +137,8 @@ import com.squareup.javapoet.TypeSpec;
 
 <span class="fc" id="L138">		properties.removeAll(STANDARD_PROPERTIES);</span>
 
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">		if (bindingIDs.size() != 1) {</span>
-<span class="nc" id="L141">			throw new MojoFailureException(&quot;Expected exactly one binding ID. Please have a look at your XML files!&quot;);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">		if (bindingIDs.size() != 1) {</span>
+<span class="fc" id="L141">			throw new MojoFailureException(&quot;Expected exactly one binding ID. Please have a look at your XML files!&quot;);</span>
 		}
 
 <span class="fc" id="L144">		String bindingId = bindingIDs.iterator().next();</span>
