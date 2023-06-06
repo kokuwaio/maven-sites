@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfluxDBFactoryReactive.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">InfluxDB support for Micronaut</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.micronaut.influxdb</a> &gt; <span class="el_source">InfluxDBFactoryReactive.java</span></div><h1>InfluxDBFactoryReactive.java</h1><pre class="source lang-java linenums">package io.kokuwa.micronaut.influxdb;
+
+import com.influxdb.client.InfluxDBClientOptions;
+import com.influxdb.client.reactive.InfluxDBClientReactive;
+import com.influxdb.client.reactive.InfluxDBClientReactiveFactory;
+import com.influxdb.client.reactive.QueryReactiveApi;
+import com.influxdb.client.reactive.WriteOptionsReactive;
+import com.influxdb.client.reactive.WriteReactiveApi;
+
+import io.micronaut.context.annotation.Bean;
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Secondary;
+import jakarta.inject.Singleton;
+
+/**
+ * Factory for reactive InfluxDB client.
+ *
+ * @author Stephan Schnabel
+ */
+@Requires(property = &quot;influxdb.enabled&quot;, notEquals = &quot;false&quot;)
+@Requires(classes = InfluxDBClientReactive.class)
+@Requires(bean = InfluxDBClientOptions.class)
+@Factory
+<span class="nc" id="L25">public class InfluxDBFactoryReactive {</span>
+
+	@Singleton
+	@Bean(preDestroy = &quot;close&quot;)
+	InfluxDBClientReactive client(InfluxDBClientOptions options) {
+<span class="nc" id="L30">		return InfluxDBClientReactiveFactory.create(options);</span>
+	}
+
+	@Singleton
+	QueryReactiveApi query(InfluxDBClientReactive client) {
+<span class="nc" id="L35">		return client.getQueryReactiveApi();</span>
+	}
+
+	@Singleton
+	@Secondary
+	WriteOptionsReactive writeOptions() {
+<span class="nc" id="L41">		return WriteOptionsReactive.DEFAULTS;</span>
+	}
+
+	@Singleton
+	WriteReactiveApi write(InfluxDBClientReactive client, WriteOptionsReactive options) {
+<span class="nc" id="L46">		return client.getWriteReactiveApi(options);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
