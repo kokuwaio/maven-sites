@@ -11,92 +11,92 @@
 <a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.openapitools.codegen.CodegenConstants.GENERATE_API_TESTS;
 <a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.openapitools.codegen.CodegenConstants.MODEL_NAME_SUFFIX;
 <a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.openapitools.codegen.CodegenConstants.SOURCE_FOLDER;
-<a class="jxr_linenumber" name="L6" href="#L6">6</a>   
-<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> java.io.File;
-<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> java.util.ArrayList;
-<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.util.HashMap;
-<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.util.LinkedHashSet;
-<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.util.List;
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.util.Optional;
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> java.util.function.BiFunction;
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> java.util.stream.Collectors;
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CliOption;
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenConstants;
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenModel;
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenOperation;
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenParameter;
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenProperty;
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenResponse;
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.SpecValidationException;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.SupportingFile;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.languages.features.BeanValidationFeatures;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.languages.features.OptionalFeatures;
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.languages.features.UseGenericResponseFeatures;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.model.ModelsMap;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.utils.ModelUtils;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.utils.StringUtils;
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> io.micronaut.http.HttpStatus;
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> io.micronaut.http.MediaType;
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.Operation;
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.media.Schema;
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.responses.ApiResponse;
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.servers.Server;
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>  
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="MicronautCodegen" href="../../../../org/openapitools/codegen/languages/MicronautCodegen.html#MicronautCodegen">MicronautCodegen</a> <strong class="jxr_keyword">extends</strong> AbstractJavaCodegen
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>  		<strong class="jxr_keyword">implements</strong> BeanValidationFeatures, UseGenericResponseFeatures, OptionalFeatures {
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String CLIENT_ID = <span class="jxr_string">"clientId"</span>;
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String INTROSPECTED = <span class="jxr_string">"introspected"</span>;
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DATETIME_RELAXED = <span class="jxr_string">"dateTimeRelaxed"</span>;
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PAGEABLE = <span class="jxr_string">"pageable"</span>;
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String GENERATE_AUTHENTICATION = <span class="jxr_string">"generateAuthentication"</span>;
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String GENERATE_EXAMPLES = <span class="jxr_string">"generateExamples"</span>;
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>  
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>  	<em class="jxr_comment">// '{' or '}' is not allowed according to https://datatracker.ietf.org/doc/html/rfc6570#section-3.2</em>
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>  	<em class="jxr_comment">// so the RegExp needs to work around and be very verbose as quantifiers cannot be used.</em>
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String UUID_PATTERN = <span class="jxr_string">"[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.openapitools.codegen.CodegenConstants.SOURCE_FOLDER_DESC;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> java.io.File;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.util.Optional;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.util.function.BiFunction;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.util.stream.Collectors;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CliOption;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenConstants;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenModel;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenOperation;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenParameter;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenProperty;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.CodegenResponse;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.SpecValidationException;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.SupportingFile;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.languages.features.BeanValidationFeatures;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.languages.features.OptionalFeatures;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.languages.features.UseGenericResponseFeatures;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.model.ModelsMap;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.utils.ModelUtils;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.openapitools.codegen.utils.StringUtils;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> io.micronaut.http.HttpStatus;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> io.micronaut.http.MediaType;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.Operation;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.media.Schema;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.responses.ApiResponse;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> io.swagger.v3.oas.models.servers.Server;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="MicronautCodegen" href="../../../../org/openapitools/codegen/languages/MicronautCodegen.html#MicronautCodegen">MicronautCodegen</a> <strong class="jxr_keyword">extends</strong> AbstractJavaCodegen
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  		<strong class="jxr_keyword">implements</strong> BeanValidationFeatures, UseGenericResponseFeatures, OptionalFeatures {
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String CLIENT_ID = <span class="jxr_string">"clientId"</span>;
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String INTROSPECTED = <span class="jxr_string">"introspected"</span>;
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DATETIME_RELAXED = <span class="jxr_string">"dateTimeRelaxed"</span>;
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PAGEABLE = <span class="jxr_string">"pageable"</span>;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String GENERATE_AUTHENTICATION = <span class="jxr_string">"generateAuthentication"</span>;
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String GENERATE_EXAMPLES = <span class="jxr_string">"generateExamples"</span>;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  	<em class="jxr_comment">// '{' or '}' is not allowed according to https://datatracker.ietf.org/doc/html/rfc6570#section-3.2</em>
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  	<em class="jxr_comment">// so the RegExp needs to work around and be very verbose as quantifiers cannot be used.</em>
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String UUID_PATTERN = <span class="jxr_string">"[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>;
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger LOG = LoggerFactory.getLogger(MicronautCodegen.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>  
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> generateApiTests = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> generateAuthentication = false;
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> generateExamples = false;
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useBeanValidation = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useGenericResponse = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useOptional = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> introspected = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> dateTimeRelaxed = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> pageable = false;
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> isClient = false;
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  			+ <span class="jxr_string">"-[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]"</span>;
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger LOG = LoggerFactory.getLogger(MicronautCodegen.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> generateApiTests = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> generateAuthentication = false;
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> generateExamples = false;
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useBeanValidation = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useGenericResponse = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> useOptional = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> introspected = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> dateTimeRelaxed = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> pageable = false;
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> isClient = false;
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  	<strong class="jxr_keyword">public</strong> <a name="MicronautCodegen" href="../../../../org/openapitools/codegen/languages/MicronautCodegen.html#MicronautCodegen">MicronautCodegen</a>() {
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>  
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>  	<strong class="jxr_keyword">public</strong> <a name="MicronautCodegen" href="../../../../org/openapitools/codegen/languages/MicronautCodegen.html#MicronautCodegen">MicronautCodegen</a>() {
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  		<em class="jxr_comment">// enable the supported default-codegen features</em>
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>  		<em class="jxr_comment">// enable the supported default-codegen features</em>
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>  		supportsAdditionalPropertiesWithComposedSchema = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		useOneOfInterfaces = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>  
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  		cliOptions.clear();
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		cliOptions.add(CliOption.newBoolean(USE_BEANVALIDATION, <span class="jxr_string">"Use bean validation annotations"</span>, useBeanValidation));
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		cliOptions.add(CliOption.newBoolean(USE_GENERIC_RESPONSE, <span class="jxr_string">"Use generic response"</span>, useGenericResponse));
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>  		cliOptions.add(CliOption.newBoolean(USE_OPTIONAL, <span class="jxr_string">"Use Optional&lt;T&gt; instead of @Nullable."</span>, useOptional));
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>  		cliOptions.add(CliOption.newBoolean(INTROSPECTED, <span class="jxr_string">"Add @Introspected to models"</span>, introspected));
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>  		cliOptions.add(CliOption.newBoolean(SUPPORT_ASYNC, <span class="jxr_string">"Use async responses"</span>, supportAsync));
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  		cliOptions.add(CliOption.newBoolean(DATETIME_RELAXED, <span class="jxr_string">"Relaxed parsing of datetimes."</span>, dateTimeRelaxed));
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>  		cliOptions.add(CliOption.newBoolean(PAGEABLE, <span class="jxr_string">"Generate provider for pageable (mironaut-data)."</span>, pageable));
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  		cliOptions.add(CliOption.newBoolean(OPENAPI_NULLABLE, <span class="jxr_string">"Enable OpenAPI Jackson Nullable"</span>, openApiNullable));
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		cliOptions.add(CliOption.newBoolean(GENERATE_AUTHENTICATION,
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>  				<span class="jxr_string">"Generate authentication into apis with return code 401."</span>, generateAuthentication));
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>  		cliOptions.add(CliOption.newBoolean(GENERATE_EXAMPLES, <span class="jxr_string">"Generate examples for tests."</span>, generateExamples));
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>  		cliOptions.add(CliOption.newString(CLIENT_ID, <span class="jxr_string">"ClientId to use."</span>));
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  		supportsAdditionalPropertiesWithComposedSchema = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  		useOneOfInterfaces = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		cliOptions.clear();
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  		cliOptions.add(CliOption.newBoolean(USE_BEANVALIDATION, <span class="jxr_string">"Use bean validation annotations"</span>, useBeanValidation));
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  		cliOptions.add(CliOption.newBoolean(USE_GENERIC_RESPONSE, <span class="jxr_string">"Use generic response"</span>, useGenericResponse));
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		cliOptions.add(CliOption.newBoolean(USE_OPTIONAL, <span class="jxr_string">"Use Optional&lt;T&gt; instead of @Nullable."</span>, useOptional));
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		cliOptions.add(CliOption.newBoolean(INTROSPECTED, <span class="jxr_string">"Add @Introspected to models"</span>, introspected));
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  		cliOptions.add(CliOption.newBoolean(SUPPORT_ASYNC, <span class="jxr_string">"Use async responses"</span>, supportAsync));
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  		cliOptions.add(CliOption.newBoolean(DATETIME_RELAXED, <span class="jxr_string">"Relaxed parsing of datetimes."</span>, dateTimeRelaxed));
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  		cliOptions.add(CliOption.newBoolean(PAGEABLE, <span class="jxr_string">"Generate provider for pageable (mironaut-data)."</span>, pageable));
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  		cliOptions.add(CliOption.newBoolean(OPENAPI_NULLABLE, <span class="jxr_string">"Enable OpenAPI Jackson Nullable"</span>, openApiNullable));
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  		cliOptions.add(CliOption.newBoolean(GENERATE_AUTHENTICATION,
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  				<span class="jxr_string">"Generate authentication into apis with return code 401."</span>, generateAuthentication));
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		cliOptions.add(CliOption.newBoolean(GENERATE_EXAMPLES, <span class="jxr_string">"Generate examples for tests."</span>, generateExamples));
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  		cliOptions.add(CliOption.newString(CLIENT_ID, <span class="jxr_string">"ClientId to use."</span>));
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  		cliOptions.add(CliOption.newString(SOURCE_FOLDER, SOURCE_FOLDER_DESC));
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  		cliOptions.add(CliOption.newString(<span class="jxr_string">"testFolder"</span>, <span class="jxr_string">"test folder for generated code"</span>));
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>  
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>  		<em class="jxr_comment">// there is no documentation template yet</em>
 <a class="jxr_linenumber" name="L94" href="#L94">94</a>  
@@ -122,29 +122,29 @@
 <a class="jxr_linenumber" name="L114" href="#L114">114</a> 		<em class="jxr_comment">// add custom type mappings</em>
 <a class="jxr_linenumber" name="L115" href="#L115">115</a> 
 <a class="jxr_linenumber" name="L116" href="#L116">116</a> 		typeMapping.clear();
-<a class="jxr_linenumber" name="L117" href="#L117">117</a> 		typeMapping.put(<span class="jxr_string">"object"</span>, java.lang.Object.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L118" href="#L118">118</a> 		typeMapping.put(<span class="jxr_string">"AnyType"</span>, java.lang.Object.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L119" href="#L119">119</a> 		typeMapping.put(<span class="jxr_string">"date"</span>, java.time.LocalDate.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L120" href="#L120">120</a> 		typeMapping.put(<span class="jxr_string">"DateTime"</span>, java.time.Instant.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L121" href="#L121">121</a> 		typeMapping.put(<span class="jxr_string">"array"</span>, java.util.List.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L122" href="#L122">122</a> 		typeMapping.put(<span class="jxr_string">"map"</span>, java.util.Map.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L123" href="#L123">123</a> 		typeMapping.put(<span class="jxr_string">"set"</span>, java.util.Set.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L124" href="#L124">124</a> 		typeMapping.put(<span class="jxr_string">"boolean"</span>, java.lang.Boolean.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L125" href="#L125">125</a> 		typeMapping.put(<span class="jxr_string">"string"</span>, java.lang.String.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L126" href="#L126">126</a> 		typeMapping.put(<span class="jxr_string">"int"</span>, java.lang.Integer.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L127" href="#L127">127</a> 		typeMapping.put(<span class="jxr_string">"integer"</span>, java.lang.Integer.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L128" href="#L128">128</a> 		typeMapping.put(<span class="jxr_string">"Integer"</span>, java.lang.Integer.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L129" href="#L129">129</a> 		typeMapping.put(<span class="jxr_string">"long"</span>, java.lang.Long.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L130" href="#L130">130</a> 		typeMapping.put(<span class="jxr_string">"Long"</span>, java.lang.Long.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L131" href="#L131">131</a> 		typeMapping.put(<span class="jxr_string">"float"</span>, java.lang.Float.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L132" href="#L132">132</a> 		typeMapping.put(<span class="jxr_string">"Float"</span>, java.lang.Float.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L133" href="#L133">133</a> 		typeMapping.put(<span class="jxr_string">"double"</span>, java.lang.Double.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L134" href="#L134">134</a> 		typeMapping.put(<span class="jxr_string">"Double"</span>, java.lang.Double.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L135" href="#L135">135</a> 		typeMapping.put(<span class="jxr_string">"number"</span>, java.lang.Double.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L136" href="#L136">136</a> 		typeMapping.put(<span class="jxr_string">"BigDecimal"</span>, java.lang.Double.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L137" href="#L137">137</a> 		typeMapping.put(<span class="jxr_string">"UUID"</span>, java.util.UUID.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L138" href="#L138">138</a> 		typeMapping.put(<span class="jxr_string">"URI"</span>, java.net.URI.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L139" href="#L139">139</a> 		typeMapping.put(<span class="jxr_string">"URL"</span>, java.net.URL.<strong class="jxr_keyword">class</strong>.getName());
+<a class="jxr_linenumber" name="L117" href="#L117">117</a> 		typeMapping.put(<span class="jxr_string">"object"</span>, <span class="jxr_string">"java.lang.Object"</span>);
+<a class="jxr_linenumber" name="L118" href="#L118">118</a> 		typeMapping.put(<span class="jxr_string">"AnyType"</span>, <span class="jxr_string">"java.lang.Object"</span>);
+<a class="jxr_linenumber" name="L119" href="#L119">119</a> 		typeMapping.put(<span class="jxr_string">"date"</span>, <span class="jxr_string">"java.time.LocalDate"</span>);
+<a class="jxr_linenumber" name="L120" href="#L120">120</a> 		typeMapping.put(<span class="jxr_string">"DateTime"</span>, <span class="jxr_string">"java.time.Instant"</span>);
+<a class="jxr_linenumber" name="L121" href="#L121">121</a> 		typeMapping.put(<span class="jxr_string">"array"</span>, <span class="jxr_string">"java.util.List"</span>);
+<a class="jxr_linenumber" name="L122" href="#L122">122</a> 		typeMapping.put(<span class="jxr_string">"map"</span>, <span class="jxr_string">"java.util.Map"</span>);
+<a class="jxr_linenumber" name="L123" href="#L123">123</a> 		typeMapping.put(<span class="jxr_string">"set"</span>, <span class="jxr_string">"java.util.Set"</span>);
+<a class="jxr_linenumber" name="L124" href="#L124">124</a> 		typeMapping.put(<span class="jxr_string">"boolean"</span>, <span class="jxr_string">"java.lang.Boolean"</span>);
+<a class="jxr_linenumber" name="L125" href="#L125">125</a> 		typeMapping.put(<span class="jxr_string">"string"</span>, <span class="jxr_string">"java.lang.String"</span>);
+<a class="jxr_linenumber" name="L126" href="#L126">126</a> 		typeMapping.put(<span class="jxr_string">"int"</span>, <span class="jxr_string">"java.lang.Integer"</span>);
+<a class="jxr_linenumber" name="L127" href="#L127">127</a> 		typeMapping.put(<span class="jxr_string">"integer"</span>, <span class="jxr_string">"java.lang.Integer"</span>);
+<a class="jxr_linenumber" name="L128" href="#L128">128</a> 		typeMapping.put(<span class="jxr_string">"Integer"</span>, <span class="jxr_string">"java.lang.Integer"</span>);
+<a class="jxr_linenumber" name="L129" href="#L129">129</a> 		typeMapping.put(<span class="jxr_string">"long"</span>, <span class="jxr_string">"java.lang.Long"</span>);
+<a class="jxr_linenumber" name="L130" href="#L130">130</a> 		typeMapping.put(<span class="jxr_string">"Long"</span>, <span class="jxr_string">"java.lang.Long"</span>);
+<a class="jxr_linenumber" name="L131" href="#L131">131</a> 		typeMapping.put(<span class="jxr_string">"float"</span>, <span class="jxr_string">"java.lang.Float"</span>);
+<a class="jxr_linenumber" name="L132" href="#L132">132</a> 		typeMapping.put(<span class="jxr_string">"Float"</span>, <span class="jxr_string">"java.lang.Float"</span>);
+<a class="jxr_linenumber" name="L133" href="#L133">133</a> 		typeMapping.put(<span class="jxr_string">"double"</span>, <span class="jxr_string">"java.lang.Double"</span>);
+<a class="jxr_linenumber" name="L134" href="#L134">134</a> 		typeMapping.put(<span class="jxr_string">"Double"</span>, <span class="jxr_string">"java.lang.Double"</span>);
+<a class="jxr_linenumber" name="L135" href="#L135">135</a> 		typeMapping.put(<span class="jxr_string">"number"</span>, <span class="jxr_string">"java.lang.Double"</span>);
+<a class="jxr_linenumber" name="L136" href="#L136">136</a> 		typeMapping.put(<span class="jxr_string">"BigDecimal"</span>, <span class="jxr_string">"java.lang.Double"</span>);
+<a class="jxr_linenumber" name="L137" href="#L137">137</a> 		typeMapping.put(<span class="jxr_string">"UUID"</span>, <span class="jxr_string">"java.util.UUID"</span>);
+<a class="jxr_linenumber" name="L138" href="#L138">138</a> 		typeMapping.put(<span class="jxr_string">"URI"</span>, <span class="jxr_string">"java.net.URI"</span>);
+<a class="jxr_linenumber" name="L139" href="#L139">139</a> 		typeMapping.put(<span class="jxr_string">"URL"</span>, <span class="jxr_string">"java.net.URL"</span>);
 <a class="jxr_linenumber" name="L140" href="#L140">140</a> 		typeMapping.put(<span class="jxr_string">"file"</span>, <span class="jxr_string">"byte[]"</span>);
 <a class="jxr_linenumber" name="L141" href="#L141">141</a> 		typeMapping.put(<span class="jxr_string">"ByteArray"</span>, <span class="jxr_string">"byte[]"</span>);
 <a class="jxr_linenumber" name="L142" href="#L142">142</a> 		typeMapping.put(<span class="jxr_string">"Authentication"</span>, <span class="jxr_string">"io.micronaut.security.authentication.Authentication"</span>);
@@ -161,9 +161,9 @@
 <a class="jxr_linenumber" name="L153" href="#L153">153</a> 		typeMapping.put(<span class="jxr_string">"Inject"</span>, <span class="jxr_string">"jakarta.inject.Inject"</span>);
 <a class="jxr_linenumber" name="L154" href="#L154">154</a> 		typeMapping.put(<span class="jxr_string">"Singleton"</span>, <span class="jxr_string">"jakarta.inject.Singleton"</span>);
 <a class="jxr_linenumber" name="L155" href="#L155">155</a> 		instantiationTypes.clear();
-<a class="jxr_linenumber" name="L156" href="#L156">156</a> 		instantiationTypes.put(<span class="jxr_string">"array"</span>, ArrayList.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L157" href="#L157">157</a> 		instantiationTypes.put(<span class="jxr_string">"map"</span>, HashMap.<strong class="jxr_keyword">class</strong>.getName());
-<a class="jxr_linenumber" name="L158" href="#L158">158</a> 		instantiationTypes.put(<span class="jxr_string">"set"</span>, LinkedHashSet.<strong class="jxr_keyword">class</strong>.getName());
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> 		instantiationTypes.put(<span class="jxr_string">"array"</span>, <span class="jxr_string">"java.util.ArrayList"</span>);
+<a class="jxr_linenumber" name="L157" href="#L157">157</a> 		instantiationTypes.put(<span class="jxr_string">"map"</span>, <span class="jxr_string">"java.util.HashMap"</span>);
+<a class="jxr_linenumber" name="L158" href="#L158">158</a> 		instantiationTypes.put(<span class="jxr_string">"set"</span>, <span class="jxr_string">"java.util.LinkedHashSet"</span>);
 <a class="jxr_linenumber" name="L159" href="#L159">159</a> 		importMapping.clear();
 <a class="jxr_linenumber" name="L160" href="#L160">160</a> 
 <a class="jxr_linenumber" name="L161" href="#L161">161</a> 		<em class="jxr_comment">// allow list and file as variables</em>
@@ -356,7 +356,7 @@
 <a class="jxr_linenumber" name="L348" href="#L348">348</a> 				<strong class="jxr_keyword">if</strong> (isVoid) {
 <a class="jxr_linenumber" name="L349" href="#L349">349</a> 					<strong class="jxr_keyword">var</strong> asyncCompletable = typeMapping.get(<span class="jxr_string">"asyncCompletable"</span>);
 <a class="jxr_linenumber" name="L350" href="#L350">350</a> 					<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"reactor.core.publisher.Mono"</span>.equals(asyncCompletable)) {
-<a class="jxr_linenumber" name="L351" href="#L351">351</a> 						extensions.put(<span class="jxr_string">"asyncContainer"</span>, asyncCompletable + <span class="jxr_string">"&lt;"</span> + java.lang.Void.<strong class="jxr_keyword">class</strong>.getName() + <span class="jxr_string">"&gt;"</span>);
+<a class="jxr_linenumber" name="L351" href="#L351">351</a> 						extensions.put(<span class="jxr_string">"asyncContainer"</span>, asyncCompletable + <span class="jxr_string">"&lt;java.lang.Void&gt;"</span>);
 <a class="jxr_linenumber" name="L352" href="#L352">352</a> 					} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L353" href="#L353">353</a> 						extensions.put(<span class="jxr_string">"asyncContainer"</span>, asyncCompletable);
 <a class="jxr_linenumber" name="L354" href="#L354">354</a> 					}
@@ -432,7 +432,7 @@
 <a class="jxr_linenumber" name="L424" href="#L424">424</a> 
 <a class="jxr_linenumber" name="L425" href="#L425">425</a> 		objs.entrySet().removeIf(e -&gt; e.getKey().endsWith(<span class="jxr_string">"_allOf"</span>));
 <a class="jxr_linenumber" name="L426" href="#L426">426</a> 
-<a class="jxr_linenumber" name="L427" href="#L427">427</a> 		Map&lt;String, CodegenModel&gt; allModels = getAllModels(objs);
+<a class="jxr_linenumber" name="L427" href="#L427">427</a> 		<strong class="jxr_keyword">var</strong> allModels = getAllModels(objs);
 <a class="jxr_linenumber" name="L428" href="#L428">428</a> 		<strong class="jxr_keyword">for</strong> (CodegenModel model : allModels.values()) {
 <a class="jxr_linenumber" name="L429" href="#L429">429</a> 
 <a class="jxr_linenumber" name="L430" href="#L430">430</a> 			<em class="jxr_comment">// check if composed schemas for additional properties should be handled and apply to the map if so.</em>
@@ -476,7 +476,7 @@
 <a class="jxr_linenumber" name="L468" href="#L468">468</a> 				}
 <a class="jxr_linenumber" name="L469" href="#L469">469</a> 				subModel.vars.removeIf(property -&gt; property.getName().equals(discriminator.getPropertyName()));
 <a class="jxr_linenumber" name="L470" href="#L470">470</a> 
-<a class="jxr_linenumber" name="L471" href="#L471">471</a> 				Map&lt;String, Object&gt; extensions = subModel.getVendorExtensions();
+<a class="jxr_linenumber" name="L471" href="#L471">471</a> 				<strong class="jxr_keyword">var</strong> extensions = subModel.getVendorExtensions();
 <a class="jxr_linenumber" name="L472" href="#L472">472</a> 				extensions.put(<span class="jxr_string">"discriminatorPropertyGetter"</span>, discriminator.getPropertyGetter());
 <a class="jxr_linenumber" name="L473" href="#L473">473</a> 				extensions.put(<span class="jxr_string">"discriminatorPropertyType"</span>, discriminator.getPropertyType());
 <a class="jxr_linenumber" name="L474" href="#L474">474</a> 				<strong class="jxr_keyword">switch</strong> (discriminator.getPropertyType()) {
@@ -513,14 +513,14 @@
 <a class="jxr_linenumber" name="L505" href="#L505">505</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> postProcessModelProperty(CodegenModel model, CodegenProperty property) {
 <a class="jxr_linenumber" name="L506" href="#L506">506</a> 		<strong class="jxr_keyword">super</strong>.postProcessModelProperty(model, property);
 <a class="jxr_linenumber" name="L507" href="#L507">507</a> 
-<a class="jxr_linenumber" name="L508" href="#L508">508</a> 		<strong class="jxr_keyword">if</strong> (openApiNullable &amp;&amp; Boolean.FALSE.equals(property.required) &amp;&amp; Boolean.TRUE.equals(property.isNullable)) {
+<a class="jxr_linenumber" name="L508" href="#L508">508</a> 		<strong class="jxr_keyword">if</strong> (openApiNullable &amp;&amp; !property.required &amp;&amp; property.isNullable) {
 <a class="jxr_linenumber" name="L509" href="#L509">509</a> 			property.getVendorExtensions().put(<span class="jxr_string">"x-jackson-nullable"</span>, <strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L510" href="#L510">510</a> 		}
 <a class="jxr_linenumber" name="L511" href="#L511">511</a> 	}
 <a class="jxr_linenumber" name="L512" href="#L512">512</a> 
 <a class="jxr_linenumber" name="L513" href="#L513">513</a> 	@Override
 <a class="jxr_linenumber" name="L514" href="#L514">514</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isDataTypeString(String dataType) {
-<a class="jxr_linenumber" name="L515" href="#L515">515</a> 		<strong class="jxr_keyword">return</strong> List.of(String.<strong class="jxr_keyword">class</strong>.getSimpleName(), String.<strong class="jxr_keyword">class</strong>.getName()).contains(dataType);
+<a class="jxr_linenumber" name="L515" href="#L515">515</a> 		<strong class="jxr_keyword">return</strong> List.of(<span class="jxr_string">"java.lang.String"</span>, <span class="jxr_string">"String"</span>).contains(dataType);
 <a class="jxr_linenumber" name="L516" href="#L516">516</a> 	}
 <a class="jxr_linenumber" name="L517" href="#L517">517</a> 
 <a class="jxr_linenumber" name="L518" href="#L518">518</a> 	<em class="jxr_comment">// enum</em>
@@ -537,16 +537,16 @@
 <a class="jxr_linenumber" name="L529" href="#L529">529</a> 
 <a class="jxr_linenumber" name="L530" href="#L530">530</a> 	@Override
 <a class="jxr_linenumber" name="L531" href="#L531">531</a> 	<strong class="jxr_keyword">public</strong> String toEnumValue(String value, String datatype) {
-<a class="jxr_linenumber" name="L532" href="#L532">532</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"int"</span>, Integer.<strong class="jxr_keyword">class</strong>.getSimpleName(), Integer.<strong class="jxr_keyword">class</strong>.getName()).contains(datatype)) {
+<a class="jxr_linenumber" name="L532" href="#L532">532</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"int"</span>, <span class="jxr_string">"Integer"</span>, <span class="jxr_string">"java.lang.Integer"</span>).contains(datatype)) {
 <a class="jxr_linenumber" name="L533" href="#L533">533</a> 			<strong class="jxr_keyword">return</strong> value;
 <a class="jxr_linenumber" name="L534" href="#L534">534</a> 		}
-<a class="jxr_linenumber" name="L535" href="#L535">535</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"long"</span>, Long.<strong class="jxr_keyword">class</strong>.getSimpleName(), Long.<strong class="jxr_keyword">class</strong>.getName()).contains(datatype)) {
+<a class="jxr_linenumber" name="L535" href="#L535">535</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"long"</span>, <span class="jxr_string">"Long"</span>, <span class="jxr_string">"java.lang.Long"</span>).contains(datatype)) {
 <a class="jxr_linenumber" name="L536" href="#L536">536</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"L"</span>;
 <a class="jxr_linenumber" name="L537" href="#L537">537</a> 		}
-<a class="jxr_linenumber" name="L538" href="#L538">538</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"float"</span>, Float.<strong class="jxr_keyword">class</strong>.getSimpleName(), Float.<strong class="jxr_keyword">class</strong>.getName()).contains(datatype)) {
+<a class="jxr_linenumber" name="L538" href="#L538">538</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"float"</span>, <span class="jxr_string">"Float"</span>, <span class="jxr_string">"java.lang.Float"</span>).contains(datatype)) {
 <a class="jxr_linenumber" name="L539" href="#L539">539</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"F"</span>;
 <a class="jxr_linenumber" name="L540" href="#L540">540</a> 		}
-<a class="jxr_linenumber" name="L541" href="#L541">541</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"double"</span>, Double.<strong class="jxr_keyword">class</strong>.getSimpleName(), Double.<strong class="jxr_keyword">class</strong>.getName()).contains(datatype)) {
+<a class="jxr_linenumber" name="L541" href="#L541">541</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"double"</span>, <span class="jxr_string">"Double"</span>, <span class="jxr_string">"java.lang.Double"</span>).contains(datatype)) {
 <a class="jxr_linenumber" name="L542" href="#L542">542</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"D"</span>;
 <a class="jxr_linenumber" name="L543" href="#L543">543</a> 		}
 <a class="jxr_linenumber" name="L544" href="#L544">544</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toEnumValue(value, datatype);
@@ -611,7 +611,7 @@
 <a class="jxr_linenumber" name="L603" href="#L603">603</a> 		}
 <a class="jxr_linenumber" name="L604" href="#L604">604</a> 
 <a class="jxr_linenumber" name="L605" href="#L605">605</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDateSchema(schema)) {
-<a class="jxr_linenumber" name="L606" href="#L606">606</a> 			<strong class="jxr_keyword">if</strong> (typeMapping.get(schema.getType()).equals(<span class="jxr_string">"java.time.LocalDate"</span>)) {
+<a class="jxr_linenumber" name="L606" href="#L606">606</a> 			<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"java.time.LocalDate"</span>.equals(typeMapping.get(schema.getType()))) {
 <a class="jxr_linenumber" name="L607" href="#L607">607</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.time.LocalDate."</span> + value.map(v -&gt; <span class="jxr_string">"parse(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"now()"</span>);
 <a class="jxr_linenumber" name="L608" href="#L608">608</a> 			} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L609" href="#L609">609</a> 				<em class="jxr_comment">// we cannot provide a valid example for all possible date types</em>
@@ -619,7 +619,7 @@
 <a class="jxr_linenumber" name="L611" href="#L611">611</a> 			}
 <a class="jxr_linenumber" name="L612" href="#L612">612</a> 		}
 <a class="jxr_linenumber" name="L613" href="#L613">613</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDateTimeSchema(schema)) {
-<a class="jxr_linenumber" name="L614" href="#L614">614</a> 			<strong class="jxr_keyword">if</strong> (typeMapping.get(schema.getType()).equals(<span class="jxr_string">"java.time.Instant"</span>)) {
+<a class="jxr_linenumber" name="L614" href="#L614">614</a> 			<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"java.time.Instant"</span>.equals(typeMapping.get(schema.getType()))) {
 <a class="jxr_linenumber" name="L615" href="#L615">615</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.time.Instant."</span> + value.map(v -&gt; <span class="jxr_string">"parse(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"now()"</span>);
 <a class="jxr_linenumber" name="L616" href="#L616">616</a> 			} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L617" href="#L617">617</a> 				<em class="jxr_comment">// we cannot provide a valid example for all possible date types</em>

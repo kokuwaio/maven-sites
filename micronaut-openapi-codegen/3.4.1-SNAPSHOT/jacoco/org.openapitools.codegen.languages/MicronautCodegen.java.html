@@ -3,11 +3,9 @@
 import static org.openapitools.codegen.CodegenConstants.GENERATE_API_TESTS;
 import static org.openapitools.codegen.CodegenConstants.MODEL_NAME_SUFFIX;
 import static org.openapitools.codegen.CodegenConstants.SOURCE_FOLDER;
+import static org.openapitools.codegen.CodegenConstants.SOURCE_FOLDER_DESC;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,39 +54,41 @@ public class MicronautCodegen extends AbstractJavaCodegen
 			+ &quot;-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]&quot;
 			+ &quot;-[a-f0-9][a-f0-9][a-f0-9][a-f0-9]&quot;
 			+ &quot;-[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]&quot;;
-<span class="fc" id="L59">	private static final Logger LOG = LoggerFactory.getLogger(MicronautCodegen.class);</span>
+<span class="fc" id="L57">	private static final Logger LOG = LoggerFactory.getLogger(MicronautCodegen.class);</span>
 
-<span class="fc" id="L61">	private boolean generateApiTests = true;</span>
-<span class="fc" id="L62">	private boolean generateAuthentication = false;</span>
-<span class="fc" id="L63">	private boolean generateExamples = false;</span>
-<span class="fc" id="L64">	private boolean useBeanValidation = true;</span>
-<span class="fc" id="L65">	private boolean useGenericResponse = true;</span>
-<span class="fc" id="L66">	private boolean useOptional = true;</span>
-<span class="fc" id="L67">	private boolean introspected = true;</span>
-<span class="fc" id="L68">	private boolean dateTimeRelaxed = true;</span>
-<span class="fc" id="L69">	private boolean pageable = false;</span>
-<span class="fc" id="L70">	private boolean isClient = false;</span>
+<span class="fc" id="L59">	private boolean generateApiTests = true;</span>
+<span class="fc" id="L60">	private boolean generateAuthentication = false;</span>
+<span class="fc" id="L61">	private boolean generateExamples = false;</span>
+<span class="fc" id="L62">	private boolean useBeanValidation = true;</span>
+<span class="fc" id="L63">	private boolean useGenericResponse = true;</span>
+<span class="fc" id="L64">	private boolean useOptional = true;</span>
+<span class="fc" id="L65">	private boolean introspected = true;</span>
+<span class="fc" id="L66">	private boolean dateTimeRelaxed = true;</span>
+<span class="fc" id="L67">	private boolean pageable = false;</span>
+<span class="fc" id="L68">	private boolean isClient = false;</span>
 
-<span class="fc" id="L72">	public MicronautCodegen() {</span>
+<span class="fc" id="L70">	public MicronautCodegen() {</span>
 
 		// enable the supported default-codegen features
 
-<span class="fc" id="L76">		supportsAdditionalPropertiesWithComposedSchema = true;</span>
-<span class="fc" id="L77">		useOneOfInterfaces = true;</span>
+<span class="fc" id="L74">		supportsAdditionalPropertiesWithComposedSchema = true;</span>
+<span class="fc" id="L75">		useOneOfInterfaces = true;</span>
 
-<span class="fc" id="L79">		cliOptions.clear();</span>
-<span class="fc" id="L80">		cliOptions.add(CliOption.newBoolean(USE_BEANVALIDATION, &quot;Use bean validation annotations&quot;, useBeanValidation));</span>
-<span class="fc" id="L81">		cliOptions.add(CliOption.newBoolean(USE_GENERIC_RESPONSE, &quot;Use generic response&quot;, useGenericResponse));</span>
-<span class="fc" id="L82">		cliOptions.add(CliOption.newBoolean(USE_OPTIONAL, &quot;Use Optional&lt;T&gt; instead of @Nullable.&quot;, useOptional));</span>
-<span class="fc" id="L83">		cliOptions.add(CliOption.newBoolean(INTROSPECTED, &quot;Add @Introspected to models&quot;, introspected));</span>
-<span class="fc" id="L84">		cliOptions.add(CliOption.newBoolean(SUPPORT_ASYNC, &quot;Use async responses&quot;, supportAsync));</span>
-<span class="fc" id="L85">		cliOptions.add(CliOption.newBoolean(DATETIME_RELAXED, &quot;Relaxed parsing of datetimes.&quot;, dateTimeRelaxed));</span>
-<span class="fc" id="L86">		cliOptions.add(CliOption.newBoolean(PAGEABLE, &quot;Generate provider for pageable (mironaut-data).&quot;, pageable));</span>
-<span class="fc" id="L87">		cliOptions.add(CliOption.newBoolean(OPENAPI_NULLABLE, &quot;Enable OpenAPI Jackson Nullable&quot;, openApiNullable));</span>
-<span class="fc" id="L88">		cliOptions.add(CliOption.newBoolean(GENERATE_AUTHENTICATION,</span>
+<span class="fc" id="L77">		cliOptions.clear();</span>
+<span class="fc" id="L78">		cliOptions.add(CliOption.newBoolean(USE_BEANVALIDATION, &quot;Use bean validation annotations&quot;, useBeanValidation));</span>
+<span class="fc" id="L79">		cliOptions.add(CliOption.newBoolean(USE_GENERIC_RESPONSE, &quot;Use generic response&quot;, useGenericResponse));</span>
+<span class="fc" id="L80">		cliOptions.add(CliOption.newBoolean(USE_OPTIONAL, &quot;Use Optional&lt;T&gt; instead of @Nullable.&quot;, useOptional));</span>
+<span class="fc" id="L81">		cliOptions.add(CliOption.newBoolean(INTROSPECTED, &quot;Add @Introspected to models&quot;, introspected));</span>
+<span class="fc" id="L82">		cliOptions.add(CliOption.newBoolean(SUPPORT_ASYNC, &quot;Use async responses&quot;, supportAsync));</span>
+<span class="fc" id="L83">		cliOptions.add(CliOption.newBoolean(DATETIME_RELAXED, &quot;Relaxed parsing of datetimes.&quot;, dateTimeRelaxed));</span>
+<span class="fc" id="L84">		cliOptions.add(CliOption.newBoolean(PAGEABLE, &quot;Generate provider for pageable (mironaut-data).&quot;, pageable));</span>
+<span class="fc" id="L85">		cliOptions.add(CliOption.newBoolean(OPENAPI_NULLABLE, &quot;Enable OpenAPI Jackson Nullable&quot;, openApiNullable));</span>
+<span class="fc" id="L86">		cliOptions.add(CliOption.newBoolean(GENERATE_AUTHENTICATION,</span>
 				&quot;Generate authentication into apis with return code 401.&quot;, generateAuthentication));
-<span class="fc" id="L90">		cliOptions.add(CliOption.newBoolean(GENERATE_EXAMPLES, &quot;Generate examples for tests.&quot;, generateExamples));</span>
-<span class="fc" id="L91">		cliOptions.add(CliOption.newString(CLIENT_ID, &quot;ClientId to use.&quot;));</span>
+<span class="fc" id="L88">		cliOptions.add(CliOption.newBoolean(GENERATE_EXAMPLES, &quot;Generate examples for tests.&quot;, generateExamples));</span>
+<span class="fc" id="L89">		cliOptions.add(CliOption.newString(CLIENT_ID, &quot;ClientId to use.&quot;));</span>
+<span class="fc" id="L90">		cliOptions.add(CliOption.newString(SOURCE_FOLDER, SOURCE_FOLDER_DESC));</span>
+<span class="fc" id="L91">		cliOptions.add(CliOption.newString(&quot;testFolder&quot;, &quot;test folder for generated code&quot;));</span>
 
 		// there is no documentation template yet
 
@@ -114,29 +114,29 @@ public class MicronautCodegen extends AbstractJavaCodegen
 		// add custom type mappings
 
 <span class="fc" id="L116">		typeMapping.clear();</span>
-<span class="fc" id="L117">		typeMapping.put(&quot;object&quot;, java.lang.Object.class.getName());</span>
-<span class="fc" id="L118">		typeMapping.put(&quot;AnyType&quot;, java.lang.Object.class.getName());</span>
-<span class="fc" id="L119">		typeMapping.put(&quot;date&quot;, java.time.LocalDate.class.getName());</span>
-<span class="fc" id="L120">		typeMapping.put(&quot;DateTime&quot;, java.time.Instant.class.getName());</span>
-<span class="fc" id="L121">		typeMapping.put(&quot;array&quot;, java.util.List.class.getName());</span>
-<span class="fc" id="L122">		typeMapping.put(&quot;map&quot;, java.util.Map.class.getName());</span>
-<span class="fc" id="L123">		typeMapping.put(&quot;set&quot;, java.util.Set.class.getName());</span>
-<span class="fc" id="L124">		typeMapping.put(&quot;boolean&quot;, java.lang.Boolean.class.getName());</span>
-<span class="fc" id="L125">		typeMapping.put(&quot;string&quot;, java.lang.String.class.getName());</span>
-<span class="fc" id="L126">		typeMapping.put(&quot;int&quot;, java.lang.Integer.class.getName());</span>
-<span class="fc" id="L127">		typeMapping.put(&quot;integer&quot;, java.lang.Integer.class.getName());</span>
-<span class="fc" id="L128">		typeMapping.put(&quot;Integer&quot;, java.lang.Integer.class.getName());</span>
-<span class="fc" id="L129">		typeMapping.put(&quot;long&quot;, java.lang.Long.class.getName());</span>
-<span class="fc" id="L130">		typeMapping.put(&quot;Long&quot;, java.lang.Long.class.getName());</span>
-<span class="fc" id="L131">		typeMapping.put(&quot;float&quot;, java.lang.Float.class.getName());</span>
-<span class="fc" id="L132">		typeMapping.put(&quot;Float&quot;, java.lang.Float.class.getName());</span>
-<span class="fc" id="L133">		typeMapping.put(&quot;double&quot;, java.lang.Double.class.getName());</span>
-<span class="fc" id="L134">		typeMapping.put(&quot;Double&quot;, java.lang.Double.class.getName());</span>
-<span class="fc" id="L135">		typeMapping.put(&quot;number&quot;, java.lang.Double.class.getName());</span>
-<span class="fc" id="L136">		typeMapping.put(&quot;BigDecimal&quot;, java.lang.Double.class.getName());</span>
-<span class="fc" id="L137">		typeMapping.put(&quot;UUID&quot;, java.util.UUID.class.getName());</span>
-<span class="fc" id="L138">		typeMapping.put(&quot;URI&quot;, java.net.URI.class.getName());</span>
-<span class="fc" id="L139">		typeMapping.put(&quot;URL&quot;, java.net.URL.class.getName());</span>
+<span class="fc" id="L117">		typeMapping.put(&quot;object&quot;, &quot;java.lang.Object&quot;);</span>
+<span class="fc" id="L118">		typeMapping.put(&quot;AnyType&quot;, &quot;java.lang.Object&quot;);</span>
+<span class="fc" id="L119">		typeMapping.put(&quot;date&quot;, &quot;java.time.LocalDate&quot;);</span>
+<span class="fc" id="L120">		typeMapping.put(&quot;DateTime&quot;, &quot;java.time.Instant&quot;);</span>
+<span class="fc" id="L121">		typeMapping.put(&quot;array&quot;, &quot;java.util.List&quot;);</span>
+<span class="fc" id="L122">		typeMapping.put(&quot;map&quot;, &quot;java.util.Map&quot;);</span>
+<span class="fc" id="L123">		typeMapping.put(&quot;set&quot;, &quot;java.util.Set&quot;);</span>
+<span class="fc" id="L124">		typeMapping.put(&quot;boolean&quot;, &quot;java.lang.Boolean&quot;);</span>
+<span class="fc" id="L125">		typeMapping.put(&quot;string&quot;, &quot;java.lang.String&quot;);</span>
+<span class="fc" id="L126">		typeMapping.put(&quot;int&quot;, &quot;java.lang.Integer&quot;);</span>
+<span class="fc" id="L127">		typeMapping.put(&quot;integer&quot;, &quot;java.lang.Integer&quot;);</span>
+<span class="fc" id="L128">		typeMapping.put(&quot;Integer&quot;, &quot;java.lang.Integer&quot;);</span>
+<span class="fc" id="L129">		typeMapping.put(&quot;long&quot;, &quot;java.lang.Long&quot;);</span>
+<span class="fc" id="L130">		typeMapping.put(&quot;Long&quot;, &quot;java.lang.Long&quot;);</span>
+<span class="fc" id="L131">		typeMapping.put(&quot;float&quot;, &quot;java.lang.Float&quot;);</span>
+<span class="fc" id="L132">		typeMapping.put(&quot;Float&quot;, &quot;java.lang.Float&quot;);</span>
+<span class="fc" id="L133">		typeMapping.put(&quot;double&quot;, &quot;java.lang.Double&quot;);</span>
+<span class="fc" id="L134">		typeMapping.put(&quot;Double&quot;, &quot;java.lang.Double&quot;);</span>
+<span class="fc" id="L135">		typeMapping.put(&quot;number&quot;, &quot;java.lang.Double&quot;);</span>
+<span class="fc" id="L136">		typeMapping.put(&quot;BigDecimal&quot;, &quot;java.lang.Double&quot;);</span>
+<span class="fc" id="L137">		typeMapping.put(&quot;UUID&quot;, &quot;java.util.UUID&quot;);</span>
+<span class="fc" id="L138">		typeMapping.put(&quot;URI&quot;, &quot;java.net.URI&quot;);</span>
+<span class="fc" id="L139">		typeMapping.put(&quot;URL&quot;, &quot;java.net.URL&quot;);</span>
 <span class="fc" id="L140">		typeMapping.put(&quot;file&quot;, &quot;byte[]&quot;);</span>
 <span class="fc" id="L141">		typeMapping.put(&quot;ByteArray&quot;, &quot;byte[]&quot;);</span>
 <span class="fc" id="L142">		typeMapping.put(&quot;Authentication&quot;, &quot;io.micronaut.security.authentication.Authentication&quot;);</span>
@@ -153,9 +153,9 @@ public class MicronautCodegen extends AbstractJavaCodegen
 <span class="fc" id="L153">		typeMapping.put(&quot;Inject&quot;, &quot;jakarta.inject.Inject&quot;);</span>
 <span class="fc" id="L154">		typeMapping.put(&quot;Singleton&quot;, &quot;jakarta.inject.Singleton&quot;);</span>
 <span class="fc" id="L155">		instantiationTypes.clear();</span>
-<span class="fc" id="L156">		instantiationTypes.put(&quot;array&quot;, ArrayList.class.getName());</span>
-<span class="fc" id="L157">		instantiationTypes.put(&quot;map&quot;, HashMap.class.getName());</span>
-<span class="fc" id="L158">		instantiationTypes.put(&quot;set&quot;, LinkedHashSet.class.getName());</span>
+<span class="fc" id="L156">		instantiationTypes.put(&quot;array&quot;, &quot;java.util.ArrayList&quot;);</span>
+<span class="fc" id="L157">		instantiationTypes.put(&quot;map&quot;, &quot;java.util.HashMap&quot;);</span>
+<span class="fc" id="L158">		instantiationTypes.put(&quot;set&quot;, &quot;java.util.LinkedHashSet&quot;);</span>
 <span class="fc" id="L159">		importMapping.clear();</span>
 
 		// allow list and file as variables
@@ -348,7 +348,7 @@ public class MicronautCodegen extends AbstractJavaCodegen
 <span class="fc bfc" id="L348" title="All 2 branches covered.">				if (isVoid) {</span>
 <span class="fc" id="L349">					var asyncCompletable = typeMapping.get(&quot;asyncCompletable&quot;);</span>
 <span class="pc bpc" id="L350" title="1 of 2 branches missed.">					if (&quot;reactor.core.publisher.Mono&quot;.equals(asyncCompletable)) {</span>
-<span class="fc" id="L351">						extensions.put(&quot;asyncContainer&quot;, asyncCompletable + &quot;&lt;&quot; + java.lang.Void.class.getName() + &quot;&gt;&quot;);</span>
+<span class="fc" id="L351">						extensions.put(&quot;asyncContainer&quot;, asyncCompletable + &quot;&lt;java.lang.Void&gt;&quot;);</span>
 					} else {
 <span class="nc" id="L353">						extensions.put(&quot;asyncContainer&quot;, asyncCompletable);</span>
 					}
@@ -424,7 +424,7 @@ public class MicronautCodegen extends AbstractJavaCodegen
 
 <span class="fc" id="L425">		objs.entrySet().removeIf(e -&gt; e.getKey().endsWith(&quot;_allOf&quot;));</span>
 
-<span class="fc" id="L427">		Map&lt;String, CodegenModel&gt; allModels = getAllModels(objs);</span>
+<span class="fc" id="L427">		var allModels = getAllModels(objs);</span>
 <span class="fc bfc" id="L428" title="All 2 branches covered.">		for (CodegenModel model : allModels.values()) {</span>
 
 			// check if composed schemas for additional properties should be handled and apply to the map if so.
@@ -468,7 +468,7 @@ public class MicronautCodegen extends AbstractJavaCodegen
 				}
 <span class="fc" id="L469">				subModel.vars.removeIf(property -&gt; property.getName().equals(discriminator.getPropertyName()));</span>
 
-<span class="fc" id="L471">				Map&lt;String, Object&gt; extensions = subModel.getVendorExtensions();</span>
+<span class="fc" id="L471">				var extensions = subModel.getVendorExtensions();</span>
 <span class="fc" id="L472">				extensions.put(&quot;discriminatorPropertyGetter&quot;, discriminator.getPropertyGetter());</span>
 <span class="fc" id="L473">				extensions.put(&quot;discriminatorPropertyType&quot;, discriminator.getPropertyType());</span>
 <span class="pc bpc" id="L474" title="1 of 3 branches missed.">				switch (discriminator.getPropertyType()) {</span>
@@ -505,14 +505,14 @@ public class MicronautCodegen extends AbstractJavaCodegen
 	public void postProcessModelProperty(CodegenModel model, CodegenProperty property) {
 <span class="fc" id="L506">		super.postProcessModelProperty(model, property);</span>
 
-<span class="fc bfc" id="L508" title="All 6 branches covered.">		if (openApiNullable &amp;&amp; Boolean.FALSE.equals(property.required) &amp;&amp; Boolean.TRUE.equals(property.isNullable)) {</span>
+<span class="fc bfc" id="L508" title="All 6 branches covered.">		if (openApiNullable &amp;&amp; !property.required &amp;&amp; property.isNullable) {</span>
 <span class="fc" id="L509">			property.getVendorExtensions().put(&quot;x-jackson-nullable&quot;, true);</span>
 		}
 <span class="fc" id="L511">	}</span>
 
 	@Override
 	public boolean isDataTypeString(String dataType) {
-<span class="fc" id="L515">		return List.of(String.class.getSimpleName(), String.class.getName()).contains(dataType);</span>
+<span class="fc" id="L515">		return List.of(&quot;java.lang.String&quot;, &quot;String&quot;).contains(dataType);</span>
 	}
 
 	// enum
@@ -529,16 +529,16 @@ public class MicronautCodegen extends AbstractJavaCodegen
 
 	@Override
 	public String toEnumValue(String value, String datatype) {
-<span class="fc bfc" id="L532" title="All 2 branches covered.">		if (List.of(&quot;int&quot;, Integer.class.getSimpleName(), Integer.class.getName()).contains(datatype)) {</span>
+<span class="fc bfc" id="L532" title="All 2 branches covered.">		if (List.of(&quot;int&quot;, &quot;Integer&quot;, &quot;java.lang.Integer&quot;).contains(datatype)) {</span>
 <span class="fc" id="L533">			return value;</span>
 		}
-<span class="pc bpc" id="L535" title="1 of 2 branches missed.">		if (List.of(&quot;long&quot;, Long.class.getSimpleName(), Long.class.getName()).contains(datatype)) {</span>
+<span class="pc bpc" id="L535" title="1 of 2 branches missed.">		if (List.of(&quot;long&quot;, &quot;Long&quot;, &quot;java.lang.Long&quot;).contains(datatype)) {</span>
 <span class="nc" id="L536">			return value + &quot;L&quot;;</span>
 		}
-<span class="pc bpc" id="L538" title="1 of 2 branches missed.">		if (List.of(&quot;float&quot;, Float.class.getSimpleName(), Float.class.getName()).contains(datatype)) {</span>
+<span class="pc bpc" id="L538" title="1 of 2 branches missed.">		if (List.of(&quot;float&quot;, &quot;Float&quot;, &quot;java.lang.Float&quot;).contains(datatype)) {</span>
 <span class="nc" id="L539">			return value + &quot;F&quot;;</span>
 		}
-<span class="fc bfc" id="L541" title="All 2 branches covered.">		if (List.of(&quot;double&quot;, Double.class.getSimpleName(), Double.class.getName()).contains(datatype)) {</span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">		if (List.of(&quot;double&quot;, &quot;Double&quot;, &quot;java.lang.Double&quot;).contains(datatype)) {</span>
 <span class="fc" id="L542">			return value + &quot;D&quot;;</span>
 		}
 <span class="fc" id="L544">		return super.toEnumValue(value, datatype);</span>
@@ -603,7 +603,7 @@ public class MicronautCodegen extends AbstractJavaCodegen
 		}
 
 <span class="fc bfc" id="L605" title="All 2 branches covered.">		if (ModelUtils.isDateSchema(schema)) {</span>
-<span class="pc bpc" id="L606" title="1 of 2 branches missed.">			if (typeMapping.get(schema.getType()).equals(&quot;java.time.LocalDate&quot;)) {</span>
+<span class="pc bpc" id="L606" title="1 of 2 branches missed.">			if (&quot;java.time.LocalDate&quot;.equals(typeMapping.get(schema.getType()))) {</span>
 <span class="nc" id="L607">				return &quot;java.time.LocalDate.&quot; + value.map(v -&gt; &quot;parse(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;now()&quot;);</span>
 			} else {
 				// we cannot provide a valid example for all possible date types
@@ -611,7 +611,7 @@ public class MicronautCodegen extends AbstractJavaCodegen
 			}
 		}
 <span class="fc bfc" id="L613" title="All 2 branches covered.">		if (ModelUtils.isDateTimeSchema(schema)) {</span>
-<span class="pc bpc" id="L614" title="1 of 2 branches missed.">			if (typeMapping.get(schema.getType()).equals(&quot;java.time.Instant&quot;)) {</span>
+<span class="pc bpc" id="L614" title="1 of 2 branches missed.">			if (&quot;java.time.Instant&quot;.equals(typeMapping.get(schema.getType()))) {</span>
 <span class="nc" id="L615">				return &quot;java.time.Instant.&quot; + value.map(v -&gt; &quot;parse(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;now()&quot;);</span>
 			} else {
 				// we cannot provide a valid example for all possible date types
