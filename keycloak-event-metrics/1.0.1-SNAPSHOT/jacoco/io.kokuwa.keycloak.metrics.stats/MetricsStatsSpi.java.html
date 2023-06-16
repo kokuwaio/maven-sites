@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MetricsStatsSpi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Keycloak Metrics</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.keycloak.metrics.stats</a> &gt; <span class="el_source">MetricsStatsSpi.java</span></div><h1>MetricsStatsSpi.java</h1><pre class="source lang-java linenums">package io.kokuwa.keycloak.metrics.stats;
+
+import org.keycloak.provider.Provider;
+import org.keycloak.provider.ProviderFactory;
+import org.keycloak.provider.Spi;
+
+/**
+ * SPI for Keycloak metrics.
+ *
+ * @author Stephan Schnabel
+ */
+<span class="fc" id="L12">public class MetricsStatsSpi implements Spi {</span>
+
+	@Override
+	public boolean isInternal() {
+<span class="fc" id="L16">		return false;</span>
+	}
+
+	@Override
+	public String getName() {
+<span class="fc" id="L21">		return &quot;metrics&quot;;</span>
+	}
+
+	@Override
+	public Class&lt;? extends Provider&gt; getProviderClass() {
+<span class="fc" id="L26">		return MetricsStatsTask.class;</span>
+	}
+
+	@Override
+	public Class&lt;? extends ProviderFactory&lt;? extends Provider&gt;&gt; getProviderFactoryClass() {
+		// this must be an interface, otherwise spi will be silenty ignored
+<span class="fc" id="L32">		return MetricsStatsFactory.class;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
