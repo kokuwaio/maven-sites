@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DependencyBuildMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">DependencyBuildMojo.java</span></div><h1>DependencyBuildMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.nio.file.Path;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm dependency-build&quot;.
+ *
+ * @author Axel Köhler
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_dependency_build&quot;&gt;helm dependency-build&lt;/a&gt;
+ * @since 1.1
+ */
+@Mojo(name = &quot;dependency-build&quot;, defaultPhase = LifecyclePhase.PROCESS_RESOURCES, threadSafe = true)
+<span class="fc" id="L20">@Setter</span>
+<span class="fc" id="L21">public class DependencyBuildMojo extends AbstractHelmMojo {</span>
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking dependency-build goal.
+	 *
+	 * @since 3.3
+	 */
+	@Parameter(property = &quot;helm.dependency-build.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipDependencyBuild;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L34" title="All 4 branches covered.">		if (skip || skipDependencyBuild) {</span>
+<span class="fc" id="L35">			getLog().info(&quot;Skip dependency build&quot;);</span>
+<span class="fc" id="L36">			return;</span>
+		}
+
+<span class="fc bfc" id="L39" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc" id="L40">			getLog().info(&quot;Build chart dependencies for &quot; + chartDirectory + &quot; ...&quot;);</span>
+<span class="fc" id="L41">			helm()</span>
+<span class="fc" id="L42">					.arguments(&quot;dependency&quot;, &quot;build&quot;, chartDirectory)</span>
+<span class="fc" id="L43">					.execute(&quot;Failed to resolve dependencies&quot;);</span>
+<span class="fc" id="L44">		}</span>
+<span class="fc" id="L45">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

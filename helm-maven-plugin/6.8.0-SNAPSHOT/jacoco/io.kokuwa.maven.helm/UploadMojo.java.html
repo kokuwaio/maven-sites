@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UploadMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">UploadMojo.java</span></div><h1>UploadMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Base64;
+
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.StringUtils;
+
+import io.kokuwa.maven.helm.pojo.HelmRepository;
+import io.kokuwa.maven.helm.pojo.RepoType;
+import lombok.Setter;
+
+/**
+ * Mojo for uploading to helm repo (see types {@link RepoType}).
+ *
+ * @author Fabian Schlegel
+ * @since 1.4
+ */
+@Mojo(name = &quot;upload&quot;, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
+<span class="fc" id="L32">@Setter</span>
+<span class="fc" id="L33">public class UploadMojo extends AbstractHelmMojo {</span>
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking upload goal.
+	 *
+	 * @since 3.3
+	 */
+	@Parameter(property = &quot;helm.upload.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipUpload;
+
+	/**
+	 * Project groupId.
+	 *
+	 * @since 5.10
+	 */
+	@Parameter(defaultValue = &quot;${project.groupId}&quot;, readonly = true)
+	private String projectGroupId;
+
+	/**
+	 * Project artifactId.
+	 *
+	 * @since 6.7.0
+	 */
+	@Parameter(defaultValue = &quot;${project.artifactId}&quot;, readonly = true)
+	private String projectArtifactId;
+
+	/**
+	 * Project version.
+	 *
+	 * @since 5.10
+	 */
+	@Parameter(defaultValue = &quot;${project.version}&quot;, readonly = true)
+	private String projectVersion;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L70" title="All 4 branches covered.">		if (skip || skipUpload) {</span>
+<span class="fc" id="L71">			getLog().info(&quot;Skip upload&quot;);</span>
+<span class="fc" id="L72">			return;</span>
+		}
+
+<span class="fc" id="L75">		getLog().info(&quot;Uploading to &quot; + getHelmUploadUrl() + &quot;\n&quot;);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">		for (Path chart : getChartArchives()) {</span>
+<span class="fc" id="L77">			getLog().info(&quot;Uploading &quot; + chart + &quot;...&quot;);</span>
+			try {
+<span class="fc" id="L79">				uploadSingle(chart);</span>
+<span class="nc" id="L80">			} catch (IOException e) {</span>
+<span class="nc" id="L81">				throw new MojoExecutionException(&quot;Upload failed.&quot;, e);</span>
+<span class="fc" id="L82">			}</span>
+<span class="fc" id="L83">		}</span>
+<span class="fc" id="L84">	}</span>
+
+	/**
+	 * Returns the proper upload URL based on the provided chart version. Charts w/ an SNAPSHOT suffix will be uploaded
+	 * to SNAPSHOT repo.
+	 *
+	 * @return Upload URL based on chart version
+	 */
+	private String getHelmUploadUrl() {
+<span class="fc" id="L93">		String chartVersion = getChartVersion();</span>
+<span class="fc" id="L94">		HelmRepository uploadRepoStable = getUploadRepoStable();</span>
+<span class="fc" id="L95">		HelmRepository uploadRepoSnapshot = getUploadRepoSnapshot();</span>
+<span class="fc" id="L96">		String uploadUrl = uploadRepoStable.getUrl();</span>
+<span class="pc bpc" id="L97" title="5 of 6 branches missed.">		if (chartVersion != null &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)</span>
+				&amp;&amp; uploadRepoSnapshot != null
+<span class="nc bnc" id="L99" title="All 2 branches missed.">				&amp;&amp; StringUtils.isNotEmpty(uploadRepoSnapshot.getUrl())) {</span>
+<span class="nc" id="L100">			uploadUrl = uploadRepoSnapshot.getUrl();</span>
+		}
+
+<span class="fc" id="L103">		return uploadUrl;</span>
+	}
+
+	private void uploadSingle(Path chart) throws MojoExecutionException, IOException {
+<span class="fc" id="L107">		File fileToUpload = chart.toFile();</span>
+<span class="fc" id="L108">		HelmRepository uploadRepo = getHelmUploadRepo();</span>
+
+		HttpURLConnection connection;
+
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		if (uploadRepo.getType() == null) {</span>
+<span class="fc" id="L113">			throw new IllegalArgumentException(&quot;Repository type missing. Check your plugin configuration.&quot;);</span>
+		}
+
+<span class="pc bpc" id="L116" title="1 of 4 branches missed.">		switch (uploadRepo.getType()) {</span>
+			case ARTIFACTORY:
+<span class="fc" id="L118">				connection = getConnectionForUploadToArtifactory(fileToUpload, uploadRepo);</span>
+<span class="fc" id="L119">				break;</span>
+			case CHARTMUSEUM:
+<span class="fc" id="L121">				connection = getConnectionForUploadToChartmuseum();</span>
+<span class="fc" id="L122">				break;</span>
+			case NEXUS:
+<span class="fc" id="L124">				connection = getConnectionForUploadToNexus(fileToUpload);</span>
+<span class="fc" id="L125">				break;</span>
+			default:
+<span class="nc" id="L127">				throw new IllegalArgumentException(&quot;Unsupported repository type for upload.&quot;);</span>
+		}
+
+<span class="fc" id="L130">		try (FileInputStream fileInputStream = new FileInputStream(fileToUpload)) {</span>
+<span class="fc" id="L131">			IOUtils.copy(fileInputStream, connection.getOutputStream());</span>
+		}
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">		if (connection.getResponseCode() &gt;= 300) {</span>
+			String response;
+<span class="nc bnc" id="L135" title="All 2 branches missed.">			if (connection.getErrorStream() != null) {</span>
+<span class="nc" id="L136">				response = new String(IOUtils.toByteArray(connection.getErrorStream()));</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">			} else if (connection.getInputStream() != null) {</span>
+<span class="nc" id="L138">				response = new String(IOUtils.toByteArray(connection.getInputStream()));</span>
+			} else {
+<span class="nc" id="L140">				response = &quot;No details provided&quot;;</span>
+			}
+<span class="nc" id="L142">			throw new MojoExecutionException(&quot;Failed to upload: &quot; + response);</span>
+		} else {
+<span class="fc" id="L144">			String message = Integer.toString(connection.getResponseCode());</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">			if (connection.getInputStream() != null) {</span>
+<span class="fc" id="L146">				message += &quot; - &quot; + new String(IOUtils.toByteArray(connection.getInputStream()));</span>
+			}
+<span class="fc" id="L148">			getLog().info(message);</span>
+		}
+<span class="fc" id="L150">		connection.disconnect();</span>
+<span class="fc" id="L151">	}</span>
+
+	private HttpURLConnection getConnectionForUploadToChartmuseum() throws IOException, MojoExecutionException {
+<span class="fc" id="L154">		HttpURLConnection connection = (HttpURLConnection) new URL(getHelmUploadUrl()).openConnection();</span>
+<span class="fc" id="L155">		connection.setDoOutput(true);</span>
+<span class="fc" id="L156">		connection.setRequestMethod(&quot;POST&quot;);</span>
+<span class="fc" id="L157">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
+
+<span class="fc" id="L159">		setBasicAuthHeader(connection);</span>
+
+<span class="fc" id="L161">		return connection;</span>
+	}
+
+	private void setBasicAuthHeader(HttpURLConnection connection) throws MojoExecutionException {
+<span class="fc" id="L165">		PasswordAuthentication authentication = getAuthentication(getHelmUploadRepo());</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">		if (authentication != null) {</span>
+<span class="fc" id="L167">			String encoded = Base64.getEncoder()</span>
+<span class="fc" id="L168">					.encodeToString((authentication.getUserName() + &quot;:&quot; + new String(authentication.getPassword()))</span>
+<span class="fc" id="L169">							.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L170">			connection.setRequestProperty(&quot;Authorization&quot;, &quot;Basic &quot; + encoded);</span>
+		}
+<span class="fc" id="L172">	}</span>
+
+	private HttpURLConnection getConnectionForUploadToArtifactory(File file, HelmRepository repo)
+			throws IOException, MojoExecutionException {
+<span class="fc" id="L176">		String uploadUrl = getHelmUploadUrl();</span>
+		// Append slash if not already in place
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">		if (!uploadUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L179">			uploadUrl += &quot;/&quot;;</span>
+		}
+<span class="fc bfc" id="L181" title="All 2 branches covered.">		if (repo.isUseGroupId()) {</span>
+<span class="fc" id="L182">			uploadUrl += projectGroupId.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot;;</span>
+		}
+<span class="fc bfc" id="L184" title="All 2 branches covered.">		if (repo.isUseArtifactId()) {</span>
+<span class="fc" id="L185">			uploadUrl += projectArtifactId.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot;;</span>
+		}
+<span class="fc bfc" id="L187" title="All 4 branches covered.">		if (repo.isUseGroupId() || repo.isUseArtifactId()) {</span>
+<span class="fc" id="L188">			uploadUrl += projectVersion + &quot;/&quot;;</span>
+		}
+
+<span class="fc" id="L191">		uploadUrl = uploadUrl + file.getName();</span>
+
+<span class="fc" id="L193">		HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();</span>
+<span class="fc" id="L194">		connection.setDoOutput(true);</span>
+<span class="fc" id="L195">		connection.setRequestMethod(&quot;PUT&quot;);</span>
+<span class="fc" id="L196">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
+
+<span class="fc" id="L198">		verifyAndSetAuthentication(true);</span>
+
+<span class="fc" id="L200">		return connection;</span>
+	}
+
+	private HttpURLConnection getConnectionForUploadToNexus(File file) throws IOException, MojoExecutionException {
+<span class="fc" id="L204">		String uploadUrl = getHelmUploadUrl();</span>
+		// Append slash if not already in place
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">		if (!uploadUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L207">			uploadUrl += &quot;/&quot;;</span>
+		}
+<span class="fc" id="L209">		uploadUrl = uploadUrl + file.getName();</span>
+
+<span class="fc" id="L211">		HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();</span>
+<span class="fc" id="L212">		connection.setDoOutput(true);</span>
+<span class="fc" id="L213">		connection.setRequestMethod(&quot;PUT&quot;);</span>
+<span class="fc" id="L214">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
+
+<span class="fc" id="L216">		verifyAndSetAuthentication(false);</span>
+
+<span class="fc" id="L218">		return connection;</span>
+	}
+
+	/**
+	 *
+	 * @param requireCredentials The need for credentials depends on how the repository is configured. For instance on
+	 *                           nexus it is possible to configure a repository without authentication
+	 * @throws MojoExecutionException
+	 */
+	private void verifyAndSetAuthentication(boolean requireCredentials) throws MojoExecutionException {
+
+<span class="fc" id="L229">		PasswordAuthentication authentication = getAuthentication(getHelmUploadRepo());</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">		if (authentication != null) {</span>
+<span class="fc" id="L231">			Authenticator.setDefault(new Authenticator() {</span>
+				@Override
+				protected PasswordAuthentication getPasswordAuthentication() {
+<span class="fc" id="L234">					return authentication;</span>
+				}
+			});
+<span class="fc bfc" id="L237" title="All 2 branches covered.">		} else if (requireCredentials) {</span>
+<span class="fc" id="L238">			throw new IllegalArgumentException(&quot;Credentials has to be configured for uploading to Artifactory.&quot;);</span>
+		}
+<span class="fc" id="L240">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

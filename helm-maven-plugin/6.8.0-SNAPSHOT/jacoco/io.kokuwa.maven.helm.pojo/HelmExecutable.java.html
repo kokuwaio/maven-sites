@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HelmExecutable.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm.pojo</a> &gt; <span class="el_source">HelmExecutable.java</span></div><h1>HelmExecutable.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm.pojo;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.StringUtils;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+/** Wrapper for helm executeable to execute commands. */
+<span class="fc" id="L32">@RequiredArgsConstructor</span>
+public class HelmExecutable {
+
+	private final Log log;
+<span class="nc" id="L36">	@Getter</span>
+	private final Path executable;
+<span class="fc" id="L38">	private final List&lt;String&gt; arguments = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L39">	private final Set&lt;String&gt; sensitiveFlags = new HashSet&lt;&gt;(Arrays.asList(&quot;password&quot;, &quot;kube-token&quot;));</span>
+<span class="fc" id="L40">	private final Map&lt;String, List&lt;String&gt;&gt; flags = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L41">	@Setter</span>
+	private String stdin;
+
+	public HelmExecutable arguments(Object... args) {
+<span class="fc" id="L45">		Stream.of(args).filter(Objects::nonNull).map(Object::toString).forEach(arguments::add);</span>
+<span class="fc" id="L46">		return this;</span>
+	}
+
+	public HelmExecutable flag(String key) {
+<span class="fc" id="L50">		return flag(key, true);</span>
+	}
+
+	public HelmExecutable flag(String key, boolean value) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		if (value) {</span>
+<span class="fc" id="L55">			flags.put(key, Arrays.asList());</span>
+		}
+<span class="fc" id="L57">		return this;</span>
+	}
+
+	public HelmExecutable flag(String key, File file) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (file != null) {</span>
+<span class="fc" id="L62">			flag(key, file.toPath());</span>
+		}
+<span class="fc" id="L64">		return this;</span>
+	}
+
+	public HelmExecutable flag(String key, Path path) {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		if (path != null) {</span>
+<span class="fc" id="L69">			flags.computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;()).add(path.toString());</span>
+		}
+<span class="fc" id="L71">		return this;</span>
+	}
+
+	public HelmExecutable flag(String key, String value) {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">		if (StringUtils.isNotBlank(value)) {</span>
+<span class="fc" id="L76">			flags.computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;()).add(value);</span>
+		}
+<span class="fc" id="L78">		return this;</span>
+	}
+
+	/**
+	 * Execute helm command.
+	 *
+	 * @param errorMessage Error message if exit code is not zero.
+	 * @throws MojoExecutionException Failed to execute helm command.
+	 */
+	public void execute(String errorMessage) throws MojoExecutionException {
+
+<span class="fc" id="L89">		String command = Stream.of(toCommand(true)).collect(Collectors.joining(&quot; &quot;));</span>
+<span class="fc" id="L90">		log.debug(&quot;Execute: &quot; + command);</span>
+
+		try {
+
+<span class="fc" id="L94">			Process process = Runtime.getRuntime().exec(toCommand(false));</span>
+
+			// write to stdin
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(stdin)) {</span>
+<span class="fc" id="L99">				try (OutputStream output = process.getOutputStream()) {</span>
+<span class="fc" id="L100">					output.write(stdin.getBytes(StandardCharsets.UTF_8));</span>
+<span class="nc" id="L101">				} catch (IOException e) {</span>
+<span class="nc" id="L102">					log.error(&quot;failed to write to stdin of helm&quot;, e);</span>
+<span class="fc" id="L103">				}</span>
+			}
+
+			// redirect helm output to maven log
+
+<span class="fc" id="L108">			new Thread(() -&gt; {</span>
+<span class="fc" id="L109">				try (InputStream input = process.getInputStream()) {</span>
+<span class="fc" id="L110">					BufferedReader reader = new BufferedReader(new InputStreamReader(input));</span>
+					String line;
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">					while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L113">						log.info(line);</span>
+					}
+<span class="nc" id="L115">				} catch (IOException e) {</span>
+<span class="nc" id="L116">					log.error(&quot;Failed to redirect input&quot;, e);</span>
+<span class="fc" id="L117">				}</span>
+<span class="fc" id="L118">			}).start();</span>
+<span class="fc" id="L119">			new Thread(() -&gt; {</span>
+<span class="fc" id="L120">				try (InputStream error = process.getErrorStream()) {</span>
+<span class="fc" id="L121">					BufferedReader reader = new BufferedReader(new InputStreamReader(error));</span>
+					String line;
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">					while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L124">						log.error(line);</span>
+					}
+<span class="nc" id="L126">				} catch (IOException e) {</span>
+<span class="nc" id="L127">					log.error(&quot;Failed to redirect errors&quot;, e);</span>
+<span class="fc" id="L128">				}</span>
+<span class="fc" id="L129">			}).start();</span>
+
+			// wait for process to finish
+
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">			if (process.waitFor() != 0) {</span>
+<span class="nc" id="L134">				throw new MojoExecutionException(errorMessage);</span>
+			}
+
+<span class="nc" id="L137">		} catch (IOException | InterruptedException e) {</span>
+<span class="nc" id="L138">			throw new MojoExecutionException(&quot;Error processing command: &quot; + command, e);</span>
+<span class="fc" id="L139">		}</span>
+<span class="fc" id="L140">	}</span>
+
+	/**
+	 * Returns this command as strings for {@link Runtime#exec(String[])}
+	 *
+	 * @param stripSensitiveFlags &lt;code&gt;true&lt;/code&gt; if passwords and tokens should be masked.
+	 * @return Strings for helm command.
+	 */
+	private String[] toCommand(boolean stripSensitiveFlags) {
+<span class="fc" id="L149">		List&lt;String&gt; command = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L150">		command.add(executable.toString());</span>
+<span class="fc" id="L151">		command.addAll(arguments);</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">		for (Entry&lt;String, List&lt;String&gt;&gt; entry : flags.entrySet()) {</span>
+<span class="fc" id="L153">			String flag = entry.getKey();</span>
+<span class="fc" id="L154">			List&lt;String&gt; values = entry.getValue();</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">			if (values.isEmpty()) {</span>
+<span class="fc" id="L156">				command.add(&quot;--&quot; + flag);</span>
+			}
+<span class="fc bfc" id="L158" title="All 2 branches covered.">			for (String value : values) {</span>
+<span class="fc" id="L159">				command.add(&quot;--&quot; + flag);</span>
+<span class="fc bfc" id="L160" title="All 4 branches covered.">				command.add(stripSensitiveFlags &amp;&amp; sensitiveFlags.contains(flag) ? &quot;********&quot; : value);</span>
+<span class="fc" id="L161">			}</span>
+<span class="fc" id="L162">		}</span>
+<span class="fc" id="L163">		return command.toArray(new String[command.size()]);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
