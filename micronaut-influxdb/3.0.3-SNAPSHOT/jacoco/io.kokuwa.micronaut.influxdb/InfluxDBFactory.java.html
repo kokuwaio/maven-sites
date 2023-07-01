@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfluxDBFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">InfluxDB support for Micronaut</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.micronaut.influxdb</a> &gt; <span class="el_source">InfluxDBFactory.java</span></div><h1>InfluxDBFactory.java</h1><pre class="source lang-java linenums">package io.kokuwa.micronaut.influxdb;
+
+import java.util.Optional;
+
+import com.influxdb.LogLevel;
+import com.influxdb.client.BucketsApi;
+import com.influxdb.client.DeleteApi;
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.InfluxDBClientOptions;
+import com.influxdb.client.InfluxQLQueryApi;
+import com.influxdb.client.LabelsApi;
+import com.influxdb.client.OrganizationsApi;
+import com.influxdb.client.QueryApi;
+import com.influxdb.client.WriteApi;
+import com.influxdb.client.WriteApiBlocking;
+import com.influxdb.client.WriteOptions;
+
+import io.micronaut.context.annotation.Bean;
+import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Secondary;
+import io.micronaut.context.annotation.Value;
+import jakarta.inject.Singleton;
+import okhttp3.OkHttpClient;
+
+/**
+ * Factory for InfluxDB client.
+ *
+ * @author Stephan Schnabel
+ */
+@Requires(property = &quot;influxdb.enabled&quot;, notEquals = &quot;false&quot;)
+@Factory
+<span class="fc" id="L35">public class InfluxDBFactory {</span>
+
+	@Singleton
+	@Secondary
+	InfluxDBClientOptions options(
+			@Value(&quot;${influxdb.url:`http://influxdb:8086`}&quot;) String url,
+			@Value(&quot;${influxdb.token:changeMe}&quot;) char[] token,
+			@Value(&quot;${influxdb.organisation:default}&quot;) String organisation,
+			@Value(&quot;${influxdb.bucket:default}&quot;) String bucket,
+			@Value(&quot;${influxdb.log-level:NONE}&quot;) LogLevel logLevel,
+			Optional&lt;OkHttpClient.Builder&gt; okHttp) {
+<span class="fc" id="L46">		var builder = InfluxDBClientOptions.builder();</span>
+<span class="fc" id="L47">		okHttp.ifPresent(builder::okHttpClient);</span>
+<span class="fc" id="L48">		return builder</span>
+<span class="fc" id="L49">				.url(url)</span>
+<span class="fc" id="L50">				.authenticateToken(token)</span>
+<span class="fc" id="L51">				.org(organisation)</span>
+<span class="fc" id="L52">				.bucket(bucket)</span>
+<span class="fc" id="L53">				.logLevel(logLevel)</span>
+<span class="fc" id="L54">				.build();</span>
+	}
+
+	@Context
+	@Bean(preDestroy = &quot;close&quot;)
+	InfluxDBClient client(InfluxDBClientOptions options) {
+<span class="fc" id="L60">		return InfluxDBClientFactory.create(options);</span>
+	}
+
+	@Singleton
+	BucketsApi buckets(InfluxDBClient client) {
+<span class="nc" id="L65">		return client.getBucketsApi();</span>
+	}
+
+	@Singleton
+	DeleteApi delete(InfluxDBClient client) {
+<span class="nc" id="L70">		return client.getDeleteApi();</span>
+	}
+
+	@Singleton
+	QueryApi query(InfluxDBClient client) {
+<span class="nc" id="L75">		return client.getQueryApi();</span>
+	}
+
+	@Singleton
+	InfluxQLQueryApi influxQuery(InfluxDBClient client) {
+<span class="nc" id="L80">		return client.getInfluxQLQueryApi();</span>
+	}
+
+	@Singleton
+	OrganizationsApi organizations(InfluxDBClient client) {
+<span class="nc" id="L85">		return client.getOrganizationsApi();</span>
+	}
+
+	@Singleton
+	LabelsApi labels(InfluxDBClient client) {
+<span class="nc" id="L90">		return client.getLabelsApi();</span>
+	}
+
+	@Singleton
+	@Secondary
+	WriteOptions writeOptions() {
+<span class="nc" id="L96">		return WriteOptions.DEFAULTS;</span>
+	}
+
+	@Singleton
+	WriteApi write(InfluxDBClient client, WriteOptions options) {
+<span class="nc" id="L101">		return client.makeWriteApi(options);</span>
+	}
+
+	@Singleton
+	WriteApiBlocking writeBlocking(InfluxDBClient client) {
+<span class="nc" id="L106">		return client.getWriteApiBlocking();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

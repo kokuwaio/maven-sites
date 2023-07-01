@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfluxDBHealthIndicator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">InfluxDB support for Micronaut</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.micronaut.influxdb</a> &gt; <span class="el_source">InfluxDBHealthIndicator.java</span></div><h1>InfluxDBHealthIndicator.java</h1><pre class="source lang-java linenums">package io.kokuwa.micronaut.influxdb;
+
+import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.influxdb.client.InfluxDBClient;
+
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.health.HealthStatus;
+import io.micronaut.management.health.indicator.HealthIndicator;
+import io.micronaut.management.health.indicator.HealthResult;
+import jakarta.inject.Singleton;
+import reactor.core.publisher.Mono;
+
+/**
+ * A {@link HealthIndicator} for InfluxDB.
+ *
+ * @author Stephan Schnabel
+ */
+@Requires(property = &quot;influxdb.health.enabled&quot;, notEquals = &quot;false&quot;)
+@Requires(beans = InfluxDBClient.class)
+@Singleton
+public class InfluxDBHealthIndicator implements HealthIndicator {
+
+<span class="fc" id="L26">	private final Logger log = LoggerFactory.getLogger(InfluxDBHealthIndicator.class);</span>
+	private final InfluxDBClient influxdb;
+
+<span class="fc" id="L29">	public InfluxDBHealthIndicator(InfluxDBClient influxdb) {</span>
+<span class="fc" id="L30">		this.influxdb = influxdb;</span>
+<span class="fc" id="L31">	}</span>
+
+	@Override
+	public Publisher&lt;HealthResult&gt; getResult() {
+<span class="fc" id="L35">		return Mono.fromCallable(() -&gt; getHealthResult());</span>
+	}
+
+	private HealthResult getHealthResult() {
+
+<span class="fc" id="L40">		var ready = influxdb.ready();</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">		if (ready == null) {</span>
+<span class="fc" id="L42">			log.warn(&quot;Failed to ping to InfluxDB&quot;);</span>
+		} else {
+<span class="fc" id="L44">			log.trace(&quot;InfluxDB ready {}&quot;, ready);</span>
+		}
+
+<span class="fc" id="L47">		return HealthResult</span>
+<span class="fc" id="L48">				.builder(&quot;influxdb&quot;)</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">				.status(ready == null ? HealthStatus.DOWN : HealthStatus.UP)</span>
+<span class="fc" id="L50">				.details(ready)</span>
+<span class="fc" id="L51">				.build();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
