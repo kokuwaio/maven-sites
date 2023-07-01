@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GenerateConstantsMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Eclipse Smarthome Constants generator Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.edge.esh.constants.maven.plugin</a> &gt; <span class="el_source">GenerateConstantsMojo.java</span></div><h1>GenerateConstantsMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.edge.esh.constants.maven.plugin;
+
+import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PRIVATE;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
+
+/**
+ * Mojo for generating constant class from &quot;ESH-INF&quot; folder. The plugin scans for XML files in the input folder and
+ * looks for a couple of XPath matching nodes to extract constants strings and writes them to a Java constants class
+ * using a Freemarker template.
+ *
+ * @author Fabian Schlegel
+ * @since 0.1.0
+ */
+@Mojo(name = &quot;generate-esh-constants&quot;, defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
+<span class="fc" id="L56">public class GenerateConstantsMojo extends AbstractMojo {</span>
+
+	/**
+	 * property names which are already defined in org.eclipse.smarthome.core.thing.Thing
+	 */
+<span class="fc" id="L61">	private static final Set&lt;String&gt; STANDARD_PROPERTIES = Set.of(</span>
+			/* the key for the vendor property */
+			&quot;vendor&quot;,
+			/* the key for the model ID property */
+			&quot;modelId&quot;,
+			/* the key for the serial number property */
+			&quot;serialNumber&quot;,
+			/* the key for the hardware version property */
+			&quot;hardwareVersion&quot;,
+			/* the key for the firmware version property */
+			&quot;firmwareVersion&quot;,
+			/* the key for the MAC address property */
+			&quot;macAddress&quot;);
+
+	private static final String PACKAGE = &quot;org.eclipse.smarthome.core.thing&quot;;
+<span class="fc" id="L76">	private static final ClassName THING_TYPE_UID_CLASS_NAME = ClassName.get(PACKAGE, &quot;ThingTypeUID&quot;);</span>
+
+	/**
+	 * Input directory.
+	 *
+	 * @since 0.1.0
+	 */
+	@Parameter(property = &quot;esh-constants.inputDirectory&quot;,
+			defaultValue = &quot;${project.basedir}/src/main/resources/ESH-INF&quot;)
+	private String inputDirectory;
+
+	/**
+	 * Output directory for constant classes.
+	 *
+	 * @since 0.1.0
+	 */
+	@Parameter(property = &quot;esh-constants.outputDirectory&quot;,
+			defaultValue = &quot;${project.build.directory}/generated-sources/esh-constants&quot;)
+	private String outputDirectory;
+
+	/**
+	 * Package name for constant classes.
+	 *
+	 * @since 0.1.0
+	 */
+	@Parameter(property = &quot;esh-constants.packageName&quot;, required = true)
+	private String packageName;
+
+	/**
+	 * Class name for openHAB constants.
+	 *
+	 * @since 0.1.11
+	 */
+	@Parameter(property = &quot;esh-constants.openhabClassName&quot;, required = true)
+	private String openhabClassName;
+
+	/**
+	 * Class name for string constants.
+	 *
+	 * @since 0.1.11
+	 */
+	@Parameter(property = &quot;esh-constants.stringsClassName&quot;, required = true)
+	private String stringsClassName;
+
+	@Override
+	public void execute() throws MojoExecutionException, MojoFailureException {
+
+		// Create output directory
+<span class="fc" id="L124">		createOutputDirectory();</span>
+
+		// Get input file list
+<span class="fc" id="L127">		final Set&lt;Path&gt; inputFiles = findXMLFiles();</span>
+
+<span class="fc" id="L129">		List&lt;String&gt; bindingIDs = scanDocuments(inputFiles, &quot;//thing-descriptions/@bindingId&quot;);</span>
+<span class="fc" id="L130">		List&lt;String&gt; properties = scanDocuments(inputFiles, &quot;//property/@name&quot;);</span>
+<span class="fc" id="L131">		List&lt;String&gt; thingTypeIDs = scanDocuments(inputFiles, &quot;//thing-type/@id&quot;);</span>
+<span class="fc" id="L132">		List&lt;String&gt; bridgeTypeIDs = scanDocuments(inputFiles, &quot;//bridge-type/@id&quot;);</span>
+<span class="fc" id="L133">		List&lt;String&gt; channelIDs = scanDocuments(inputFiles, &quot;//channel/@id&quot;);</span>
+<span class="fc" id="L134">		List&lt;String&gt; channelTypeIDs = scanDocuments(inputFiles, &quot;//channel-type/@id&quot;);</span>
+<span class="fc" id="L135">		List&lt;String&gt; channelGroupTypeIDs = scanDocuments(inputFiles, &quot;//channel-group-type/@id&quot;);</span>
+<span class="fc" id="L136">		List&lt;String&gt; channelGroupIDs = scanDocuments(inputFiles, &quot;//channel-group/@id&quot;);</span>
+
+<span class="fc" id="L138">		properties.removeAll(STANDARD_PROPERTIES);</span>
+
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">		if (bindingIDs.size() != 1) {</span>
+<span class="nc" id="L141">			throw new MojoFailureException(&quot;Expected exactly one binding ID. Please have a look at your XML files!&quot;);</span>
+		}
+
+<span class="fc" id="L144">		String bindingId = bindingIDs.iterator().next();</span>
+
+		TypeSpec stringConstantsClass;
+		try {
+<span class="fc" id="L148">			stringConstantsClass = TypeSpec.classBuilder(stringsClassName)</span>
+<span class="fc" id="L149">					.addModifiers(PUBLIC, FINAL)</span>
+<span class="fc" id="L150">					.addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())</span>
+<span class="fc" id="L151">					.addField(FieldSpec</span>
+<span class="fc" id="L152">									.builder(String.class, &quot;BINDING_ID&quot;, PUBLIC, STATIC, FINAL)</span>
+<span class="fc" id="L153">									.initializer(&quot;$S&quot;, bindingId)</span>
+<span class="fc" id="L154">									.build())</span>
+<span class="fc" id="L155">					.addFields(mapConstants(properties, &quot;PROPERTY_&quot;))</span>
+<span class="fc" id="L156">					.addFields(mapConstants(thingTypeIDs.stream().map(type -&gt; bindingId + &quot;:&quot; + type)</span>
+<span class="fc" id="L157">									.collect(Collectors.toList()), &quot;UID_&quot;))</span>
+<span class="fc" id="L158">					.addFields(mapConstants(bridgeTypeIDs.stream().map(type -&gt; bindingId + &quot;:&quot; + type)</span>
+<span class="fc" id="L159">									.collect(Collectors.toList()), &quot;UID_&quot;))</span>
+<span class="fc" id="L160">					.addFields(mapConstants(thingTypeIDs, &quot;THING_TYPE_ID_&quot;))</span>
+<span class="fc" id="L161">					.addFields(mapConstants(bridgeTypeIDs, &quot;BRIDGE_TYPE_ID_&quot;))</span>
+<span class="fc" id="L162">					.addFields(deprecated(mapConstants(channelIDs, &quot;CID_&quot;)))</span>
+<span class="fc" id="L163">					.addFields(deprecated(mapConstants(channelTypeIDs, &quot;CHANNEL_TYPE_ID_&quot;)))</span>
+<span class="fc" id="L164">					.addFields(deprecated(mapConstants(channelGroupTypeIDs, &quot;CHANNEL_GROUP_TYPE_ID_&quot;)))</span>
+<span class="fc" id="L165">					.addFields(deprecated(mapConstants(channelGroupIDs, &quot;GID_&quot;)))</span>
+<span class="fc" id="L166">					.addFields(mapConstants(scanDocuments(inputFiles,</span>
+							&quot;//bridge-type/channels/channel/@id | //thing-type/channels/channel/@id&quot;), &quot;GCID_&quot;))
+					// add a constant for each channel which is in a group
+<span class="fc" id="L169">					.addFields(mapConstants(channelGroupTypeIDs.stream().flatMap(</span>
+<span class="fc" id="L170">									groupType -&gt; scanDocuments(inputFiles,</span>
+											&quot;//channel-group-type[@id='&quot; + groupType + &quot;']//channel/@id&quot;)
+<span class="fc" id="L172">											.stream()</span>
+<span class="fc" id="L173">											.flatMap(groupTypeChannel -&gt; scanDocuments(</span>
+													inputFiles,
+													&quot;//channel-group[@typeId='&quot; + groupType + &quot;']/@id&quot;)
+<span class="fc" id="L176">													.stream()</span>
+<span class="fc" id="L177">													.map(group -&gt; group + &quot;#&quot; + groupTypeChannel)))</span>
+<span class="fc" id="L178">							.collect(Collectors.toCollection(LinkedHashSet::new)), &quot;GCID_&quot;))</span>
+
+<span class="fc" id="L180">					.build();</span>
+<span class="nc" id="L181">		} catch (RuntimeException exception) {</span>
+<span class="nc" id="L182">			throw new MojoExecutionException(&quot;Can't generate string constants class&quot;, exception);</span>
+<span class="fc" id="L183">		}</span>
+
+		try {
+<span class="fc" id="L186">			JavaFile.builder(packageName, stringConstantsClass)</span>
+<span class="fc" id="L187">					.build()</span>
+<span class="fc" id="L188">					.writeTo(Path.of(outputDirectory));</span>
+<span class="nc" id="L189">		} catch (IOException e) {</span>
+<span class="nc" id="L190">			throw new MojoExecutionException(&quot;Can't write string constants output file to &quot; + outputDirectory, e);</span>
+<span class="fc" id="L191">		}</span>
+
+<span class="fc" id="L193">		TypeSpec openhabConstantsClass = TypeSpec.classBuilder(openhabClassName)</span>
+<span class="fc" id="L194">				.addModifiers(PUBLIC, FINAL)</span>
+<span class="fc" id="L195">				.addMethod(MethodSpec.constructorBuilder().addModifiers(PRIVATE).build())</span>
+<span class="fc" id="L196">				.addFields(bridgeTypeIDs.stream()</span>
+<span class="fc" id="L197">						.map(bridgeTypeId -&gt; thingTypeUidSpec(bridgeTypeId, &quot;BRIDGE_TYPE_ID_&quot;))</span>
+<span class="fc" id="L198">						.collect(Collectors.toList()))</span>
+<span class="fc" id="L199">				.addFields(thingTypeIDs.stream()</span>
+<span class="fc" id="L200">						.map(thingTypeId -&gt; thingTypeUidSpec(thingTypeId, &quot;THING_TYPE_ID_&quot;))</span>
+<span class="fc" id="L201">						.collect(Collectors.toList()))</span>
+<span class="fc" id="L202">				.build();</span>
+
+		try {
+<span class="fc" id="L205">			JavaFile.builder(packageName, openhabConstantsClass)</span>
+<span class="fc" id="L206">					.addStaticImport(ClassName.get(packageName, stringConstantsClass.name), &quot;*&quot;)</span>
+<span class="fc" id="L207">					.build()</span>
+<span class="fc" id="L208">					.writeTo(Path.of(outputDirectory));</span>
+<span class="nc" id="L209">		} catch (IOException e) {</span>
+<span class="nc" id="L210">			throw new MojoExecutionException(&quot;Can't write openhab constants output file to &quot; + outputDirectory, e);</span>
+<span class="fc" id="L211">		}</span>
+<span class="fc" id="L212">	}</span>
+
+	/**
+	 * Creates output directory (recursively)
+	 *
+	 * @throws MojoExecutionException on error, execution fails
+	 */
+	private void createOutputDirectory() throws MojoExecutionException {
+		try {
+<span class="fc" id="L221">			Files.createDirectories(Path.of(this.outputDirectory));</span>
+<span class="nc" id="L222">		} catch (IOException e) {</span>
+<span class="nc" id="L223">			throw new MojoExecutionException(&quot;Unable to create output directory: &quot; + this.outputDirectory, e);</span>
+<span class="fc" id="L224">		}</span>
+<span class="fc" id="L225">	}</span>
+
+	/**
+	 * Find all XML files in the input folder.
+	 *
+	 * @return Set of {@link Path} to XML files
+	 * @throws MojoExecutionException on error, execution fails
+	 */
+	private Set&lt;Path&gt; findXMLFiles() throws MojoExecutionException {
+		Set&lt;Path&gt; result;
+		// Recursively walk down the directory tree and put all &quot;.xml&quot; files in the set
+<span class="fc" id="L236">		try (Stream&lt;Path&gt; walk = Files.walk(Path.of(inputDirectory))) {</span>
+<span class="fc" id="L237">			result = walk.filter(p -&gt; p.getFileName().toString().endsWith(&quot;xml&quot;)).collect(Collectors.toSet());</span>
+<span class="nc" id="L238">		} catch (IOException e) {</span>
+<span class="nc" id="L239">			throw new MojoExecutionException(&quot;Unable to get input files.&quot;, e);</span>
+<span class="fc" id="L240">		}</span>
+<span class="fc" id="L241">		return result;</span>
+	}
+
+	/**
+	 * Retrieve strings matching the XPath from the given XML files.
+	 *
+	 * @param inputFiles input file list
+	 * @param expression the XPath expression to scan
+	 * @return A {@link Set} of strings matching the XPath
+	 * @throws MojoExecutionException on error, execution fails
+	 */
+	private List&lt;String&gt; scanDocuments(Set&lt;Path&gt; inputFiles, String expression) {
+<span class="fc" id="L253">		final Set&lt;String&gt; result = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">		for (Path inputFile : inputFiles) {</span>
+<span class="fc" id="L255">			result.addAll(scanDocument(inputFile.toFile(), expression));</span>
+<span class="fc" id="L256">		}</span>
+<span class="fc" id="L257">		return result.stream().sorted().distinct().collect(Collectors.toList());</span>
+	}
+
+	/**
+	 * Retrieve strings matching the XPath from the given XML file.
+	 *
+	 * @param file       the input file
+	 * @param expression the XPath expression to scan
+	 * @return A {@link Set} of strings matching the XPath
+	 * @throws MojoExecutionException on error, execution fails
+	 */
+	private Set&lt;String&gt; scanDocument(File file, String expression) {
+
+		try {
+<span class="fc" id="L271">			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L272">			final DocumentBuilder builder = factory.newDocumentBuilder();</span>
+<span class="fc" id="L273">			final Document document = builder.parse(file);</span>
+
+<span class="fc" id="L275">			final XPathFactory xPathFactory = XPathFactory.newInstance();</span>
+<span class="fc" id="L276">			final XPath xpath = xPathFactory.newXPath();</span>
+
+<span class="fc" id="L278">			final Set&lt;String&gt; result = new LinkedHashSet&lt;&gt;();</span>
+
+			// Find node list in document matching the xpath expression
+<span class="fc" id="L281">			XPathExpression xPathExpression = xpath.compile(expression);</span>
+<span class="fc" id="L282">			NodeList nodeList = (NodeList) xPathExpression.evaluate(document, XPathConstants.NODESET);</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">			for (int i = 0; i &lt; nodeList.getLength(); i++) {</span>
+<span class="fc" id="L284">				Node node = nodeList.item(i);</span>
+				// Put the text content of the node to the map
+<span class="fc" id="L286">				result.add(node.getTextContent());</span>
+			}
+<span class="fc" id="L288">			return result;</span>
+<span class="nc" id="L289">		} catch (ParserConfigurationException | IOException | SAXException | XPathExpressionException e) {</span>
+<span class="nc" id="L290">			throw new RuntimeException(&quot;Unable to parse XML document: &quot; + file, e);</span>
+		}
+	}
+
+	private String safeUpper(String name) {
+<span class="fc" id="L295">		return name.replaceAll(&quot;\\W&quot;, &quot;_&quot;).toUpperCase(Locale.ROOT);</span>
+	}
+
+	private FieldSpec stringConstant(String prefix, String name) {
+<span class="fc" id="L299">		return FieldSpec</span>
+<span class="fc" id="L300">				.builder(String.class, prefix + safeUpper(name), PUBLIC, STATIC, FINAL)</span>
+<span class="fc" id="L301">				.initializer(&quot;$S&quot;, name)</span>
+<span class="fc" id="L302">				.build();</span>
+	}
+
+	private List&lt;FieldSpec&gt; mapConstants(Collection&lt;String&gt; input, String prefix) {
+<span class="fc" id="L306">		return input.stream().map(p -&gt; stringConstant(prefix, p)).collect(Collectors.toList());</span>
+	}
+
+	/**
+	 * {@code List&lt;FieldSpec&gt;} decorator that adds a @{@link Deprecated} annotation to all fields.
+	 */
+	private List&lt;FieldSpec&gt; deprecated(List&lt;FieldSpec&gt; delegates) {
+<span class="fc" id="L313">		return delegates.stream()</span>
+<span class="fc" id="L314">				.map(field -&gt;</span>
+<span class="fc" id="L315">						field.toBuilder()</span>
+<span class="fc" id="L316">								.addAnnotation(AnnotationSpec.builder(Deprecated.class)</span>
+<span class="fc" id="L317">								.addMember(&quot;forRemoval&quot;, &quot;true&quot;).build()).build())</span>
+<span class="fc" id="L318">				.collect(Collectors.toList());</span>
+	}
+
+	private FieldSpec thingTypeUidSpec(String id, String prefix) {
+<span class="fc" id="L322">		String safeId = safeUpper(id);</span>
+<span class="fc" id="L323">		return FieldSpec</span>
+<span class="fc" id="L324">				.builder(THING_TYPE_UID_CLASS_NAME, safeId + &quot;_THING_TYPE_UID&quot;, PUBLIC, STATIC, FINAL)</span>
+<span class="fc" id="L325">				.initializer(&quot;new $T(BINDING_ID, $L$L)&quot;, THING_TYPE_UID_CLASS_NAME, prefix, safeId)</span>
+<span class="fc" id="L326">				.build();</span>
+	}
+
+	// setter
+
+	public void setInputDirectory(String inputDirectory) {
+<span class="fc" id="L332">		this.inputDirectory = inputDirectory;</span>
+<span class="fc" id="L333">	}</span>
+
+	public void setOutputDirectory(String outputDirectory) {
+<span class="fc" id="L336">		this.outputDirectory = outputDirectory;</span>
+<span class="fc" id="L337">	}</span>
+
+	public void setPackageName(String packageName) {
+<span class="fc" id="L340">		this.packageName = packageName;</span>
+<span class="fc" id="L341">	}</span>
+
+	public void setOpenhabClassName(String openhabClassName) {
+<span class="fc" id="L344">		this.openhabClassName = openhabClassName;</span>
+<span class="fc" id="L345">	}</span>
+
+	public void setStringsClassName(String stringsClassName) {
+<span class="fc" id="L348">		this.stringsClassName = stringsClassName;</span>
+<span class="fc" id="L349">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
