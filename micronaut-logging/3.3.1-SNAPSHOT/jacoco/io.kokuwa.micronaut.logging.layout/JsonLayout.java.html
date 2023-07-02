@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonLayout.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Logging Support for Micronaut</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.micronaut.logging.layout</a> &gt; <span class="el_source">JsonLayout.java</span></div><h1>JsonLayout.java</h1><pre class="source lang-java linenums">package io.kokuwa.micronaut.logging.layout;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TimeZone;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
+import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.CoreConstants;
+import ch.qos.logback.core.LayoutBase;
+import io.micronaut.http.MediaType;
+
+<span class="fc" id="L19">public class JsonLayout extends LayoutBase&lt;ILoggingEvent&gt; {</span>
+
+	public static final String TIMESTAMP_ATTR_NAME = &quot;timestamp&quot;;
+	public static final String LEVEL_ATTR_NAME = &quot;level&quot;;
+	public static final String THREAD_ATTR_NAME = &quot;thread&quot;;
+	public static final String MDC_ATTR_NAME = &quot;mdc&quot;;
+	public static final String LOGGER_ATTR_NAME = &quot;logger&quot;;
+	public static final String FORMATTED_MESSAGE_ATTR_NAME = &quot;message&quot;;
+	public static final String MESSAGE_ATTR_NAME = &quot;raw-message&quot;;
+	public static final String EXCEPTION_ATTR_NAME = &quot;exception&quot;;
+	public static final String CONTEXT_ATTR_NAME = &quot;context&quot;;
+
+<span class="fc" id="L31">	private final ObjectMapper mapper = new ObjectMapper();</span>
+
+<span class="fc" id="L33">	protected boolean includeLevel = true;</span>
+<span class="fc" id="L34">	protected boolean includeThreadName = true;</span>
+<span class="fc" id="L35">	protected boolean includeMDC = true;</span>
+<span class="fc" id="L36">	protected boolean includeLoggerName = true;</span>
+<span class="fc" id="L37">	protected boolean includeFormattedMessage = true;</span>
+<span class="fc" id="L38">	protected boolean includeMessage = true;</span>
+<span class="fc" id="L39">	protected boolean includeException = true;</span>
+<span class="fc" id="L40">	protected boolean includeContextName = false;</span>
+<span class="fc" id="L41">	protected boolean includeTimestamp = true;</span>
+	private String timestampFormat;
+	private String timestampFormatTimezoneId;
+<span class="fc" id="L44">	private ThrowableHandlingConverter throwableHandlingConverter = new ThrowableProxyConverter();</span>
+
+	@Override
+	public String getContentType() {
+<span class="nc" id="L48">		return MediaType.APPLICATION_JSON;</span>
+	}
+
+	@Override
+	public void start() {
+<span class="fc" id="L53">		this.throwableHandlingConverter.start();</span>
+<span class="fc" id="L54">		super.start();</span>
+<span class="fc" id="L55">	}</span>
+
+	@Override
+	public void stop() {
+<span class="nc" id="L59">		super.stop();</span>
+<span class="nc" id="L60">		this.throwableHandlingConverter.stop();</span>
+<span class="nc" id="L61">	}</span>
+
+	@Override
+	public String doLayout(ILoggingEvent event) {
+<span class="nc" id="L65">		var map = toJsonMap(event);</span>
+		try {
+<span class="nc" id="L67">			return mapper.writeValueAsString(map) + CoreConstants.LINE_SEPARATOR;</span>
+<span class="nc" id="L68">		} catch (JsonProcessingException e) {</span>
+<span class="nc" id="L69">			addError(&quot;Failed to write json from event &quot; + event + &quot; and map &quot; + map, e);</span>
+<span class="nc" id="L70">			return null;</span>
+		}
+	}
+
+	protected Map&lt;String, Object&gt; toJsonMap(ILoggingEvent event) {
+<span class="nc" id="L75">		var map = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L76">		addTimestamp(TIMESTAMP_ATTR_NAME, includeTimestamp, event.getTimeStamp(), map);</span>
+<span class="nc" id="L77">		add(LEVEL_ATTR_NAME, includeLevel, String.valueOf(event.getLevel()), map);</span>
+<span class="nc" id="L78">		add(THREAD_ATTR_NAME, includeThreadName, event.getThreadName(), map);</span>
+<span class="nc" id="L79">		addMap(MDC_ATTR_NAME, includeMDC, event.getMDCPropertyMap(), map);</span>
+<span class="nc" id="L80">		add(LOGGER_ATTR_NAME, includeLoggerName, event.getLoggerName(), map);</span>
+<span class="nc" id="L81">		add(FORMATTED_MESSAGE_ATTR_NAME, includeFormattedMessage, event.getFormattedMessage(), map);</span>
+<span class="nc" id="L82">		add(MESSAGE_ATTR_NAME, includeMessage, event.getMessage(), map);</span>
+<span class="nc" id="L83">		add(CONTEXT_ATTR_NAME, includeContextName, event.getLoggerContextVO().getName(), map);</span>
+<span class="nc" id="L84">		addThrowableInfo(EXCEPTION_ATTR_NAME, includeException, event, map);</span>
+<span class="nc" id="L85">		return map;</span>
+	}
+
+	protected void addThrowableInfo(String fieldName, boolean field, ILoggingEvent value, Map&lt;String, Object&gt; map) {
+<span class="nc bnc" id="L89" title="All 4 branches missed.">		if (field &amp;&amp; value != null) {</span>
+<span class="nc" id="L90">			var throwableProxy = value.getThrowableProxy();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">			if (throwableProxy != null) {</span>
+<span class="nc" id="L92">				var ex = throwableHandlingConverter.convert(value);</span>
+<span class="nc bnc" id="L93" title="All 4 branches missed.">				if (ex != null &amp;&amp; !ex.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L94">					map.put(fieldName, ex);</span>
+				}
+			}
+		}
+<span class="nc" id="L98">	}</span>
+
+	protected void addMap(String key, boolean field, Map&lt;String, ?&gt; mapValue, Map&lt;String, Object&gt; map) {
+<span class="nc bnc" id="L101" title="All 6 branches missed.">		if (field &amp;&amp; mapValue != null &amp;&amp; !mapValue.isEmpty()) {</span>
+<span class="nc" id="L102">			map.put(key, mapValue);</span>
+		}
+<span class="nc" id="L104">	}</span>
+
+	protected void addTimestamp(String key, boolean field, long timeStamp, Map&lt;String, Object&gt; map) {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">		if (field) {</span>
+<span class="nc" id="L108">			var formatted = formatTimestamp(timeStamp);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">			if (formatted != null) {</span>
+<span class="nc" id="L110">				map.put(key, formatted);</span>
+			}
+		}
+<span class="nc" id="L113">	}</span>
+
+	protected void add(String fieldName, boolean field, String value, Map&lt;String, Object&gt; map) {
+<span class="nc bnc" id="L116" title="All 4 branches missed.">		if (field &amp;&amp; value != null) {</span>
+<span class="nc" id="L117">			map.put(fieldName, value);</span>
+		}
+<span class="nc" id="L119">	}</span>
+
+	protected String formatTimestamp(long timestamp) {
+<span class="nc bnc" id="L122" title="All 4 branches missed.">		if (timestampFormat == null || timestamp &lt; 0) {</span>
+<span class="nc" id="L123">			return String.valueOf(timestamp);</span>
+		}
+<span class="nc" id="L125">		var date = new Date(timestamp);</span>
+<span class="nc" id="L126">		var format = new SimpleDateFormat(timestampFormat);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		if (timestampFormatTimezoneId != null) {</span>
+<span class="nc" id="L128">			format.setTimeZone(TimeZone.getTimeZone(timestampFormatTimezoneId));</span>
+		}
+<span class="nc" id="L130">		return format.format(date);</span>
+	}
+
+	// setter
+
+	public void setIncludeLevel(boolean includeLevel) {
+<span class="nc" id="L136">		this.includeLevel = includeLevel;</span>
+<span class="nc" id="L137">	}</span>
+
+	public void setIncludeThreadName(boolean includeThreadName) {
+<span class="nc" id="L140">		this.includeThreadName = includeThreadName;</span>
+<span class="nc" id="L141">	}</span>
+
+	public void setIncludeMDC(boolean includeMDC) {
+<span class="nc" id="L144">		this.includeMDC = includeMDC;</span>
+<span class="nc" id="L145">	}</span>
+
+	public void setIncludeLoggerName(boolean includeLoggerName) {
+<span class="nc" id="L148">		this.includeLoggerName = includeLoggerName;</span>
+<span class="nc" id="L149">	}</span>
+
+	public void setIncludeFormattedMessage(boolean includeFormattedMessage) {
+<span class="nc" id="L152">		this.includeFormattedMessage = includeFormattedMessage;</span>
+<span class="nc" id="L153">	}</span>
+
+	public void setIncludeMessage(boolean includeMessage) {
+<span class="nc" id="L156">		this.includeMessage = includeMessage;</span>
+<span class="nc" id="L157">	}</span>
+
+	public void setIncludeException(boolean includeException) {
+<span class="nc" id="L160">		this.includeException = includeException;</span>
+<span class="nc" id="L161">	}</span>
+
+	public void setIncludeContextName(boolean includeContextName) {
+<span class="nc" id="L164">		this.includeContextName = includeContextName;</span>
+<span class="nc" id="L165">	}</span>
+
+	public void setIncludeTimestamp(boolean includeTimestamp) {
+<span class="nc" id="L168">		this.includeTimestamp = includeTimestamp;</span>
+<span class="nc" id="L169">	}</span>
+
+	public void setTimestampFormat(String timestampFormat) {
+<span class="nc" id="L172">		this.timestampFormat = timestampFormat;</span>
+<span class="nc" id="L173">	}</span>
+
+	public void setTimestampFormatTimezoneId(String timestampFormatTimezoneId) {
+<span class="nc" id="L176">		this.timestampFormatTimezoneId = timestampFormatTimezoneId;</span>
+<span class="nc" id="L177">	}</span>
+
+	public void setThrowableHandlingConverter(ThrowableHandlingConverter throwableHandlingConverter) {
+<span class="nc" id="L180">		this.throwableHandlingConverter = throwableHandlingConverter;</span>
+<span class="nc" id="L181">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
