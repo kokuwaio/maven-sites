@@ -164,7 +164,7 @@
 <a class="jxr_linenumber" name="L156" href="#L156">156</a> 			<strong class="jxr_keyword">var</strong> outputPattern = Pattern.compile(<span class="jxr_string">"^unpacking (?&lt;image&gt;.*) &#92;&#92;(sha256:[0-9a-f]{64}&#92;&#92;).*$"</span>);
 <a class="jxr_linenumber" name="L157" href="#L157">157</a> 
 <a class="jxr_linenumber" name="L158" href="#L158">158</a> 			getDocker().copyToContainer(tarFile, destination);
-<a class="jxr_linenumber" name="L159" href="#L159">159</a> 			<strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">var</strong> output : getDocker().exec(<span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"import"</span>, destination.toString())) {
+<a class="jxr_linenumber" name="L159" href="#L159">159</a> 			<strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">var</strong> output : getDocker().exec(pullTimeout, <span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"import"</span>, destination.toString())) {
 <a class="jxr_linenumber" name="L160" href="#L160">160</a> 				<strong class="jxr_keyword">var</strong> matcher = outputPattern.matcher(output);
 <a class="jxr_linenumber" name="L161" href="#L161">161</a> 				<strong class="jxr_keyword">if</strong> (matcher.matches()) {
 <a class="jxr_linenumber" name="L162" href="#L162">162</a> 					getDocker().exec(<span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"label"</span>, matcher.group(<span class="jxr_string">"image"</span>), labelPath + <span class="jxr_string">"="</span> + tarFile);
@@ -242,7 +242,7 @@
 <a class="jxr_linenumber" name="L234" href="#L234">234</a> 		<strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L235" href="#L235">235</a> 			getDocker().saveImage(image, source);
 <a class="jxr_linenumber" name="L236" href="#L236">236</a> 			getDocker().copyToContainer(source, destination);
-<a class="jxr_linenumber" name="L237" href="#L237">237</a> 			getDocker().exec(<span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"import"</span>, destination.toString());
+<a class="jxr_linenumber" name="L237" href="#L237">237</a> 			getDocker().exec(pullTimeout, <span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"import"</span>, destination.toString());
 <a class="jxr_linenumber" name="L238" href="#L238">238</a> 			getDocker().exec(<span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"label"</span>, normalizedImage, label + <span class="jxr_string">"="</span> + digest);
 <a class="jxr_linenumber" name="L239" href="#L239">239</a> 		} <strong class="jxr_keyword">catch</strong> (MojoExecutionException e) {
 <a class="jxr_linenumber" name="L240" href="#L240">240</a> 			getLog().error(<span class="jxr_string">"Failed to import tar "</span> + source, e);

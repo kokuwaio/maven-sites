@@ -156,7 +156,7 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 <span class="fc" id="L156">			var outputPattern = Pattern.compile(&quot;^unpacking (?&lt;image&gt;.*) \\(sha256:[0-9a-f]{64}\\).*$&quot;);</span>
 
 <span class="fc" id="L158">			getDocker().copyToContainer(tarFile, destination);</span>
-<span class="fc bfc" id="L159" title="All 2 branches covered.">			for (var output : getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString())) {</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">			for (var output : getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString())) {</span>
 <span class="fc" id="L160">				var matcher = outputPattern.matcher(output);</span>
 <span class="pc bpc" id="L161" title="1 of 2 branches missed.">				if (matcher.matches()) {</span>
 <span class="fc" id="L162">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;), labelPath + &quot;=&quot; + tarFile);</span>
@@ -234,7 +234,7 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 		try {
 <span class="fc" id="L235">			getDocker().saveImage(image, source);</span>
 <span class="fc" id="L236">			getDocker().copyToContainer(source, destination);</span>
-<span class="fc" id="L237">			getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString());</span>
+<span class="fc" id="L237">			getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString());</span>
 <span class="fc" id="L238">			getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, normalizedImage, label + &quot;=&quot; + digest);</span>
 <span class="nc" id="L239">		} catch (MojoExecutionException e) {</span>
 <span class="nc" id="L240">			getLog().error(&quot;Failed to import tar &quot; + source, e);</span>
