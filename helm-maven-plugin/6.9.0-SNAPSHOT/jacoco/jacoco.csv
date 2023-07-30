@@ -1,0 +1,28 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Helm Maven Plugin,io.kokuwa.maven.helm.pojo,HelmRepository,239,92,58,0,0,9,32,18,3,18
+Helm Maven Plugin,io.kokuwa.maven.helm.pojo,RepoType,0,34,0,0,0,2,0,1,0,1
+Helm Maven Plugin,io.kokuwa.maven.helm.pojo,ValueOverride,217,43,46,0,0,6,27,11,4,11
+Helm Maven Plugin,io.kokuwa.maven.helm.pojo,K8SCluster,217,38,46,0,0,6,28,10,5,10
+Helm Maven Plugin,io.kokuwa.maven.helm.pojo,HelmExecutable,50,311,4,22,12,56,5,23,1,14
+Helm Maven Plugin,io.kokuwa.maven.helm.github,Github,260,0,8,0,45,0,10,0,6,0
+Helm Maven Plugin,io.kokuwa.maven.helm.github,ReleaseCache,128,0,22,0,3,0,20,0,9,0
+Helm Maven Plugin,io.kokuwa.maven.helm.github,ReleaseResponse,84,0,14,0,2,0,14,0,7,0
+Helm Maven Plugin,io.kokuwa.maven.helm,UpgradeMojo,0,100,0,10,0,14,0,11,0,6
+Helm Maven Plugin,io.kokuwa.maven.helm,UploadMojo,65,444,18,34,10,89,13,28,0,14
+Helm Maven Plugin,io.kokuwa.maven.helm,PackageMojo,0,184,2,16,0,27,2,17,0,10
+Helm Maven Plugin,io.kokuwa.maven.helm,RegistryLoginMojo,0,104,0,8,0,22,0,9,0,5
+Helm Maven Plugin,io.kokuwa.maven.helm,TLSHelper,10,30,0,0,3,7,1,2,1,2
+Helm Maven Plugin,io.kokuwa.maven.helm,AbstractHelmMojo,239,525,16,34,33,89,45,51,32,39
+Helm Maven Plugin,io.kokuwa.maven.helm,AbstractHelmWithValueOverrideMojo,0,157,1,15,0,22,1,15,0,8
+Helm Maven Plugin,io.kokuwa.maven.helm,TLSHelper.new X509TrustManager() {...},1,6,0,0,1,3,1,3,1,3
+Helm Maven Plugin,io.kokuwa.maven.helm,InitMojo.new Authenticator() {...},20,0,0,0,4,0,2,0,2,0
+Helm Maven Plugin,io.kokuwa.maven.helm,RegistryLogoutMojo,0,63,0,6,0,13,0,6,0,3
+Helm Maven Plugin,io.kokuwa.maven.helm,InitMojo.new Authenticator() {...},17,0,0,0,2,0,2,0,2,0
+Helm Maven Plugin,io.kokuwa.maven.helm,UploadMojo.new Authenticator() {...},0,12,0,0,0,2,0,2,0,2
+Helm Maven Plugin,io.kokuwa.maven.helm,DryRunMojo,5,65,0,6,0,14,1,6,1,3
+Helm Maven Plugin,io.kokuwa.maven.helm,InitMojo,233,632,45,63,40,123,35,43,3,20
+Helm Maven Plugin,io.kokuwa.maven.helm,LintMojo,0,78,0,6,0,14,0,8,0,5
+Helm Maven Plugin,io.kokuwa.maven.helm,DependencyBuildMojo,0,64,0,6,0,12,0,6,0,3
+Helm Maven Plugin,io.kokuwa.maven.helm,PushMojo,22,192,2,14,3,32,2,12,0,6
+Helm Maven Plugin,io.kokuwa.maven.helm,TemplateMojo,5,101,0,8,0,19,1,11,1,7
+Helm Maven Plugin,io.kokuwa.maven.helm,InstallMojo,5,65,0,6,0,12,1,6,1,3

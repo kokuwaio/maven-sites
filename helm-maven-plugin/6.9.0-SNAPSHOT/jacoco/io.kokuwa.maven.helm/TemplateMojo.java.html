@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TemplateMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">TemplateMojo.java</span></div><h1>TemplateMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.nio.file.Path;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.StringUtils;
+
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm template&quot;.
+ *
+ * @author Tim IJntema, Kirill Nazarov
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_template&quot;&gt;helm template&lt;/a&gt;
+ * @since 5.10
+ */
+@Mojo(name = &quot;template&quot;, defaultPhase = LifecyclePhase.TEST, threadSafe = true)
+<span class="pc" id="L23">@Setter</span>
+<span class="fc" id="L24">public class TemplateMojo extends AbstractHelmWithValueOverrideMojo {</span>
+
+	/**
+	 * Helm command to execute.
+	 *
+	 * @since 5.10
+	 * @deprecated Will be removed in 7.x and set to &quot;template&quot;.
+	 */
+	@Deprecated // java8 (since = &quot;6.5.0&quot;, forRemoval = true)
+	@Parameter(property = &quot;action&quot;, defaultValue = &quot;template&quot;)
+	private String action;
+
+	/**
+	 * Writes the executed templates to files in output-dir instead of stdout.
+	 *
+	 * @since 6.6.1
+	 */
+	@Parameter(property = &quot;helm.template.output-dir&quot;)
+	private File templateOutputDir;
+
+	/**
+	 * Generate the name (and omit the NAME parameter).
+	 *
+	 * @since 6.6.1
+	 */
+	@Parameter(property = &quot;helm.template.generate-name&quot;, defaultValue = &quot;false&quot;)
+	private boolean templateGenerateName;
+
+	/**
+	 * Additional arguments.
+	 *
+	 * @since 5.10
+	 * @deprecated Will be removed in 7.x and use &quot;helm.values&quot;.
+	 */
+	@Deprecated // java8 (since = &quot;6.5.0&quot;, forRemoval = true)
+	@Parameter(property = &quot;helm.additional.arguments&quot;)
+	private String additionalArguments;
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking template goal.
+	 *
+	 * @since 5.10
+	 */
+	@Parameter(property = &quot;helm.template.skip&quot;, defaultValue = &quot;true&quot;)
+	private boolean skipTemplate;
+
+	@Override
+	public void execute() throws MojoExecutionException, MojoFailureException {
+
+<span class="fc bfc" id="L73" title="All 4 branches covered.">		if (skip || skipTemplate) {</span>
+<span class="fc" id="L74">			getLog().info(&quot;Skip template&quot;);</span>
+<span class="fc" id="L75">			return;</span>
+		}
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc" id="L79">			getLog().info(String.format(&quot;\n\nPerform template for chart %s...&quot;, chartDirectory));</span>
+<span class="fc" id="L80">			helm()</span>
+<span class="fc" id="L81">					.arguments(action, chartDirectory)</span>
+<span class="fc" id="L82">					.arguments(getArguments())</span>
+<span class="fc" id="L83">					.flag(&quot;output-dir&quot;, templateOutputDir)</span>
+<span class="fc" id="L84">					.flag(&quot;generate-name&quot;, templateGenerateName)</span>
+<span class="fc" id="L85">					.execute(&quot;There are test failures&quot;);</span>
+<span class="fc" id="L86">		}</span>
+<span class="fc" id="L87">	}</span>
+
+	private Object[] getArguments() {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">		if (StringUtils.isEmpty(additionalArguments)) {</span>
+<span class="fc" id="L91">			return new Object[0];</span>
+		}
+<span class="fc" id="L93">		getLog().warn(&quot;NOTE: &lt;additionalArguments&gt; option will be removed in future major release.&quot;);</span>
+<span class="fc" id="L94">		return additionalArguments.split(&quot; &quot;);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
