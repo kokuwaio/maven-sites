@@ -190,14 +190,14 @@ import io.kokuwa.maven.k3s.util.Await;
 
 			// get image name
 
-<span class="pc bpc" id="L193" title="1 of 2 branches missed.">			if (imageTag.equals(&quot;latest&quot;)) {</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">			if (&quot;latest&quot;.equals(imageTag)) {</span>
 <span class="fc" id="L194">				getLog().warn(&quot;Using image tag 'latest' is unstable.&quot;);</span>
 			}
 <span class="pc bpc" id="L196" title="1 of 2 branches missed.">			var image = (imageRegistry == null ? &quot;&quot; : imageRegistry + &quot;/&quot;) + imageRepository + &quot;:&quot; + imageTag;</span>
 
 			// k3s command
 
-<span class="fc" id="L200">			var command = new ArrayList&lt;&gt;(List.of(&quot;server&quot;, &quot;--https-listen-port=&quot; + portKubeApi));</span>
+<span class="fc" id="L200">			var command = new ArrayList&lt;&gt;(List.of(&quot;server&quot;, &quot;--node-name=k3s&quot;, &quot;--https-listen-port=&quot; + portKubeApi));</span>
 <span class="pc bpc" id="L201" title="1 of 2 branches missed.">			if (disableCloudController) {</span>
 <span class="fc" id="L202">				command.add(&quot;--disable-cloud-controller&quot;);</span>
 			}

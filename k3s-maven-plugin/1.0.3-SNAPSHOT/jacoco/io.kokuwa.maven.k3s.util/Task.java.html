@@ -104,7 +104,7 @@ public class Task {
 <span class="fc bfc" id="L104" title="All 2 branches covered.">		if (exitCode != 0) {</span>
 <span class="fc" id="L105">			log.error(&quot;&gt;&gt;&gt; &quot; + this);</span>
 <span class="fc" id="L106">			output.forEach(line -&gt; log.error(&quot;&lt;&lt;&lt; &quot; + line));</span>
-<span class="fc" id="L107">			throw new MojoExecutionException(&quot;Command failed wit exit code &quot; + exitCode + &quot;: &quot; + this);</span>
+<span class="fc" id="L107">			throw new MojoExecutionException(&quot;Command failed with exit code &quot; + exitCode + &quot;: &quot; + this);</span>
 		}
 <span class="fc" id="L109">		return this;</span>
 	}
