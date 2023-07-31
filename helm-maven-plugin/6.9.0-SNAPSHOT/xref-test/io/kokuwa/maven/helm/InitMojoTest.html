@@ -100,7 +100,7 @@
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>  		Path helmExecutableDirectory = Files.createTempDirectory(<span class="jxr_string">"helm-maven-plugin-test"</span>);
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>  		Path helmExecutable = helmExecutableDirectory.resolve(HELM);
 <a class="jxr_linenumber" name="L94" href="#L94">94</a>  		mojo.setHelmExecutableDirectory(helmExecutableDirectory.toFile());
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		mojo.setHelmVersion(<span class="jxr_string">"3.12.0"</span>);
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		mojo.setHelmVersion(<span class="jxr_string">"3.10.1"</span>);
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>  		mojo.setUseLocalHelmBinary(false);
 <a class="jxr_linenumber" name="L97" href="#L97">97</a>  		assertHelm(mojo, <span class="jxr_string">"repo add stable "</span> + InitMojo.STABLE_HELM_REPO);
 <a class="jxr_linenumber" name="L98" href="#L98">98</a>  		assertTrue(Files.isRegularFile(helmExecutable), <span class="jxr_string">"executable not found"</span>);
@@ -115,7 +115,7 @@
 <a class="jxr_linenumber" name="L107" href="#L107">107</a> 		Path helmExecutable = helmExecutableDirectory.resolve(<span class="jxr_string">"helm"</span>);
 <a class="jxr_linenumber" name="L108" href="#L108">108</a> 		mojo.setHelmExecutableDirectory(helmExecutableDirectory.toFile());
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> 		mojo.setHelmVersion(<strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="L110" href="#L110">110</a> 		mojo.setHelmDownloadUrl(<strong class="jxr_keyword">new</strong> URL(<span class="jxr_string">"https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz"</span>));
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> 		mojo.setHelmDownloadUrl(<strong class="jxr_keyword">new</strong> URL(<span class="jxr_string">"https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz"</span>));
 <a class="jxr_linenumber" name="L111" href="#L111">111</a> 		assertHelm(mojo, <span class="jxr_string">"repo add stable "</span> + InitMojo.STABLE_HELM_REPO);
 <a class="jxr_linenumber" name="L112" href="#L112">112</a> 		assertTrue(Files.isRegularFile(helmExecutable), <span class="jxr_string">"executable not found"</span>);
 <a class="jxr_linenumber" name="L113" href="#L113">113</a> 		assertTrue(Files.isExecutable(helmExecutable), <span class="jxr_string">"executable not executable"</span>);
