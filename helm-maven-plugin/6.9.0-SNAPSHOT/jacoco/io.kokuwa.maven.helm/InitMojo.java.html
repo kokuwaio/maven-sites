@@ -269,7 +269,7 @@ import lombok.SneakyThrows;
 
 			// get helm executable entry
 <span class="fc" id="L271">			ArchiveEntry entry = null;</span>
-<span class="pc bpc" id="L272" title="1 of 2 branches missed.">			while ((entry = is.getNextEntry()) != null) {</span>
+<span class="pc bpc" id="L272" title="1 of 4 branches missed.">			while (!found &amp;&amp; (entry = is.getNextEntry()) != null) {</span>
 
 <span class="fc" id="L274">				String name = entry.getName();</span>
 <span class="pc bpc" id="L275" title="2 of 6 branches missed.">				if (entry.isDirectory() || !name.endsWith(&quot;helm.exe&quot;) &amp;&amp; !name.endsWith(&quot;helm&quot;)) {</span>
@@ -284,119 +284,117 @@ import lombok.SneakyThrows;
 				}
 
 <span class="fc" id="L286">				addExecPermission(helm);</span>
+<span class="fc" id="L287">				found = true;</span>
+<span class="fc" id="L288">			}</span>
 
-<span class="fc" id="L288">				found = true;</span>
-<span class="fc" id="L289">				break;</span>
-			}
+<span class="nc" id="L290">		} catch (IOException e) {</span>
+<span class="nc" id="L291">			throw new MojoExecutionException(&quot;Unable to download and extract helm executable.&quot;, e);</span>
+<span class="fc" id="L292">		}</span>
 
-<span class="nc" id="L292">		} catch (IOException e) {</span>
-<span class="nc" id="L293">			throw new MojoExecutionException(&quot;Unable to download and extract helm executable.&quot;, e);</span>
-<span class="fc" id="L294">		}</span>
-
-<span class="pc bpc" id="L296" title="1 of 2 branches missed.">		if (!found) {</span>
-<span class="nc" id="L297">			throw new MojoExecutionException(&quot;Unable to find helm executable in tar file.&quot;);</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">		if (!found) {</span>
+<span class="nc" id="L295">			throw new MojoExecutionException(&quot;Unable to find helm executable in tar file.&quot;);</span>
 		}
-<span class="fc" id="L299">	}</span>
+<span class="fc" id="L297">	}</span>
 
 	private void addExecPermission(Path helm) throws IOException {
-<span class="fc" id="L302">		Set&lt;String&gt; fileAttributeView = FileSystems.getDefault().supportedFileAttributeViews();</span>
+<span class="fc" id="L300">		Set&lt;String&gt; fileAttributeView = FileSystems.getDefault().supportedFileAttributeViews();</span>
 
-<span class="pc bpc" id="L304" title="1 of 2 branches missed.">		if (fileAttributeView.contains(&quot;posix&quot;)) {</span>
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">		if (fileAttributeView.contains(&quot;posix&quot;)) {</span>
 			Set&lt;PosixFilePermission&gt; permissions;
 			try {
-<span class="fc" id="L307">				permissions = Files.getPosixFilePermissions(helm);</span>
-<span class="nc" id="L308">			} catch (UnsupportedOperationException e) {</span>
-<span class="nc" id="L309">				getLog().debug(&quot;Exec file permission is not set&quot;, e);</span>
-<span class="nc" id="L310">				return;</span>
-<span class="fc" id="L311">			}</span>
-<span class="fc" id="L312">			permissions.add(PosixFilePermission.OWNER_EXECUTE);</span>
-<span class="fc" id="L313">			Files.setPosixFilePermissions(helm, permissions);</span>
+<span class="fc" id="L305">				permissions = Files.getPosixFilePermissions(helm);</span>
+<span class="nc" id="L306">			} catch (UnsupportedOperationException e) {</span>
+<span class="nc" id="L307">				getLog().debug(&quot;Exec file permission is not set&quot;, e);</span>
+<span class="nc" id="L308">				return;</span>
+<span class="fc" id="L309">			}</span>
+<span class="fc" id="L310">			permissions.add(PosixFilePermission.OWNER_EXECUTE);</span>
+<span class="fc" id="L311">			Files.setPosixFilePermissions(helm, permissions);</span>
 
-<span class="pc bnc" id="L315" title="All 2 branches missed.">		} else if (fileAttributeView.contains(&quot;acl&quot;)) {</span>
-<span class="nc" id="L316">			String username = System.getProperty(&quot;user.name&quot;);</span>
-<span class="nc" id="L317">			UserPrincipal userPrincipal = FileSystems.getDefault().getUserPrincipalLookupService()</span>
-<span class="nc" id="L318">					.lookupPrincipalByName(username);</span>
-<span class="nc" id="L319">			AclEntry aclEntry = AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE)</span>
-<span class="nc" id="L320">					.setType(AclEntryType.ALLOW).setPrincipal(userPrincipal).build();</span>
+<span class="pc bnc" id="L313" title="All 2 branches missed.">		} else if (fileAttributeView.contains(&quot;acl&quot;)) {</span>
+<span class="nc" id="L314">			String username = System.getProperty(&quot;user.name&quot;);</span>
+<span class="nc" id="L315">			UserPrincipal userPrincipal = FileSystems.getDefault().getUserPrincipalLookupService()</span>
+<span class="nc" id="L316">					.lookupPrincipalByName(username);</span>
+<span class="nc" id="L317">			AclEntry aclEntry = AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE)</span>
+<span class="nc" id="L318">					.setType(AclEntryType.ALLOW).setPrincipal(userPrincipal).build();</span>
 
-<span class="nc" id="L322">			AclFileAttributeView acl = Files.getFileAttributeView(helm, AclFileAttributeView.class,</span>
+<span class="nc" id="L320">			AclFileAttributeView acl = Files.getFileAttributeView(helm, AclFileAttributeView.class,</span>
 					LinkOption.NOFOLLOW_LINKS);
-<span class="nc" id="L324">			List&lt;AclEntry&gt; aclEntries = acl.getAcl();</span>
-<span class="nc" id="L325">			aclEntries.add(aclEntry);</span>
-<span class="nc" id="L326">			acl.setAcl(aclEntries);</span>
+<span class="nc" id="L322">			List&lt;AclEntry&gt; aclEntries = acl.getAcl();</span>
+<span class="nc" id="L323">			aclEntries.add(aclEntry);</span>
+<span class="nc" id="L324">			acl.setAcl(aclEntries);</span>
 		}
-<span class="fc" id="L328">	}</span>
+<span class="fc" id="L326">	}</span>
 
 	private ArchiveInputStream createArchiverInputStream(InputStream is) throws MojoExecutionException {
 
 		// Stream must support mark to allow for auto detection of compressor
-<span class="pc bpc" id="L333" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
 
 		try {
-<span class="fc" id="L336">			return new ArchiveStreamFactory().createArchiveInputStream(inputStream);</span>
-<span class="nc" id="L337">		} catch (ArchiveException e) {</span>
-<span class="nc" id="L338">			throw new MojoExecutionException(&quot;Unsupported archive type downloaded&quot;, e);</span>
+<span class="fc" id="L334">			return new ArchiveStreamFactory().createArchiveInputStream(inputStream);</span>
+<span class="nc" id="L335">		} catch (ArchiveException e) {</span>
+<span class="nc" id="L336">			throw new MojoExecutionException(&quot;Unsupported archive type downloaded&quot;, e);</span>
 		}
 	}
 
 	private InputStream createCompressorInputStream(InputStream is) throws MojoExecutionException {
 
 		// Stream must support mark to allow for auto detection of compressor
-<span class="pc bpc" id="L345" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
 
 		// Detect if stream is compressed
-<span class="fc" id="L348">		String compressorType = null;</span>
+<span class="fc" id="L346">		String compressorType = null;</span>
 		try {
-<span class="fc" id="L350">			compressorType = CompressorStreamFactory.detect(inputStream);</span>
-<span class="nc" id="L351">		} catch (CompressorException e) {</span>
-<span class="nc" id="L352">			getLog().debug(&quot;Unknown type of compressed stream&quot;, e);</span>
-<span class="fc" id="L353">		}</span>
+<span class="fc" id="L348">			compressorType = CompressorStreamFactory.detect(inputStream);</span>
+<span class="nc" id="L349">		} catch (CompressorException e) {</span>
+<span class="nc" id="L350">			getLog().debug(&quot;Unknown type of compressed stream&quot;, e);</span>
+<span class="fc" id="L351">		}</span>
 
 		// If compressed then wrap with compressor stream
-<span class="pc bpc" id="L356" title="1 of 2 branches missed.">		if (compressorType != null) {</span>
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">		if (compressorType != null) {</span>
 			try {
-<span class="fc" id="L358">				return new CompressorStreamFactory().createCompressorInputStream(compressorType, inputStream);</span>
-<span class="nc" id="L359">			} catch (CompressorException e) {</span>
-<span class="nc" id="L360">				throw new MojoExecutionException(&quot;Unsupported compressor type: &quot; + compressorType);</span>
+<span class="fc" id="L356">				return new CompressorStreamFactory().createCompressorInputStream(compressorType, inputStream);</span>
+<span class="nc" id="L357">			} catch (CompressorException e) {</span>
+<span class="nc" id="L358">				throw new MojoExecutionException(&quot;Unsupported compressor type: &quot; + compressorType);</span>
 			}
 		}
 
-<span class="nc" id="L364">		return inputStream;</span>
+<span class="nc" id="L362">		return inputStream;</span>
 	}
 
 	private String getArchitecture() {
-<span class="fc" id="L368">		String architecture = System.getProperty(&quot;os.arch&quot;).toLowerCase(Locale.US);</span>
+<span class="fc" id="L366">		String architecture = System.getProperty(&quot;os.arch&quot;).toLowerCase(Locale.US);</span>
 
-<span class="pc bpc" id="L370" title="4 of 6 branches missed.">		if (architecture.equals(&quot;x86_64&quot;) || architecture.equals(&quot;amd64&quot;) || architecture.equals(&quot;aarch64&quot;)) {</span>
-<span class="fc" id="L371">			return &quot;amd64&quot;;</span>
-<span class="nc bnc" id="L372" title="All 4 branches missed.">		} else if (architecture.equals(&quot;x86&quot;) || architecture.equals(&quot;i386&quot;)) {</span>
-<span class="nc" id="L373">			return &quot;386&quot;;</span>
-<span class="nc bnc" id="L374" title="All 2 branches missed.">		} else if (architecture.contains(&quot;arm64&quot;)) {</span>
-<span class="nc" id="L375">			return &quot;arm64&quot;;</span>
-<span class="nc bnc" id="L376" title="All 4 branches missed.">		} else if (architecture.equals(&quot;aarch32&quot;) || architecture.startsWith(&quot;arm&quot;)) {</span>
-<span class="nc" id="L377">			return &quot;arm&quot;;</span>
-<span class="nc bnc" id="L378" title="All 2 branches missed.">		} else if (architecture.contains(&quot;ppc64le&quot;)</span>
-<span class="nc bnc" id="L379" title="All 4 branches missed.">				|| architecture.contains(&quot;ppc64&quot;) &amp;&amp; System.getProperty(&quot;sun.cpu.endian&quot;).equals(&quot;little&quot;)) {</span>
-<span class="nc" id="L380">			return &quot;ppc64le&quot;;</span>
+<span class="pc bpc" id="L368" title="4 of 6 branches missed.">		if (architecture.equals(&quot;x86_64&quot;) || architecture.equals(&quot;amd64&quot;) || architecture.equals(&quot;aarch64&quot;)) {</span>
+<span class="fc" id="L369">			return &quot;amd64&quot;;</span>
+<span class="nc bnc" id="L370" title="All 4 branches missed.">		} else if (architecture.equals(&quot;x86&quot;) || architecture.equals(&quot;i386&quot;)) {</span>
+<span class="nc" id="L371">			return &quot;386&quot;;</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">		} else if (architecture.contains(&quot;arm64&quot;)) {</span>
+<span class="nc" id="L373">			return &quot;arm64&quot;;</span>
+<span class="nc bnc" id="L374" title="All 4 branches missed.">		} else if (architecture.equals(&quot;aarch32&quot;) || architecture.startsWith(&quot;arm&quot;)) {</span>
+<span class="nc" id="L375">			return &quot;arm&quot;;</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">		} else if (architecture.contains(&quot;ppc64le&quot;)</span>
+<span class="nc bnc" id="L377" title="All 4 branches missed.">				|| architecture.contains(&quot;ppc64&quot;) &amp;&amp; System.getProperty(&quot;sun.cpu.endian&quot;).equals(&quot;little&quot;)) {</span>
+<span class="nc" id="L378">			return &quot;ppc64le&quot;;</span>
 		}
 
-<span class="nc" id="L383">		throw new IllegalStateException(&quot;Unsupported architecture: &quot; + architecture);</span>
+<span class="nc" id="L381">		throw new IllegalStateException(&quot;Unsupported architecture: &quot; + architecture);</span>
 	}
 
 	private String getExtension() {
-<span class="pc bpc" id="L387" title="1 of 2 branches missed.">		return Os.OS_FAMILY.equals(Os.FAMILY_WINDOWS) ? &quot;zip&quot; : &quot;tar.gz&quot;;</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">		return Os.OS_FAMILY.equals(Os.FAMILY_WINDOWS) ? &quot;zip&quot; : &quot;tar.gz&quot;;</span>
 	}
 
 	private String getOperatingSystem() {
-<span class="pc bpc" id="L391" title="3 of 4 branches missed.">		switch (Os.OS_FAMILY) {</span>
+<span class="pc bpc" id="L389" title="3 of 4 branches missed.">		switch (Os.OS_FAMILY) {</span>
 			case Os.FAMILY_UNIX:
-<span class="fc" id="L393">				return &quot;linux&quot;;</span>
+<span class="fc" id="L391">				return &quot;linux&quot;;</span>
 			case Os.FAMILY_MAC:
-<span class="nc" id="L395">				return &quot;darwin&quot;;</span>
+<span class="nc" id="L393">				return &quot;darwin&quot;;</span>
 			case Os.FAMILY_WINDOWS:
-<span class="nc" id="L397">				return &quot;windows&quot;;</span>
+<span class="nc" id="L395">				return &quot;windows&quot;;</span>
 			default:
-<span class="nc" id="L399">				throw new IllegalStateException(&quot;Unsupported OS: &quot; + Os.OS_FAMILY);</span>
+<span class="nc" id="L397">				throw new IllegalStateException(&quot;Unsupported OS: &quot; + Os.OS_FAMILY);</span>
 		}
 	}
 }

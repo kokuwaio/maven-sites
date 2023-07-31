@@ -107,7 +107,7 @@ public class HelmExecutable {
 
 <span class="fc" id="L108">			new Thread(() -&gt; {</span>
 <span class="fc" id="L109">				try (InputStream input = process.getInputStream()) {</span>
-<span class="fc" id="L110">					BufferedReader reader = new BufferedReader(new InputStreamReader(input));</span>
+<span class="fc" id="L110">					BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));</span>
 					String line;
 <span class="pc bpc" id="L112" title="1 of 2 branches missed.">					while ((line = reader.readLine()) != null) {</span>
 <span class="nc" id="L113">						log.info(line);</span>
@@ -118,7 +118,7 @@ public class HelmExecutable {
 <span class="fc" id="L118">			}).start();</span>
 <span class="fc" id="L119">			new Thread(() -&gt; {</span>
 <span class="fc" id="L120">				try (InputStream error = process.getErrorStream()) {</span>
-<span class="fc" id="L121">					BufferedReader reader = new BufferedReader(new InputStreamReader(error));</span>
+<span class="fc" id="L121">					BufferedReader reader = new BufferedReader(new InputStreamReader(error, StandardCharsets.UTF_8));</span>
 					String line;
 <span class="pc bpc" id="L123" title="1 of 2 branches missed.">					while ((line = reader.readLine()) != null) {</span>
 <span class="nc" id="L124">						log.error(line);</span>

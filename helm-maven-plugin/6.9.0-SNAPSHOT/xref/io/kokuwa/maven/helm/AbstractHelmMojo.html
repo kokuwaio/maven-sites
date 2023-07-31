@@ -57,7 +57,7 @@
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>  	<em class="jxr_javadoccomment">/** Path of helm executable. */</em>
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Path helmExecutableName = Paths.get(Os.isFamily(Os.FAMILY_WINDOWS) ? <span class="jxr_string">"helm.exe"</span> : <span class="jxr_string">"helm"</span>);
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>  
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>  	@Component(role = org.sonatype.plexus.components.sec.dispatcher.SecDispatcher.<strong class="jxr_keyword">class</strong>, hint = <span class="jxr_string">"default"</span>)
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  	@Component(role = SecDispatcher.<strong class="jxr_keyword">class</strong>, hint = <span class="jxr_string">"default"</span>)
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  	<strong class="jxr_keyword">private</strong> SecDispatcher securityDispatcher;
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>  
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>  	<em class="jxr_javadoccomment">/**</em>
