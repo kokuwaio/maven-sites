@@ -128,8 +128,8 @@ import lombok.SneakyThrows;
 	private String helmDownloadServerId;
 
 	/**
-	 * Controls whether a download should occur when local helm binary is not found/verified.
-	 * This property has no effect unless &quot;helm.useLocalHelmBinary&quot; is set to &lt;code&gt;true&lt;/code&gt;.
+	 * Controls whether a download should occur when local helm binary is not found/verified. This property has no
+	 * effect unless &quot;helm.useLocalHelmBinary&quot; is set to &lt;code&gt;true&lt;/code&gt;.
 	 *
 	 * @since 6.9.0
 	 */
@@ -155,254 +155,248 @@ import lombok.SneakyThrows;
 <span class="fc" id="L155">			}</span>
 		}
 
-<span class="fc" id="L158">		boolean performDownload = true;</span>
-<span class="fc bfc" id="L159" title="All 2 branches covered.">		if (isUseLocalHelmBinary()) {</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">		if (isUseLocalHelmBinary()) {</span>
 			try {
-<span class="fc" id="L161">				verifyLocalHelmBinary();</span>
-<span class="fc" id="L162">				getLog().info(&quot;Using local HELM binary [&quot; + getHelmExecutablePath() + &quot;]&quot;);</span>
-<span class="fc" id="L163">				performDownload = false;</span>
-<span class="nc" id="L164">			} catch (Exception e) {</span>
-<span class="nc bnc" id="L165" title="All 2 branches missed.">				if (fallbackBinaryDownload) {</span>
-<span class="nc" id="L166">					getLog().info(&quot;Local HELM not verified =&gt; falling back to binary download&quot;);</span>
+<span class="fc" id="L160">				helm().arguments(&quot;version&quot;).execute(&quot;Unable to verify local HELM binary&quot;);</span>
+<span class="fc" id="L161">				getLog().info(&quot;Using local HELM binary [&quot; + getHelmExecutablePath() + &quot;]&quot;);</span>
+<span class="fc" id="L162">			} catch (MojoExecutionException e) {</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">				if (fallbackBinaryDownload) {</span>
+<span class="fc" id="L164">					getLog().info(&quot;Local HELM binary not found =&gt; falling back to binary download&quot;);</span>
+<span class="fc" id="L165">					downloadAndUnpackHelm();</span>
 				} else {
-<span class="nc" id="L168">					getLog().debug(&quot;Skipping fallback binary download&quot;);</span>
-<span class="nc" id="L169">					throw e;</span>
+<span class="fc" id="L167">					getLog().error(&quot;Local HELM binary not found.&quot;);</span>
+<span class="fc" id="L168">					throw e;</span>
 				}
-<span class="fc" id="L171">			}</span>
-		}
-<span class="fc bfc" id="L173" title="All 2 branches covered.">		if (performDownload) {</span>
-<span class="fc" id="L174">			downloadAndUnpackHelm();</span>
-		}
-
-<span class="fc bfc" id="L177" title="All 2 branches covered.">		if (addDefaultRepo) {</span>
-<span class="fc" id="L178">			HelmRepository stableHelmRepo = new HelmRepository();</span>
-<span class="fc" id="L179">			stableHelmRepo.setName(&quot;stable&quot;);</span>
-<span class="fc" id="L180">			stableHelmRepo.setUrl(STABLE_HELM_REPO);</span>
-<span class="fc" id="L181">			addRepository(stableHelmRepo, false);</span>
+<span class="fc" id="L170">			}</span>
+		} else {
+<span class="fc" id="L172">			downloadAndUnpackHelm();</span>
 		}
 
-<span class="fc bfc" id="L184" title="All 2 branches covered.">		if (addUploadRepos) {</span>
-<span class="fc bfc" id="L185" title="All 2 branches covered.">			if (getUploadRepoStable() != null) {</span>
-<span class="fc" id="L186">				addRepository(getUploadRepoStable(), true);</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">		if (addDefaultRepo) {</span>
+<span class="fc" id="L176">			HelmRepository stableHelmRepo = new HelmRepository();</span>
+<span class="fc" id="L177">			stableHelmRepo.setName(&quot;stable&quot;);</span>
+<span class="fc" id="L178">			stableHelmRepo.setUrl(STABLE_HELM_REPO);</span>
+<span class="fc" id="L179">			addRepository(stableHelmRepo, false);</span>
+		}
+
+<span class="fc bfc" id="L182" title="All 2 branches covered.">		if (addUploadRepos) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">			if (getUploadRepoStable() != null) {</span>
+<span class="fc" id="L184">				addRepository(getUploadRepoStable(), true);</span>
 			}
 
 			// add the upload snapshot repo only if it's name differs to the upload repo stable name
-<span class="fc bfc" id="L190" title="All 4 branches covered.">			if (getUploadRepoSnapshot() != null &amp;&amp; (getUploadRepoStable() == null</span>
-<span class="fc bfc" id="L191" title="All 2 branches covered.">					|| !getUploadRepoStable().getName().equals(getUploadRepoSnapshot().getName()))) {</span>
-<span class="fc" id="L192">				addRepository(getUploadRepoSnapshot(), true);</span>
+<span class="fc bfc" id="L188" title="All 4 branches covered.">			if (getUploadRepoSnapshot() != null &amp;&amp; (getUploadRepoStable() == null</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">					|| !getUploadRepoStable().getName().equals(getUploadRepoSnapshot().getName()))) {</span>
+<span class="fc" id="L190">				addRepository(getUploadRepoSnapshot(), true);</span>
 			}
 		}
 
-<span class="fc bfc" id="L196" title="All 2 branches covered.">		if (helmExtraRepos != null) {</span>
-<span class="fc bfc" id="L197" title="All 2 branches covered.">			for (HelmRepository repository : helmExtraRepos) {</span>
-<span class="fc" id="L198">				addRepository(repository, true);</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">		if (helmExtraRepos != null) {</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">			for (HelmRepository repository : helmExtraRepos) {</span>
+<span class="fc" id="L196">				addRepository(repository, true);</span>
 			}
 		}
-<span class="fc" id="L201">	}</span>
+<span class="fc" id="L199">	}</span>
 
 	private void addRepository(HelmRepository repository, boolean authenticationRequired)
 			throws MojoExecutionException {
-<span class="fc" id="L205">		getLog().info(&quot;Adding repo [&quot; + repository + &quot;]&quot;);</span>
-<span class="fc" id="L206">		HelmExecutable helm = helm()</span>
-<span class="fc bfc" id="L207" title="All 2 branches covered.">				.arguments(&quot;repo&quot;, &quot;add&quot;, repository.getName(), repository.getUrl())</span>
-<span class="fc bfc" id="L208" title="All 2 branches covered.">				.flag(&quot;force-update&quot;, repositoryAddForceUpdate || repository.isForceUpdate());</span>
-<span class="fc bfc" id="L209" title="All 2 branches covered.">		PasswordAuthentication auth = authenticationRequired ? getAuthentication(repository) : null;</span>
-<span class="fc bfc" id="L210" title="All 2 branches covered.">		if (auth != null) {</span>
-<span class="fc" id="L211">			helm.flag(&quot;username&quot;, auth.getUserName()).flag(&quot;password&quot;, String.valueOf(auth.getPassword()));</span>
+<span class="fc" id="L203">		getLog().info(&quot;Adding repo [&quot; + repository + &quot;]&quot;);</span>
+<span class="fc" id="L204">		HelmExecutable helm = helm()</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">				.arguments(&quot;repo&quot;, &quot;add&quot;, repository.getName(), repository.getUrl())</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">				.flag(&quot;force-update&quot;, repositoryAddForceUpdate || repository.isForceUpdate());</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">		PasswordAuthentication auth = authenticationRequired ? getAuthentication(repository) : null;</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">		if (auth != null) {</span>
+<span class="fc" id="L209">			helm.flag(&quot;username&quot;, auth.getUserName()).flag(&quot;password&quot;, String.valueOf(auth.getPassword()));</span>
 		}
-<span class="fc" id="L213">		helm.execute(&quot;Unable add repo&quot;);</span>
-<span class="fc" id="L214">	}</span>
+<span class="fc" id="L211">		helm.execute(&quot;Unable add repo&quot;);</span>
+<span class="fc" id="L212">	}</span>
 
-<span class="pc" id="L216">	@SneakyThrows(MalformedURLException.class)</span>
+<span class="pc" id="L214">	@SneakyThrows(MalformedURLException.class)</span>
 	private void downloadAndUnpackHelm() throws MojoExecutionException {
 
-<span class="fc" id="L219">		Path directory = getHelmExecutableDirectory();</span>
-<span class="fc bfc" id="L220" title="All 2 branches covered.">		if (Files.exists(directory.resolve(getHelmExecutableName()))) {</span>
-<span class="fc" id="L221">			getLog().info(&quot;Found helm executable, skip init.&quot;);</span>
-<span class="fc" id="L222">			return;</span>
+<span class="fc" id="L217">		Path directory = getHelmExecutableDirectory();</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">		if (Files.exists(directory.resolve(getHelmExecutableName()))) {</span>
+<span class="fc" id="L219">			getLog().info(&quot;Found helm executable, skip init.&quot;);</span>
+<span class="fc" id="L220">			return;</span>
 		}
 
-<span class="fc" id="L225">		URL url = helmDownloadUrl;</span>
-<span class="fc bfc" id="L226" title="All 2 branches covered.">		if (url == null) {</span>
-<span class="fc" id="L227">			url = new URL(String.format(&quot;https://get.helm.sh/helm-v%s-%s-%s.%s&quot;,</span>
-<span class="fc" id="L228">					getHelmVersion(),</span>
-<span class="fc" id="L229">					getOperatingSystem(),</span>
-<span class="fc" id="L230">					getArchitecture(),</span>
-<span class="fc" id="L231">					getExtension()));</span>
+<span class="fc" id="L223">		URL url = helmDownloadUrl;</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">		if (url == null) {</span>
+<span class="fc" id="L225">			url = new URL(String.format(&quot;https://get.helm.sh/helm-v%s-%s-%s.%s&quot;,</span>
+<span class="fc" id="L226">					getHelmVersion(),</span>
+<span class="fc" id="L227">					getOperatingSystem(),</span>
+<span class="fc" id="L228">					getArchitecture(),</span>
+<span class="fc" id="L229">					getExtension()));</span>
 		}
 
-<span class="fc" id="L234">		getLog().debug(&quot;Downloading Helm: &quot; + url);</span>
-<span class="fc" id="L235">		boolean found = false;</span>
+<span class="fc" id="L232">		getLog().debug(&quot;Downloading Helm: &quot; + url);</span>
+<span class="fc" id="L233">		boolean found = false;</span>
 
-<span class="fc" id="L237">		Server downloadServer = getSettings().getServer(helmDownloadServerId);</span>
+<span class="fc" id="L235">		Server downloadServer = getSettings().getServer(helmDownloadServerId);</span>
 
-<span class="pc bpc" id="L239" title="5 of 6 branches missed.">		if (StringUtils.isNotBlank(helmDownloadUser) &amp;&amp; StringUtils.isNotBlank(helmDownloadPassword)</span>
+<span class="pc bpc" id="L237" title="5 of 6 branches missed.">		if (StringUtils.isNotBlank(helmDownloadUser) &amp;&amp; StringUtils.isNotBlank(helmDownloadPassword)</span>
 				&amp;&amp; downloadServer != null) {
-<span class="nc" id="L241">			throw new MojoExecutionException(&quot;Either use only helm.downloadUser and helm.downloadPassword &quot; +</span>
+<span class="nc" id="L239">			throw new MojoExecutionException(&quot;Either use only helm.downloadUser and helm.downloadPassword &quot; +</span>
 					&quot;or helm.downloadServerId properties&quot;);
 		}
 
-<span class="pc bpc" id="L245" title="3 of 4 branches missed.">		if (StringUtils.isNotBlank(helmDownloadUser) &amp;&amp; StringUtils.isNotBlank(helmDownloadPassword)) {</span>
-<span class="nc" id="L246">			Authenticator.setDefault(new Authenticator() {</span>
+<span class="pc bpc" id="L243" title="3 of 4 branches missed.">		if (StringUtils.isNotBlank(helmDownloadUser) &amp;&amp; StringUtils.isNotBlank(helmDownloadPassword)) {</span>
+<span class="nc" id="L244">			Authenticator.setDefault(new Authenticator() {</span>
 				@Override
 				protected PasswordAuthentication getPasswordAuthentication() {
-<span class="nc" id="L249">					return new PasswordAuthentication(helmDownloadUser, helmDownloadPassword.toCharArray());</span>
+<span class="nc" id="L247">					return new PasswordAuthentication(helmDownloadUser, helmDownloadPassword.toCharArray());</span>
 				}
 			});
 		}
 
-<span class="pc bpc" id="L254" title="1 of 2 branches missed.">		if (downloadServer != null) {</span>
-<span class="nc" id="L255">			Authenticator.setDefault(new Authenticator() {</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">		if (downloadServer != null) {</span>
+<span class="nc" id="L253">			Authenticator.setDefault(new Authenticator() {</span>
 				@Override
 				protected PasswordAuthentication getPasswordAuthentication() {
-<span class="nc" id="L258">					return new PasswordAuthentication(</span>
-<span class="nc" id="L259">							downloadServer.getUsername(),</span>
-<span class="nc" id="L260">							downloadServer.getPassword().toCharArray());</span>
+<span class="nc" id="L256">					return new PasswordAuthentication(</span>
+<span class="nc" id="L257">							downloadServer.getUsername(),</span>
+<span class="nc" id="L258">							downloadServer.getPassword().toCharArray());</span>
 				}
 			});
 		}
 
-<span class="fc" id="L265">		try (InputStream dis = url.openStream();</span>
-<span class="fc" id="L266">				InputStream cis = createCompressorInputStream(dis);</span>
-<span class="fc" id="L267">				ArchiveInputStream is = createArchiverInputStream(cis)) {</span>
+<span class="fc" id="L263">		try (InputStream dis = url.openStream();</span>
+<span class="fc" id="L264">				InputStream cis = createCompressorInputStream(dis);</span>
+<span class="fc" id="L265">				ArchiveInputStream is = createArchiverInputStream(cis)) {</span>
 
 			// create directory if not present
-<span class="fc" id="L270">			Files.createDirectories(directory);</span>
+<span class="fc" id="L268">			Files.createDirectories(directory);</span>
 
 			// get helm executable entry
-<span class="fc" id="L273">			ArchiveEntry entry = null;</span>
-<span class="pc bpc" id="L274" title="1 of 2 branches missed.">			while ((entry = is.getNextEntry()) != null) {</span>
+<span class="fc" id="L271">			ArchiveEntry entry = null;</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">			while ((entry = is.getNextEntry()) != null) {</span>
 
-<span class="fc" id="L276">				String name = entry.getName();</span>
-<span class="pc bpc" id="L277" title="2 of 6 branches missed.">				if (entry.isDirectory() || !name.endsWith(&quot;helm.exe&quot;) &amp;&amp; !name.endsWith(&quot;helm&quot;)) {</span>
-<span class="fc" id="L278">					getLog().debug(&quot;Skip archive entry with name: &quot; + name);</span>
-<span class="fc" id="L279">					continue;</span>
+<span class="fc" id="L274">				String name = entry.getName();</span>
+<span class="pc bpc" id="L275" title="2 of 6 branches missed.">				if (entry.isDirectory() || !name.endsWith(&quot;helm.exe&quot;) &amp;&amp; !name.endsWith(&quot;helm&quot;)) {</span>
+<span class="fc" id="L276">					getLog().debug(&quot;Skip archive entry with name: &quot; + name);</span>
+<span class="fc" id="L277">					continue;</span>
 				}
 
-<span class="fc" id="L282">				getLog().debug(&quot;Use archive entry with name: &quot; + name);</span>
-<span class="pc bpc" id="L283" title="1 of 2 branches missed.">				Path helm = directory.resolve(name.endsWith(&quot;.exe&quot;) ? &quot;helm.exe&quot; : &quot;helm&quot;);</span>
-<span class="fc" id="L284">				try (FileOutputStream output = new FileOutputStream(helm.toFile())) {</span>
-<span class="fc" id="L285">					IOUtils.copy(is, output);</span>
+<span class="fc" id="L280">				getLog().debug(&quot;Use archive entry with name: &quot; + name);</span>
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">				Path helm = directory.resolve(name.endsWith(&quot;.exe&quot;) ? &quot;helm.exe&quot; : &quot;helm&quot;);</span>
+<span class="fc" id="L282">				try (FileOutputStream output = new FileOutputStream(helm.toFile())) {</span>
+<span class="fc" id="L283">					IOUtils.copy(is, output);</span>
 				}
 
-<span class="fc" id="L288">				addExecPermission(helm);</span>
+<span class="fc" id="L286">				addExecPermission(helm);</span>
 
-<span class="fc" id="L290">				found = true;</span>
-<span class="fc" id="L291">				break;</span>
+<span class="fc" id="L288">				found = true;</span>
+<span class="fc" id="L289">				break;</span>
 			}
 
-<span class="nc" id="L294">		} catch (IOException e) {</span>
-<span class="nc" id="L295">			throw new MojoExecutionException(&quot;Unable to download and extract helm executable.&quot;, e);</span>
-<span class="fc" id="L296">		}</span>
+<span class="nc" id="L292">		} catch (IOException e) {</span>
+<span class="nc" id="L293">			throw new MojoExecutionException(&quot;Unable to download and extract helm executable.&quot;, e);</span>
+<span class="fc" id="L294">		}</span>
 
-<span class="pc bpc" id="L298" title="1 of 2 branches missed.">		if (!found) {</span>
-<span class="nc" id="L299">			throw new MojoExecutionException(&quot;Unable to find helm executable in tar file.&quot;);</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">		if (!found) {</span>
+<span class="nc" id="L297">			throw new MojoExecutionException(&quot;Unable to find helm executable in tar file.&quot;);</span>
 		}
-<span class="fc" id="L301">	}</span>
+<span class="fc" id="L299">	}</span>
 
 	private void addExecPermission(Path helm) throws IOException {
-<span class="fc" id="L304">		Set&lt;String&gt; fileAttributeView = FileSystems.getDefault().supportedFileAttributeViews();</span>
+<span class="fc" id="L302">		Set&lt;String&gt; fileAttributeView = FileSystems.getDefault().supportedFileAttributeViews();</span>
 
-<span class="pc bpc" id="L306" title="1 of 2 branches missed.">		if (fileAttributeView.contains(&quot;posix&quot;)) {</span>
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">		if (fileAttributeView.contains(&quot;posix&quot;)) {</span>
 			Set&lt;PosixFilePermission&gt; permissions;
 			try {
-<span class="fc" id="L309">				permissions = Files.getPosixFilePermissions(helm);</span>
-<span class="nc" id="L310">			} catch (UnsupportedOperationException e) {</span>
-<span class="nc" id="L311">				getLog().debug(&quot;Exec file permission is not set&quot;, e);</span>
-<span class="nc" id="L312">				return;</span>
-<span class="fc" id="L313">			}</span>
-<span class="fc" id="L314">			permissions.add(PosixFilePermission.OWNER_EXECUTE);</span>
-<span class="fc" id="L315">			Files.setPosixFilePermissions(helm, permissions);</span>
+<span class="fc" id="L307">				permissions = Files.getPosixFilePermissions(helm);</span>
+<span class="nc" id="L308">			} catch (UnsupportedOperationException e) {</span>
+<span class="nc" id="L309">				getLog().debug(&quot;Exec file permission is not set&quot;, e);</span>
+<span class="nc" id="L310">				return;</span>
+<span class="fc" id="L311">			}</span>
+<span class="fc" id="L312">			permissions.add(PosixFilePermission.OWNER_EXECUTE);</span>
+<span class="fc" id="L313">			Files.setPosixFilePermissions(helm, permissions);</span>
 
-<span class="pc bnc" id="L317" title="All 2 branches missed.">		} else if (fileAttributeView.contains(&quot;acl&quot;)) {</span>
-<span class="nc" id="L318">			String username = System.getProperty(&quot;user.name&quot;);</span>
-<span class="nc" id="L319">			UserPrincipal userPrincipal = FileSystems.getDefault().getUserPrincipalLookupService()</span>
-<span class="nc" id="L320">					.lookupPrincipalByName(username);</span>
-<span class="nc" id="L321">			AclEntry aclEntry = AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE)</span>
-<span class="nc" id="L322">					.setType(AclEntryType.ALLOW).setPrincipal(userPrincipal).build();</span>
+<span class="pc bnc" id="L315" title="All 2 branches missed.">		} else if (fileAttributeView.contains(&quot;acl&quot;)) {</span>
+<span class="nc" id="L316">			String username = System.getProperty(&quot;user.name&quot;);</span>
+<span class="nc" id="L317">			UserPrincipal userPrincipal = FileSystems.getDefault().getUserPrincipalLookupService()</span>
+<span class="nc" id="L318">					.lookupPrincipalByName(username);</span>
+<span class="nc" id="L319">			AclEntry aclEntry = AclEntry.newBuilder().setPermissions(AclEntryPermission.EXECUTE)</span>
+<span class="nc" id="L320">					.setType(AclEntryType.ALLOW).setPrincipal(userPrincipal).build();</span>
 
-<span class="nc" id="L324">			AclFileAttributeView acl = Files.getFileAttributeView(helm, AclFileAttributeView.class,</span>
+<span class="nc" id="L322">			AclFileAttributeView acl = Files.getFileAttributeView(helm, AclFileAttributeView.class,</span>
 					LinkOption.NOFOLLOW_LINKS);
-<span class="nc" id="L326">			List&lt;AclEntry&gt; aclEntries = acl.getAcl();</span>
-<span class="nc" id="L327">			aclEntries.add(aclEntry);</span>
-<span class="nc" id="L328">			acl.setAcl(aclEntries);</span>
+<span class="nc" id="L324">			List&lt;AclEntry&gt; aclEntries = acl.getAcl();</span>
+<span class="nc" id="L325">			aclEntries.add(aclEntry);</span>
+<span class="nc" id="L326">			acl.setAcl(aclEntries);</span>
 		}
-<span class="fc" id="L330">	}</span>
-
-	private void verifyLocalHelmBinary() throws MojoExecutionException {
-<span class="fc" id="L333">		helm().arguments(&quot;version&quot;).execute(&quot;Unable to verify local HELM binary&quot;);</span>
-<span class="fc" id="L334">	}</span>
+<span class="fc" id="L328">	}</span>
 
 	private ArchiveInputStream createArchiverInputStream(InputStream is) throws MojoExecutionException {
 
 		// Stream must support mark to allow for auto detection of compressor
-<span class="pc bpc" id="L339" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
 
 		try {
-<span class="fc" id="L342">			return new ArchiveStreamFactory().createArchiveInputStream(inputStream);</span>
-<span class="nc" id="L343">		} catch (ArchiveException e) {</span>
-<span class="nc" id="L344">			throw new MojoExecutionException(&quot;Unsupported archive type downloaded&quot;, e);</span>
+<span class="fc" id="L336">			return new ArchiveStreamFactory().createArchiveInputStream(inputStream);</span>
+<span class="nc" id="L337">		} catch (ArchiveException e) {</span>
+<span class="nc" id="L338">			throw new MojoExecutionException(&quot;Unsupported archive type downloaded&quot;, e);</span>
 		}
 	}
 
 	private InputStream createCompressorInputStream(InputStream is) throws MojoExecutionException {
 
 		// Stream must support mark to allow for auto detection of compressor
-<span class="pc bpc" id="L351" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
 
 		// Detect if stream is compressed
-<span class="fc" id="L354">		String compressorType = null;</span>
+<span class="fc" id="L348">		String compressorType = null;</span>
 		try {
-<span class="fc" id="L356">			compressorType = CompressorStreamFactory.detect(inputStream);</span>
-<span class="nc" id="L357">		} catch (CompressorException e) {</span>
-<span class="nc" id="L358">			getLog().debug(&quot;Unknown type of compressed stream&quot;, e);</span>
-<span class="fc" id="L359">		}</span>
+<span class="fc" id="L350">			compressorType = CompressorStreamFactory.detect(inputStream);</span>
+<span class="nc" id="L351">		} catch (CompressorException e) {</span>
+<span class="nc" id="L352">			getLog().debug(&quot;Unknown type of compressed stream&quot;, e);</span>
+<span class="fc" id="L353">		}</span>
 
 		// If compressed then wrap with compressor stream
-<span class="pc bpc" id="L362" title="1 of 2 branches missed.">		if (compressorType != null) {</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">		if (compressorType != null) {</span>
 			try {
-<span class="fc" id="L364">				return new CompressorStreamFactory().createCompressorInputStream(compressorType, inputStream);</span>
-<span class="nc" id="L365">			} catch (CompressorException e) {</span>
-<span class="nc" id="L366">				throw new MojoExecutionException(&quot;Unsupported compressor type: &quot; + compressorType);</span>
+<span class="fc" id="L358">				return new CompressorStreamFactory().createCompressorInputStream(compressorType, inputStream);</span>
+<span class="nc" id="L359">			} catch (CompressorException e) {</span>
+<span class="nc" id="L360">				throw new MojoExecutionException(&quot;Unsupported compressor type: &quot; + compressorType);</span>
 			}
 		}
 
-<span class="nc" id="L370">		return inputStream;</span>
+<span class="nc" id="L364">		return inputStream;</span>
 	}
 
 	private String getArchitecture() {
-<span class="fc" id="L374">		String architecture = System.getProperty(&quot;os.arch&quot;).toLowerCase(Locale.US);</span>
+<span class="fc" id="L368">		String architecture = System.getProperty(&quot;os.arch&quot;).toLowerCase(Locale.US);</span>
 
-<span class="pc bpc" id="L376" title="4 of 6 branches missed.">		if (architecture.equals(&quot;x86_64&quot;) || architecture.equals(&quot;amd64&quot;) || architecture.equals(&quot;aarch64&quot;)) {</span>
-<span class="fc" id="L377">			return &quot;amd64&quot;;</span>
-<span class="nc bnc" id="L378" title="All 4 branches missed.">		} else if (architecture.equals(&quot;x86&quot;) || architecture.equals(&quot;i386&quot;)) {</span>
-<span class="nc" id="L379">			return &quot;386&quot;;</span>
-<span class="nc bnc" id="L380" title="All 2 branches missed.">		} else if (architecture.contains(&quot;arm64&quot;)) {</span>
-<span class="nc" id="L381">			return &quot;arm64&quot;;</span>
-<span class="nc bnc" id="L382" title="All 4 branches missed.">		} else if (architecture.equals(&quot;aarch32&quot;) || architecture.startsWith(&quot;arm&quot;)) {</span>
-<span class="nc" id="L383">			return &quot;arm&quot;;</span>
-<span class="nc bnc" id="L384" title="All 2 branches missed.">		} else if (architecture.contains(&quot;ppc64le&quot;)</span>
-<span class="nc bnc" id="L385" title="All 4 branches missed.">				|| architecture.contains(&quot;ppc64&quot;) &amp;&amp; System.getProperty(&quot;sun.cpu.endian&quot;).equals(&quot;little&quot;)) {</span>
-<span class="nc" id="L386">			return &quot;ppc64le&quot;;</span>
+<span class="pc bpc" id="L370" title="4 of 6 branches missed.">		if (architecture.equals(&quot;x86_64&quot;) || architecture.equals(&quot;amd64&quot;) || architecture.equals(&quot;aarch64&quot;)) {</span>
+<span class="fc" id="L371">			return &quot;amd64&quot;;</span>
+<span class="nc bnc" id="L372" title="All 4 branches missed.">		} else if (architecture.equals(&quot;x86&quot;) || architecture.equals(&quot;i386&quot;)) {</span>
+<span class="nc" id="L373">			return &quot;386&quot;;</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">		} else if (architecture.contains(&quot;arm64&quot;)) {</span>
+<span class="nc" id="L375">			return &quot;arm64&quot;;</span>
+<span class="nc bnc" id="L376" title="All 4 branches missed.">		} else if (architecture.equals(&quot;aarch32&quot;) || architecture.startsWith(&quot;arm&quot;)) {</span>
+<span class="nc" id="L377">			return &quot;arm&quot;;</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">		} else if (architecture.contains(&quot;ppc64le&quot;)</span>
+<span class="nc bnc" id="L379" title="All 4 branches missed.">				|| architecture.contains(&quot;ppc64&quot;) &amp;&amp; System.getProperty(&quot;sun.cpu.endian&quot;).equals(&quot;little&quot;)) {</span>
+<span class="nc" id="L380">			return &quot;ppc64le&quot;;</span>
 		}
 
-<span class="nc" id="L389">		throw new IllegalStateException(&quot;Unsupported architecture: &quot; + architecture);</span>
+<span class="nc" id="L383">		throw new IllegalStateException(&quot;Unsupported architecture: &quot; + architecture);</span>
 	}
 
 	private String getExtension() {
-<span class="pc bpc" id="L393" title="1 of 2 branches missed.">		return Os.OS_FAMILY.equals(Os.FAMILY_WINDOWS) ? &quot;zip&quot; : &quot;tar.gz&quot;;</span>
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">		return Os.OS_FAMILY.equals(Os.FAMILY_WINDOWS) ? &quot;zip&quot; : &quot;tar.gz&quot;;</span>
 	}
 
 	private String getOperatingSystem() {
-<span class="pc bpc" id="L397" title="3 of 4 branches missed.">		switch (Os.OS_FAMILY) {</span>
+<span class="pc bpc" id="L391" title="3 of 4 branches missed.">		switch (Os.OS_FAMILY) {</span>
 			case Os.FAMILY_UNIX:
-<span class="fc" id="L399">				return &quot;linux&quot;;</span>
+<span class="fc" id="L393">				return &quot;linux&quot;;</span>
 			case Os.FAMILY_MAC:
-<span class="nc" id="L401">				return &quot;darwin&quot;;</span>
+<span class="nc" id="L395">				return &quot;darwin&quot;;</span>
 			case Os.FAMILY_WINDOWS:
-<span class="nc" id="L403">				return &quot;windows&quot;;</span>
+<span class="nc" id="L397">				return &quot;windows&quot;;</span>
 			default:
-<span class="nc" id="L405">				throw new IllegalStateException(&quot;Unsupported OS: &quot; + Os.OS_FAMILY);</span>
+<span class="nc" id="L399">				throw new IllegalStateException(&quot;Unsupported OS: &quot; + Os.OS_FAMILY);</span>
 		}
 	}
 }
