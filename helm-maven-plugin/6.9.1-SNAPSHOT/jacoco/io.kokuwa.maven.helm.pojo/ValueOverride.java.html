@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueOverride.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm.pojo</a> &gt; <span class="el_source">ValueOverride.java</span></div><h1>ValueOverride.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm.pojo;
+
+import java.util.List;
+import java.util.Map;
+
+import lombok.Data;
+
+/**
+ * POJO for extra value override configuration (typically passed with --set or -f options)
+ *
+ * @author Emile de Weerd
+ * @since 5.6
+ */
+<span class="pc bnc" id="L14" title="All 46 branches missed.">@Data</span>
+public class ValueOverride {
+	/**
+	 * Values that will be passed with the option --set of helm command line.
+	 */
+<span class="fc" id="L19">	private Map&lt;String, String&gt; overrides;</span>
+
+	/**
+	 * Values that will be passed with the option --set-string to the helm command line.
+	 *
+	 * &lt;p&gt;
+	 * This option forces the values to be transformed and manipulated as strings by Go template.
+	 * &lt;/p&gt;
+	 */
+<span class="fc" id="L28">	private Map&lt;String, String&gt; stringOverrides;</span>
+
+	/**
+	 * Values that will be passed with the option --set-file to the helm command line.
+	 *
+	 * &lt;p&gt;
+	 * Values here point to files that contain the content you want to inject. Very useful to use with en entire script
+	 * you want to insert optionally somewhere for instance.
+	 * &lt;/p&gt;
+	 */
+<span class="fc" id="L38">	private Map&lt;String, String&gt; fileOverrides;</span>
+
+	/**
+	 * Value YAML file that will be passed with option --values or -f of the helm command line.
+	 *
+	 * &lt;p&gt;
+	 * It can be seen as creating a temporary extending chart with its dedicated values.yaml.
+	 * &lt;/p&gt;
+	 */
+<span class="fc" id="L47">	private String yamlFile;</span>
+
+	/**
+	 * Multiple Value YAML files that will be passed with option --values or -f of the helm command line.
+	 *
+	 * &lt;p&gt;
+	 * It can be seen as creating a temporary extending chart with its dedicated values.yaml.
+	 * &lt;/p&gt;
+	 */
+<span class="fc" id="L56">	private List&lt;String&gt; yamlFiles;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
