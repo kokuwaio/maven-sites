@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PushMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">PushMojo.java</span></div><h1>PushMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.nio.file.Path;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import io.kokuwa.maven.helm.pojo.HelmRepository;
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm registry login&quot; and &quot;helm push&quot;.
+ *
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_registry_login&quot;&gt;helm registry login&lt;/a&gt;
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_push&quot;&gt;helm push&lt;/a&gt;
+ * @since 6.1.0
+ */
+@Mojo(name = &quot;push&quot;, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
+<span class="fc" id="L22">@Setter</span>
+<span class="fc" id="L23">public class PushMojo extends AbstractHelmMojo {</span>
+
+	/**
+	 * Verify certificates of HTTPS-enabled servers using this CA bundle.
+	 *
+	 * @since 6.8.0
+	 */
+	@Parameter(property = &quot;helm.push.caFile&quot;)
+	private File caFile;
+
+	/**
+	 * Skip tls certificate checks for the chart upload. Also known as `helm push --insecure-skip-tls-verify`.
+	 *
+	 * @since 6.8.0
+	 */
+	@Parameter(property = &quot;helm.push.insecure&quot;, defaultValue = &quot;false&quot;)
+	private boolean insecure;
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking push goal.
+	 *
+	 * @since 6.1.0
+	 */
+	@Parameter(property = &quot;helm.push.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipPush;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L52" title="All 4 branches covered.">		if (skip || skipPush) {</span>
+<span class="fc" id="L53">			getLog().info(&quot;Skip push&quot;);</span>
+<span class="fc" id="L54">			return;</span>
+		}
+
+<span class="fc" id="L57">		HelmRepository repository = getHelmUploadRepo();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		if (repository == null) {</span>
+<span class="fc" id="L59">			getLog().info(&quot;there is no helm repo. skipping the upload.&quot;);</span>
+<span class="fc" id="L60">			return;</span>
+		}
+
+		// upload chart files
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">		for (Path chartArchive : getChartArchives()) {</span>
+<span class="fc" id="L66">			getLog().info(&quot;Uploading &quot; + chartArchive + &quot;...&quot;);</span>
+<span class="fc" id="L67">			helm()</span>
+<span class="fc" id="L68">					.arguments(&quot;push&quot;, chartArchive, &quot;oci://&quot; + repository.getUrl())</span>
+<span class="fc" id="L69">					.flag(&quot;ca-file&quot;, caFile)</span>
+<span class="fc" id="L70">					.flag(&quot;insecure-skip-tls-verify&quot;, insecure)</span>
+<span class="fc" id="L71">					.execute(&quot;Upload failed&quot;);</span>
+<span class="fc" id="L72">		}</span>
+<span class="fc" id="L73">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
