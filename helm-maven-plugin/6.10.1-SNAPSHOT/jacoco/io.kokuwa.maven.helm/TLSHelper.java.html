@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TLSHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">TLSHelper.java</span></div><h1>TLSHelper.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.maven.plugin.MojoExecutionException;
+
+/**
+ * Helper for insecure TLS.
+ */
+<span class="nc" id="L17">public class TLSHelper {</span>
+
+	public static void insecure(HttpsURLConnection connection) throws MojoExecutionException {
+
+<span class="fc" id="L21">		TrustManager trustManager = new X509TrustManager() {</span>
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+<span class="fc" id="L25">				return null;</span>
+			}
+
+			@Override
+<span class="nc" id="L29">			public void checkClientTrusted(X509Certificate[] certs, String authType) {}</span>
+
+			@Override
+<span class="fc" id="L32">			public void checkServerTrusted(X509Certificate[] certs, String authType) {}</span>
+		};
+
+		try {
+<span class="fc" id="L36">			SSLContext context = SSLContext.getInstance(&quot;TLS&quot;);</span>
+<span class="fc" id="L37">			context.init(null, new TrustManager[] { trustManager }, new SecureRandom());</span>
+<span class="fc" id="L38">			connection.setSSLSocketFactory(context.getSocketFactory());</span>
+<span class="fc" id="L39">			connection.setHostnameVerifier((hostname, session) -&gt; true);</span>
+<span class="nc" id="L40">		} catch (GeneralSecurityException e) {</span>
+<span class="nc" id="L41">			throw new MojoExecutionException(&quot;Failed to setup insecure tls context.&quot;, e);</span>
+<span class="fc" id="L42">		}</span>
+<span class="fc" id="L43">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
