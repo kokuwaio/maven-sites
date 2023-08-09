@@ -32,6 +32,22 @@ import lombok.Setter;
 	private String action;
 
 	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to delete the installation on failure.
+	 *
+	 * @since 6.10.0
+	 */
+	@Parameter(property = &quot;helm.install.atomic&quot;)
+	private boolean installAtomic;
+
+	/**
+	 * Time in seconds to wait for any individual Kubernetes operation.
+	 *
+	 * @since 6.10.0
+	 */
+	@Parameter(property = &quot;helm.install.timeout&quot;)
+	private int installTimeout;
+
+	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking install goal.
 	 *
 	 * @since 5.10
@@ -42,17 +58,21 @@ import lombok.Setter;
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-<span class="fc bfc" id="L45" title="All 4 branches covered.">		if (skip || skipInstall) {</span>
-<span class="fc" id="L46">			getLog().info(&quot;Skip install&quot;);</span>
-<span class="fc" id="L47">			return;</span>
+<span class="fc bfc" id="L61" title="All 4 branches covered.">		if (skip || skipInstall) {</span>
+<span class="fc" id="L62">			getLog().info(&quot;Skip install&quot;);</span>
+<span class="fc" id="L63">			return;</span>
 		}
 
-<span class="fc bfc" id="L50" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
-<span class="fc" id="L51">			getLog().info(String.format(&quot;\n\nPerform install for chart %s...&quot;, chartDirectory));</span>
-<span class="fc" id="L52">			helm()</span>
-<span class="fc" id="L53">					.arguments(action, chartDirectory.getFileName().toString(), chartDirectory)</span>
-<span class="fc" id="L54">					.execute(&quot;Failed to deploy helm chart&quot;);</span>
-<span class="fc" id="L55">		}</span>
-<span class="fc" id="L56">	}</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc bfc" id="L67" title="All 4 branches covered.">			getLog().info(String.format(&quot;\n\nPerform install for chart %s...&quot;, chartDirectory) +</span>
+					(installAtomic ? &quot; with atomic&quot; : &quot;&quot;) +
+<span class="fc" id="L69">					(installTimeout &gt; 0 ? String.format(&quot; timeout %s&quot;, installTimeout) : &quot;&quot;));</span>
+<span class="fc" id="L70">			helm()</span>
+<span class="fc" id="L71">					.arguments(action, chartDirectory.getFileName().toString(), chartDirectory)</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">					.flag(&quot;atomic&quot;, installAtomic)</span>
+<span class="fc" id="L73">					.flag(&quot;timeout&quot;, installTimeout &gt; 0 ? installTimeout + &quot;s&quot; : null)</span>
+<span class="fc" id="L74">					.execute(&quot;Failed to deploy helm chart&quot;);</span>
+<span class="fc" id="L75">		}</span>
+<span class="fc" id="L76">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
