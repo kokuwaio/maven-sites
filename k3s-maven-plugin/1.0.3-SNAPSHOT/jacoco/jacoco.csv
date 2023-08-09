@@ -1,5 +1,5 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-k3s Maven Plugin,io.kokuwa.maven.k3s.util,Await,47,82,3,3,11,27,4,8,2,7
+k3s Maven Plugin,io.kokuwa.maven.k3s.util,Await,36,93,3,3,8,30,4,8,2,7
 k3s Maven Plugin,io.kokuwa.maven.k3s.util,Docker.ContainerVolume,0,9,0,0,0,4,0,1,0,1
 k3s Maven Plugin,io.kokuwa.maven.k3s.util,Docker.ContainerStatus,0,74,0,0,0,8,0,1,0,1
 k3s Maven Plugin,io.kokuwa.maven.k3s.util,Docker,25,589,0,12,3,74,2,33,2,27
@@ -12,4 +12,4 @@ k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,RemoveMojo,0,27,0,4,0,11,0,6,0,4
 k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,K3sMojo,0,64,0,8,0,12,0,12,0,8
 k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,RestartMojo,34,223,0,12,2,41,0,14,0,8
 k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,RunMojo,11,273,9,19,3,74,10,25,1,20
-k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,ApplyMojo,56,450,4,26,8,72,5,27,1,16
+k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,ApplyMojo,58,460,5,27,8,73,6,28,1,17
