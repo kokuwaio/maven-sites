@@ -7,6 +7,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import io.kokuwa.maven.helm.util.DependencyOverwriter;
 import lombok.Setter;
 
 /**
@@ -17,8 +18,8 @@ import lombok.Setter;
  * @since 1.1
  */
 @Mojo(name = &quot;dependency-build&quot;, defaultPhase = LifecyclePhase.PROCESS_RESOURCES, threadSafe = true)
-<span class="fc" id="L20">@Setter</span>
-<span class="fc" id="L21">public class DependencyBuildMojo extends AbstractHelmMojo {</span>
+<span class="pc" id="L21">@Setter</span>
+<span class="fc" id="L22">public class DependencyBuildMojo extends AbstractHelmMojo {</span>
 
 	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking dependency-build goal.
@@ -28,20 +29,58 @@ import lombok.Setter;
 	@Parameter(property = &quot;helm.dependency-build.skip&quot;, defaultValue = &quot;false&quot;)
 	private boolean skipDependencyBuild;
 
+	/**
+	 * Controls whether a local path chart should be used for a chart dependency. When set to &lt;code&gt;true&lt;/code&gt;,
+	 * chart dependencies on a local path chart will be overwritten with the respective properties set by
+	 * &quot;helm.overwriteDependencyVersion&quot; and &quot;helm.overwriteDependencyRepository&quot;. This is helpful for deploying charts 
+	 * with intra repository dependencies, while still being able to use local path dependencies for development builds.
+	 *
+	 * Example usage:
+	 * 	For development: mvn clean install
+	 * 	For deployment: mvn clean deploy -Dhelm.overwriteLocalDependencies=true
+	 * @since 6.9.1
+	 */
+	@Parameter(property = &quot;helm.overwriteLocalDependencies&quot;, defaultValue = &quot;false&quot;)
+	private boolean overwriteLocalDependencies;
+
+	/**
+	 * Value used to overwrite a local path chart's version within a chart's dependencies. The property 
+	 * &quot;helm.overwriteLocalDependencies&quot; must be set to &lt;code&gt;true&lt;/code&gt; for this to apply.
+	 *
+	 * @since 6.9.1
+	 */
+	@Parameter(property = &quot;helm.overwriteDependencyVersion&quot;)
+	private String overwriteDependencyVersion;
+
+	/**
+	 * Value used to overwrite a local path chart's repository within a chart's dependencies. The property 
+	 * &quot;helm.overwriteLocalDependencies&quot; must be set to &lt;code&gt;true&lt;/code&gt; for this to apply.
+	 *
+	 * @since 6.9.1
+	 */
+	@Parameter(property = &quot;helm.overwriteDependencyRepository&quot;)
+	private String overwriteDependencyRepository;
+
 	@Override
 	public void execute() throws MojoExecutionException {
 
-<span class="fc bfc" id="L34" title="All 4 branches covered.">		if (skip || skipDependencyBuild) {</span>
-<span class="fc" id="L35">			getLog().info(&quot;Skip dependency build&quot;);</span>
-<span class="fc" id="L36">			return;</span>
+<span class="fc bfc" id="L67" title="All 4 branches covered.">		if (skip || skipDependencyBuild) {</span>
+<span class="fc" id="L68">			getLog().info(&quot;Skip dependency build&quot;);</span>
+<span class="fc" id="L69">			return;</span>
 		}
 
-<span class="fc bfc" id="L39" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
-<span class="fc" id="L40">			getLog().info(&quot;Build chart dependencies for &quot; + chartDirectory + &quot; ...&quot;);</span>
-<span class="fc" id="L41">			helm()</span>
-<span class="fc" id="L42">					.arguments(&quot;dependency&quot;, &quot;build&quot;, chartDirectory)</span>
-<span class="fc" id="L43">					.execute(&quot;Failed to resolve dependencies&quot;);</span>
-<span class="fc" id="L44">		}</span>
-<span class="fc" id="L45">	}</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">			if (overwriteLocalDependencies) {</span>
+<span class="nc" id="L74">				DependencyOverwriter dependencyOverwriter = </span>
+<span class="nc" id="L75">					new DependencyOverwriter(overwriteDependencyRepository, overwriteDependencyVersion, getLog());</span>
+<span class="nc" id="L76">				dependencyOverwriter.execute(chartDirectory);</span>
+			}
+
+<span class="fc" id="L79">			getLog().info(&quot;Build chart dependencies for &quot; + chartDirectory + &quot; ...&quot;);</span>
+<span class="fc" id="L80">			helm()</span>
+<span class="fc" id="L81">					.arguments(&quot;dependency&quot;, &quot;build&quot;, chartDirectory)</span>
+<span class="fc" id="L82">					.execute(&quot;Failed to resolve dependencies&quot;);</span>
+<span class="fc" id="L83">		}</span>
+<span class="fc" id="L84">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
