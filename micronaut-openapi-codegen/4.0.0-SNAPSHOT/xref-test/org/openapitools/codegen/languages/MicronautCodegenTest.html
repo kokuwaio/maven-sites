@@ -135,31 +135,39 @@
 <a class="jxr_linenumber" name="L127" href="#L127">127</a> 				.addAdditionalProperty(MicronautCodegen.SEALED, false));
 <a class="jxr_linenumber" name="L128" href="#L128">128</a> 	}
 <a class="jxr_linenumber" name="L129" href="#L129">129</a> 
-<a class="jxr_linenumber" name="L130" href="#L130">130</a> 	@DisplayName(<span class="jxr_string">"model without micronaut annotations"</span>)
+<a class="jxr_linenumber" name="L130" href="#L130">130</a> 	@DisplayName(<span class="jxr_string">"model records without JsonNullable"</span>)
 <a class="jxr_linenumber" name="L131" href="#L131">131</a> 	@Test
-<a class="jxr_linenumber" name="L132" href="#L132">132</a> 	<strong class="jxr_keyword">void</strong> modelWithoutMicronaut() {
-<a class="jxr_linenumber" name="L133" href="#L133">133</a> 		generate(configurator(SPEC_MODEL, <span class="jxr_string">"testmodel.nomicronaut"</span>)
-<a class="jxr_linenumber" name="L134" href="#L134">134</a> 				.addAdditionalProperty(MicronautCodegen.SERDEABLE, false)
-<a class="jxr_linenumber" name="L135" href="#L135">135</a> 				.addAdditionalProperty(MicronautCodegen.GENERATE_EXAMPLES, <strong class="jxr_keyword">true</strong>)
-<a class="jxr_linenumber" name="L136" href="#L136">136</a> 				.addTypeMapping(<span class="jxr_string">"Generated"</span>, <strong class="jxr_keyword">null</strong>));
-<a class="jxr_linenumber" name="L137" href="#L137">137</a> 	}
-<a class="jxr_linenumber" name="L138" href="#L138">138</a> 
-<a class="jxr_linenumber" name="L139" href="#L139">139</a> 	<strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> generate(CodegenConfigurator configurator) {
-<a class="jxr_linenumber" name="L140" href="#L140">140</a> 		<strong class="jxr_keyword">var</strong> gen = <strong class="jxr_keyword">new</strong> DefaultGenerator();
-<a class="jxr_linenumber" name="L141" href="#L141">141</a> 		gen.setGenerateMetadata(false);
-<a class="jxr_linenumber" name="L142" href="#L142">142</a> 		gen.setGeneratorPropertyDefault(CodegenConstants.SUPPORTING_FILES, <span class="jxr_string">"false"</span>);
-<a class="jxr_linenumber" name="L143" href="#L143">143</a> 		gen.setGeneratorPropertyDefault(CodegenConstants.APIS, <span class="jxr_string">"true"</span>);
-<a class="jxr_linenumber" name="L144" href="#L144">144</a> 		gen.setGeneratorPropertyDefault(CodegenConstants.MODELS, <span class="jxr_string">"true"</span>);
-<a class="jxr_linenumber" name="L145" href="#L145">145</a> 
-<a class="jxr_linenumber" name="L146" href="#L146">146</a> 		<em class="jxr_comment">// server</em>
-<a class="jxr_linenumber" name="L147" href="#L147">147</a> 
-<a class="jxr_linenumber" name="L148" href="#L148">148</a> 		gen.opts(configurator.toClientOptInput()).generate();
-<a class="jxr_linenumber" name="L149" href="#L149">149</a> 
-<a class="jxr_linenumber" name="L150" href="#L150">150</a> 		<em class="jxr_comment">// client without model/supporting files</em>
-<a class="jxr_linenumber" name="L151" href="#L151">151</a> 
-<a class="jxr_linenumber" name="L152" href="#L152">152</a> 		gen.opts(configurator.addAdditionalProperty(MicronautCodegen.CLIENT_ID, <span class="jxr_string">"id"</span>).toClientOptInput()).generate();
-<a class="jxr_linenumber" name="L153" href="#L153">153</a> 	}
-<a class="jxr_linenumber" name="L154" href="#L154">154</a> }
+<a class="jxr_linenumber" name="L132" href="#L132">132</a> 	<strong class="jxr_keyword">void</strong> modelRecordsWithoutJsonNullable() {
+<a class="jxr_linenumber" name="L133" href="#L133">133</a> 		generate(configurator(SPEC_MODEL, <span class="jxr_string">"testmodel.micronaut_record"</span>)
+<a class="jxr_linenumber" name="L134" href="#L134">134</a> 				.addAdditionalProperty(AbstractJavaCodegen.OPENAPI_NULLABLE, false)
+<a class="jxr_linenumber" name="L135" href="#L135">135</a> 				.addAdditionalProperty(<span class="jxr_string">"record"</span>, <strong class="jxr_keyword">true</strong>));
+<a class="jxr_linenumber" name="L136" href="#L136">136</a> 	}
+<a class="jxr_linenumber" name="L137" href="#L137">137</a> 
+<a class="jxr_linenumber" name="L138" href="#L138">138</a> 	@DisplayName(<span class="jxr_string">"model without micronaut annotations"</span>)
+<a class="jxr_linenumber" name="L139" href="#L139">139</a> 	@Test
+<a class="jxr_linenumber" name="L140" href="#L140">140</a> 	<strong class="jxr_keyword">void</strong> modelWithoutMicronaut() {
+<a class="jxr_linenumber" name="L141" href="#L141">141</a> 		generate(configurator(SPEC_MODEL, <span class="jxr_string">"testmodel.nomicronaut"</span>)
+<a class="jxr_linenumber" name="L142" href="#L142">142</a> 				.addAdditionalProperty(MicronautCodegen.SERDEABLE, false)
+<a class="jxr_linenumber" name="L143" href="#L143">143</a> 				.addAdditionalProperty(MicronautCodegen.GENERATE_EXAMPLES, <strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="L144" href="#L144">144</a> 				.addTypeMapping(<span class="jxr_string">"Generated"</span>, <strong class="jxr_keyword">null</strong>));
+<a class="jxr_linenumber" name="L145" href="#L145">145</a> 	}
+<a class="jxr_linenumber" name="L146" href="#L146">146</a> 
+<a class="jxr_linenumber" name="L147" href="#L147">147</a> 	<strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> generate(CodegenConfigurator configurator) {
+<a class="jxr_linenumber" name="L148" href="#L148">148</a> 		<strong class="jxr_keyword">var</strong> gen = <strong class="jxr_keyword">new</strong> DefaultGenerator();
+<a class="jxr_linenumber" name="L149" href="#L149">149</a> 		gen.setGenerateMetadata(false);
+<a class="jxr_linenumber" name="L150" href="#L150">150</a> 		gen.setGeneratorPropertyDefault(CodegenConstants.SUPPORTING_FILES, <span class="jxr_string">"false"</span>);
+<a class="jxr_linenumber" name="L151" href="#L151">151</a> 		gen.setGeneratorPropertyDefault(CodegenConstants.APIS, <span class="jxr_string">"true"</span>);
+<a class="jxr_linenumber" name="L152" href="#L152">152</a> 		gen.setGeneratorPropertyDefault(CodegenConstants.MODELS, <span class="jxr_string">"true"</span>);
+<a class="jxr_linenumber" name="L153" href="#L153">153</a> 
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 		<em class="jxr_comment">// server</em>
+<a class="jxr_linenumber" name="L155" href="#L155">155</a> 
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> 		gen.opts(configurator.toClientOptInput()).generate();
+<a class="jxr_linenumber" name="L157" href="#L157">157</a> 
+<a class="jxr_linenumber" name="L158" href="#L158">158</a> 		<em class="jxr_comment">// client without model/supporting files</em>
+<a class="jxr_linenumber" name="L159" href="#L159">159</a> 
+<a class="jxr_linenumber" name="L160" href="#L160">160</a> 		gen.opts(configurator.addAdditionalProperty(MicronautCodegen.CLIENT_ID, <span class="jxr_string">"id"</span>).toClientOptInput()).generate();
+<a class="jxr_linenumber" name="L161" href="#L161">161</a> 	}
+<a class="jxr_linenumber" name="L162" href="#L162">162</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2019&#x2013;2023 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
