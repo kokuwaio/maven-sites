@@ -74,46 +74,6 @@
 <th>Type</th>
 <th>Optional</th></tr>
 <tr class="b">
-<td align="left">io.micronaut</td>
-<td>micronaut-http</td>
-<td>3.10.1</td>
-<td>compile</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="a">
-<td align="left">io.micronaut</td>
-<td>micronaut-core</td>
-<td>3.10.1</td>
-<td>provided</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="b">
-<td align="left">io.micronaut</td>
-<td>micronaut-http-client-core</td>
-<td>3.10.1</td>
-<td>test</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="a">
-<td align="left">io.micronaut</td>
-<td>micronaut-validation</td>
-<td>3.10.1</td>
-<td>test</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="b">
-<td align="left">io.micronaut.security</td>
-<td>micronaut-security</td>
-<td>3.11.1</td>
-<td>test</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="a">
 <td align="left">org.openapitools</td>
 <td>openapi-generator</td>
 <td>7.0.0-beta</td>
@@ -121,7 +81,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="b">
+<tr class="a">
 <td align="left">org.openapitools</td>
 <td>jackson-databind-nullable</td>
 <td>0.2.6</td>
@@ -129,10 +89,66 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
+<tr class="b">
+<td align="left">io.micronaut</td>
+<td>micronaut-http</td>
+<td>4.0.3</td>
+<td>compile</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
 <tr class="a">
+<td align="left">io.micronaut</td>
+<td>micronaut-core</td>
+<td>4.0.3</td>
+<td>provided</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="b">
 <td align="left">org.junit.jupiter</td>
 <td>junit-jupiter-api</td>
-<td>5.10.0</td>
+<td>5.9.3</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">jakarta.validation</td>
+<td>jakarta.validation-api</td>
+<td>3.0.2</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="b">
+<td align="left">javax.validation</td>
+<td>validation-api</td>
+<td>2.0.1.Final</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">io.micronaut</td>
+<td>micronaut-http-client-core</td>
+<td>4.0.3</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="b">
+<td align="left">io.micronaut.security</td>
+<td>micronaut-security</td>
+<td>4.0.3</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">io.micronaut.serde</td>
+<td>micronaut-serde-api</td>
+<td>2.0.2</td>
 <td>test</td>
 <td>-</td>
 <td>jar</td>
@@ -140,7 +156,7 @@
 <tr class="b">
 <td align="left">org.springframework</td>
 <td>spring-context</td>
-<td>5.3.25</td>
+<td>6.0.10</td>
 <td>test</td>
 <td>-</td>
 <td>jar</td>
@@ -156,17 +172,17 @@
 <th>Type</th>
 <th>Optional</th></tr>
 <tr class="b">
-<td align="left">org.springframework</td>
-<td>spring-core</td>
-<td>5.3.25</td>
-<td>test</td>
+<td align="left">com.fasterxml.jackson.core</td>
+<td>jackson-annotations</td>
+<td>2.15.2</td>
+<td>provided</td>
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
 <tr class="a">
-<td align="left">org.slf4j</td>
-<td>slf4j-api</td>
-<td>1.7.36</td>
+<td align="left">io.swagger.core.v3</td>
+<td>swagger-models</td>
+<td>2.2.14</td>
 <td>provided</td>
 <td>-</td>
 <td>jar</td>
@@ -180,14 +196,6 @@
 <td>jar</td>
 <td>false</td></tr>
 <tr class="a">
-<td align="left">com.fasterxml.jackson.core</td>
-<td>jackson-annotations</td>
-<td>2.14.0</td>
-<td>provided</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="b">
 <td align="left">commons-io</td>
 <td>commons-io</td>
 <td>2.11.0</td>
@@ -195,42 +203,50 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="a">
-<td align="left">javax.validation</td>
-<td>validation-api</td>
-<td>2.0.1.Final</td>
-<td>test</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
 <tr class="b">
-<td align="left">io.micronaut.security</td>
-<td>micronaut-security-annotations</td>
-<td>3.11.1</td>
-<td>test</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="a">
-<td align="left">com.fasterxml.jackson.core</td>
-<td>jackson-databind</td>
-<td>2.14.0</td>
-<td>provided</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="b">
-<td align="left">io.swagger.core.v3</td>
-<td>swagger-models</td>
-<td>2.2.10</td>
-<td>provided</td>
-<td>-</td>
-<td>jar</td>
-<td>false</td></tr>
-<tr class="a">
 <td align="left">io.projectreactor</td>
 <td>reactor-core</td>
-<td>3.5.0</td>
+<td>3.5.7</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">org.slf4j</td>
+<td>slf4j-api</td>
+<td>2.0.7</td>
+<td>provided</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="b">
+<td align="left">io.micronaut.validation</td>
+<td>micronaut-validation</td>
+<td>4.0.1</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">org.springframework</td>
+<td>spring-core</td>
+<td>6.0.10</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="b">
+<td align="left">com.fasterxml.jackson.core</td>
+<td>jackson-databind</td>
+<td>2.15.2</td>
+<td>provided</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">io.micronaut.security</td>
+<td>micronaut-security-annotations</td>
+<td>4.0.3</td>
 <td>test</td>
 <td>-</td>
 <td>jar</td>
@@ -254,9 +270,17 @@
 <th>Type</th>
 <th>Optional</th></tr>
 <tr class="b">
-<td align="left">io.micronaut</td>
-<td>micronaut-inject</td>
-<td>3.10.1</td>
+<td align="left">jakarta.annotation</td>
+<td>jakarta.annotation-api</td>
+<td>2.1.1</td>
+<td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">javax.annotation</td>
+<td>javax.annotation-api</td>
+<td>1.3.2</td>
 <td>test</td>
 <td>-</td>
 <td>jar</td>
