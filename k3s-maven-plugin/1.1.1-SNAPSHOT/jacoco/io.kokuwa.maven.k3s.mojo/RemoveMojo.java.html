@@ -39,17 +39,18 @@ import org.apache.maven.plugins.annotations.Parameter;
 <span class="fc" id="L39">		getDocker().removeContainer();</span>
 <span class="fc bfc" id="L40" title="All 2 branches covered.">		if (includeCache) {</span>
 <span class="fc" id="L41">			getDocker().removeVolume();</span>
+<span class="fc" id="L42">			getLog().info(&quot;Deleted cache volume.&quot;);</span>
 		}
-<span class="fc" id="L43">	}</span>
+<span class="fc" id="L44">	}</span>
 
 	// setter
 
 	public void setIncludeCache(boolean includeCache) {
-<span class="fc" id="L48">		this.includeCache = includeCache;</span>
-<span class="fc" id="L49">	}</span>
+<span class="fc" id="L49">		this.includeCache = includeCache;</span>
+<span class="fc" id="L50">	}</span>
 
 	public void setSkipRm(boolean skipRm) {
-<span class="fc" id="L52">		this.skipRm = skipRm;</span>
-<span class="fc" id="L53">	}</span>
+<span class="fc" id="L53">		this.skipRm = skipRm;</span>
+<span class="fc" id="L54">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
