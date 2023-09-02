@@ -13,31 +13,32 @@ import ch.qos.logback.core.spi.ContextAwareBase;
  */
 <span class="fc" id="L14">public class DefaultConfigurator extends ContextAwareBase implements Configurator {</span>
 
+	@SuppressWarnings(&quot;deprecation&quot;)
 	@Override
 	public ExecutionStatus configure(LoggerContext loggerContext) {
 
-<span class="pc bpc" id="L19" title="1 of 2 branches missed.">		if (new DefaultJoranConfigurator().findURLOfDefaultConfigurationFile(false) != null) {</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">		if (new DefaultJoranConfigurator().findURLOfDefaultConfigurationFile(false) != null) {</span>
 			// there is a default logback file, use this one instead of our default
-<span class="nc" id="L21">			return ExecutionStatus.INVOKE_NEXT_IF_ANY;</span>
+<span class="nc" id="L22">			return ExecutionStatus.INVOKE_NEXT_IF_ANY;</span>
 		}
 
-<span class="fc" id="L24">		var base = DefaultConfigurator.class.getResource(&quot;/io/kokuwa/logback/logback-default.xml&quot;);</span>
-<span class="pc bpc" id="L25" title="1 of 2 branches missed.">		if (base == null) {</span>
-<span class="nc" id="L26">			addError(&quot;Failed to find logback.xml from io.kokuwa:micronaut-logging&quot;);</span>
-<span class="nc" id="L27">			return ExecutionStatus.NEUTRAL;</span>
+<span class="fc" id="L25">		var base = DefaultConfigurator.class.getResource(&quot;/io/kokuwa/logback/logback-default.xml&quot;);</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">		if (base == null) {</span>
+<span class="nc" id="L27">			addError(&quot;Failed to find logback.xml from io.kokuwa:micronaut-logging&quot;);</span>
+<span class="nc" id="L28">			return ExecutionStatus.NEUTRAL;</span>
 		}
 
 		try {
-<span class="fc" id="L31">			addInfo(&quot;Use logback.xml from io.kokuwa:micronaut-logging&quot;);</span>
-<span class="fc" id="L32">			var configurator = new MicronautJoranConfigurator();</span>
-<span class="fc" id="L33">			configurator.setContext(loggerContext);</span>
-<span class="fc" id="L34">			configurator.doConfigure(base);</span>
-<span class="nc" id="L35">		} catch (JoranException e) {</span>
-<span class="nc" id="L36">			addError(&quot;Failed to load logback.xml from io.kokuwa:micronaut-logging&quot;, e);</span>
-<span class="nc" id="L37">			return ExecutionStatus.NEUTRAL;</span>
-<span class="fc" id="L38">		}</span>
+<span class="fc" id="L32">			addInfo(&quot;Use logback.xml from io.kokuwa:micronaut-logging&quot;);</span>
+<span class="fc" id="L33">			var configurator = new MicronautJoranConfigurator();</span>
+<span class="fc" id="L34">			configurator.setContext(loggerContext);</span>
+<span class="fc" id="L35">			configurator.doConfigure(base);</span>
+<span class="nc" id="L36">		} catch (JoranException e) {</span>
+<span class="nc" id="L37">			addError(&quot;Failed to load logback.xml from io.kokuwa:micronaut-logging&quot;, e);</span>
+<span class="nc" id="L38">			return ExecutionStatus.NEUTRAL;</span>
+<span class="fc" id="L39">		}</span>
 
-<span class="fc" id="L40">		return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;</span>
+<span class="fc" id="L41">		return ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
