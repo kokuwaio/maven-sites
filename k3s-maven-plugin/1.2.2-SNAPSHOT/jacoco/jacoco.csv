@@ -12,4 +12,4 @@ k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,RemoveMojo,0,31,0,4,0,12,0,6,0,4
 k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,K3sMojo,0,70,0,8,0,13,0,13,0,9
 k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,RestartMojo,34,223,0,12,2,41,0,14,0,8
 k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,RunMojo,53,308,14,28,15,82,19,28,5,21
-k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,ApplyMojo,77,572,10,34,11,91,10,33,1,20
+k3s Maven Plugin,io.kokuwa.maven.k3s.mojo,ApplyMojo,77,574,10,34,11,91,10,33,1,20

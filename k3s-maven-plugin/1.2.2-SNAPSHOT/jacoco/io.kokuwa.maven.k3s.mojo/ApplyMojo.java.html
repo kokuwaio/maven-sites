@@ -158,7 +158,7 @@ import io.kokuwa.maven.k3s.util.Task;
 
 	private Task apply() throws MojoExecutionException {
 
-<span class="fc bfc" id="L161" title="All 2 branches covered.">		var subPath = subdir == null ? path : path.resolve(subdir);</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">		var subPath = toLinuxPath(subdir == null ? path : path.resolve(subdir));</span>
 <span class="fc bfc" id="L162" title="All 2 branches covered.">		var kustomizePath = subdir == null ? manifests : manifests.resolve(subdir);</span>
 <span class="pc bpc" id="L163" title="1 of 2 branches missed.">		var kustomize = Files.isRegularFile(kustomizePath.resolve(&quot;kustomization.yml&quot;))</span>
 <span class="fc bfc" id="L164" title="All 2 branches covered.">				|| Files.isRegularFile(kustomizePath.resolve(&quot;kustomization.yaml&quot;));</span>
