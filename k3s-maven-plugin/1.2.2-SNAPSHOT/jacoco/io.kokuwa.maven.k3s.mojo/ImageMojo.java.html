@@ -152,7 +152,7 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 
 			// import tar into ctr
 
-<span class="fc" id="L155">			var destination = Paths.get(&quot;/tmp&quot;).resolve(tarFile.getFileName() + &quot;_&quot; + System.nanoTime());</span>
+<span class="fc" id="L155">			var destination = &quot;/tmp/&quot; + tarFile.getFileName() + &quot;_&quot; + System.nanoTime();</span>
 <span class="fc" id="L156">			var outputPattern = Pattern.compile(&quot;^unpacking (?&lt;image&gt;.*) \\(sha256:[0-9a-f]{64}\\).*$&quot;);</span>
 
 <span class="fc" id="L158">			getDocker().copyToContainer(tarFile, destination);</span>
@@ -232,7 +232,7 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 
 <span class="fc" id="L233">		var filename = Paths.get(image.hashCode() + &quot;.tar&quot;);</span>
 <span class="fc" id="L234">		var source = Paths.get(System.getProperty(&quot;java.io.tmpdir&quot;)).resolve(filename);</span>
-<span class="fc" id="L235">		var destination = Paths.get(&quot;/tmp&quot;).resolve(filename);</span>
+<span class="fc" id="L235">		var destination = &quot;/tmp/&quot; + filename;</span>
 		try {
 <span class="fc" id="L237">			getDocker().saveImage(image, source);</span>
 <span class="fc" id="L238">			getDocker().copyToContainer(source, destination);</span>

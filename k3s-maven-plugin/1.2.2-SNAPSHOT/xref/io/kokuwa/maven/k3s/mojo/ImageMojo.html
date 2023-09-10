@@ -160,7 +160,7 @@
 <a class="jxr_linenumber" name="L152" href="#L152">152</a> 
 <a class="jxr_linenumber" name="L153" href="#L153">153</a> 			<em class="jxr_comment">// import tar into ctr</em>
 <a class="jxr_linenumber" name="L154" href="#L154">154</a> 
-<a class="jxr_linenumber" name="L155" href="#L155">155</a> 			<strong class="jxr_keyword">var</strong> destination = Paths.get(<span class="jxr_string">"/tmp"</span>).resolve(tarFile.getFileName() + <span class="jxr_string">"_"</span> + System.nanoTime());
+<a class="jxr_linenumber" name="L155" href="#L155">155</a> 			<strong class="jxr_keyword">var</strong> destination = <span class="jxr_string">"/tmp/"</span> + tarFile.getFileName() + <span class="jxr_string">"_"</span> + System.nanoTime();
 <a class="jxr_linenumber" name="L156" href="#L156">156</a> 			<strong class="jxr_keyword">var</strong> outputPattern = Pattern.compile(<span class="jxr_string">"^unpacking (?&lt;image&gt;.*) &#92;&#92;(sha256:[0-9a-f]{64}&#92;&#92;).*$"</span>);
 <a class="jxr_linenumber" name="L157" href="#L157">157</a> 
 <a class="jxr_linenumber" name="L158" href="#L158">158</a> 			getDocker().copyToContainer(tarFile, destination);
@@ -240,7 +240,7 @@
 <a class="jxr_linenumber" name="L232" href="#L232">232</a> 
 <a class="jxr_linenumber" name="L233" href="#L233">233</a> 		<strong class="jxr_keyword">var</strong> filename = Paths.get(image.hashCode() + <span class="jxr_string">".tar"</span>);
 <a class="jxr_linenumber" name="L234" href="#L234">234</a> 		<strong class="jxr_keyword">var</strong> source = Paths.get(System.getProperty(<span class="jxr_string">"java.io.tmpdir"</span>)).resolve(filename);
-<a class="jxr_linenumber" name="L235" href="#L235">235</a> 		<strong class="jxr_keyword">var</strong> destination = Paths.get(<span class="jxr_string">"/tmp"</span>).resolve(filename);
+<a class="jxr_linenumber" name="L235" href="#L235">235</a> 		<strong class="jxr_keyword">var</strong> destination = <span class="jxr_string">"/tmp/"</span> + filename;
 <a class="jxr_linenumber" name="L236" href="#L236">236</a> 		<strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L237" href="#L237">237</a> 			getDocker().saveImage(image, source);
 <a class="jxr_linenumber" name="L238" href="#L238">238</a> 			getDocker().copyToContainer(source, destination);

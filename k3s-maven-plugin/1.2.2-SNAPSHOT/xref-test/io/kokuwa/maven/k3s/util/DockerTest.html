@@ -134,8 +134,8 @@
 <a class="jxr_linenumber" name="L126" href="#L126">126</a> 		Files.deleteIfExists(sourceFile);
 <a class="jxr_linenumber" name="L127" href="#L127">127</a> 		Files.deleteIfExists(returnFile);
 <a class="jxr_linenumber" name="L128" href="#L128">128</a> 		Files.write(sourceFile, initialContent.toString().getBytes());
-<a class="jxr_linenumber" name="L129" href="#L129">129</a> 		docker.copyToContainer(sourceDir, containerDir);
-<a class="jxr_linenumber" name="L130" href="#L130">130</a> 		docker.copyFromContainer(containerDir, returnDir);
+<a class="jxr_linenumber" name="L129" href="#L129">129</a> 		docker.copyToContainer(sourceDir, containerDir.toString());
+<a class="jxr_linenumber" name="L130" href="#L130">130</a> 		docker.copyFromContainer(containerDir.toString(), returnDir);
 <a class="jxr_linenumber" name="L131" href="#L131">131</a> 		assertEquals(initialContent, Files.readString(returnFile));
 <a class="jxr_linenumber" name="L132" href="#L132">132</a> 
 <a class="jxr_linenumber" name="L133" href="#L133">133</a> 		<em class="jxr_comment">// write changed file and copy to container</em>
@@ -144,8 +144,8 @@
 <a class="jxr_linenumber" name="L136" href="#L136">136</a> 		Files.deleteIfExists(sourceFile);
 <a class="jxr_linenumber" name="L137" href="#L137">137</a> 		Files.deleteIfExists(returnFile);
 <a class="jxr_linenumber" name="L138" href="#L138">138</a> 		Files.write(sourceFile, changedContent.toString().getBytes());
-<a class="jxr_linenumber" name="L139" href="#L139">139</a> 		docker.copyToContainer(sourceDir, containerDir);
-<a class="jxr_linenumber" name="L140" href="#L140">140</a> 		docker.copyFromContainer(containerDir, returnDir);
+<a class="jxr_linenumber" name="L139" href="#L139">139</a> 		docker.copyToContainer(sourceDir, containerDir.toString());
+<a class="jxr_linenumber" name="L140" href="#L140">140</a> 		docker.copyFromContainer(containerDir.toString(), returnDir);
 <a class="jxr_linenumber" name="L141" href="#L141">141</a> 		assertEquals(changedContent, Files.readString(returnFile));
 <a class="jxr_linenumber" name="L142" href="#L142">142</a> 	}
 <a class="jxr_linenumber" name="L143" href="#L143">143</a> }
