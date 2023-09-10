@@ -67,11 +67,11 @@ public class Docker {
 <span class="fc" id="L67">	}</span>
 
 	public void copyFromContainer(Path source, Path destination) throws MojoExecutionException {
-<span class="fc" id="L70">		Task.of(log, &quot;docker&quot;, &quot;cp&quot;, containerName + &quot;:&quot; + source, destination.toString()).run();</span>
+<span class="fc" id="L70">		Task.of(log, &quot;docker&quot;, &quot;cp&quot;, containerName + &quot;:&quot; + toLinuxPath(source), destination.toString()).run();</span>
 <span class="fc" id="L71">	}</span>
 
 	public void copyToContainer(Path source, Path destination) throws MojoExecutionException {
-<span class="fc" id="L74">		Task.of(log, &quot;docker&quot;, &quot;cp&quot;, source.toString(), containerName + &quot;:&quot; + destination).run();</span>
+<span class="fc" id="L74">		Task.of(log, &quot;docker&quot;, &quot;cp&quot;, source.toString(), containerName + &quot;:&quot; + toLinuxPath(destination)).run();</span>
 <span class="fc" id="L75">	}</span>
 
 	public void waitForLog(Await await, Function&lt;List&lt;String&gt;, Boolean&gt; checker) throws MojoExecutionException {
@@ -168,11 +168,16 @@ public class Docker {
 
 	// internal
 
+	private String toLinuxPath(Path path) {
+		// ugly hack for windows - docker path inside k3s needs to be a kinux path
+<span class="fc" id="L173">		return path.toString().replace(&quot;\\&quot;, &quot;/&quot;);</span>
+	}
+
 	private &lt;T&gt; T readValue(Class&lt;T&gt; type, String output) {
 		try {
-<span class="fc" id="L173">			return mapper.readValue(output, type);</span>
-<span class="nc" id="L174">		} catch (JsonProcessingException e) {</span>
-<span class="nc" id="L175">			throw new IllegalStateException(&quot;Failed to parse line to &quot; + type.getName() + &quot;: &quot; + output, e);</span>
+<span class="fc" id="L178">			return mapper.readValue(output, type);</span>
+<span class="nc" id="L179">		} catch (JsonProcessingException e) {</span>
+<span class="nc" id="L180">			throw new IllegalStateException(&quot;Failed to parse line to &quot; + type.getName() + &quot;: &quot; + output, e);</span>
 		}
 	}
 
@@ -191,14 +196,14 @@ public class Docker {
 
 		@JsonCreator
 		public Container(@JsonProperty(&quot;ID&quot;) String id, @JsonProperty(&quot;Names&quot;) String name,
-<span class="fc" id="L194">				@JsonProperty(&quot;State&quot;) ContainerStatus state) {</span>
-<span class="fc" id="L195">			this.id = id;</span>
-<span class="fc" id="L196">			this.name = name;</span>
-<span class="fc" id="L197">			this.state = state;</span>
-<span class="fc" id="L198">		}</span>
+<span class="fc" id="L199">				@JsonProperty(&quot;State&quot;) ContainerStatus state) {</span>
+<span class="fc" id="L200">			this.id = id;</span>
+<span class="fc" id="L201">			this.name = name;</span>
+<span class="fc" id="L202">			this.state = state;</span>
+<span class="fc" id="L203">		}</span>
 
 		public boolean isRunnding() {
-<span class="pc bpc" id="L201" title="3 of 4 branches missed.">			return state == ContainerStatus.running || state == ContainerStatus.restarting;</span>
+<span class="pc bpc" id="L206" title="3 of 4 branches missed.">			return state == ContainerStatus.running || state == ContainerStatus.restarting;</span>
 		}
 	}
 
@@ -207,15 +212,15 @@ public class Docker {
 	 *
 	 * @see &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/ps/#status&quot;&gt;docker ps&lt;/a&gt;
 	 */
-<span class="fc" id="L210">	public enum ContainerStatus {</span>
+<span class="fc" id="L215">	public enum ContainerStatus {</span>
 
-<span class="fc" id="L212">		created,</span>
-<span class="fc" id="L213">		restarting,</span>
-<span class="fc" id="L214">		running,</span>
-<span class="fc" id="L215">		removing,</span>
-<span class="fc" id="L216">		paused,</span>
-<span class="fc" id="L217">		exited,</span>
-<span class="fc" id="L218">		dead</span>
+<span class="fc" id="L217">		created,</span>
+<span class="fc" id="L218">		restarting,</span>
+<span class="fc" id="L219">		running,</span>
+<span class="fc" id="L220">		removing,</span>
+<span class="fc" id="L221">		paused,</span>
+<span class="fc" id="L222">		exited,</span>
+<span class="fc" id="L223">		dead</span>
 	}
 
 	/**
@@ -229,10 +234,10 @@ public class Docker {
 		public final String mountpoint;
 
 		@JsonCreator
-<span class="fc" id="L232">		public ContainerVolume(@JsonProperty(&quot;Name&quot;) String name, @JsonProperty(&quot;Mountpoint&quot;) String mountpoint) {</span>
-<span class="fc" id="L233">			this.name = name;</span>
-<span class="fc" id="L234">			this.mountpoint = mountpoint;</span>
-<span class="fc" id="L235">		}</span>
+<span class="fc" id="L237">		public ContainerVolume(@JsonProperty(&quot;Name&quot;) String name, @JsonProperty(&quot;Mountpoint&quot;) String mountpoint) {</span>
+<span class="fc" id="L238">			this.name = name;</span>
+<span class="fc" id="L239">			this.mountpoint = mountpoint;</span>
+<span class="fc" id="L240">		}</span>
 	}
 
 	/**
@@ -256,21 +261,21 @@ public class Docker {
 				@JsonProperty(&quot;Size&quot;) Long size,
 				@JsonProperty(&quot;RepoDigests&quot;) List&lt;String&gt; repoDigests,
 				@JsonProperty(&quot;RootFS&quot;) Map&lt;String, Object&gt; rootFs,
-<span class="fc" id="L259">				@JsonProperty(&quot;Metadata&quot;) Map&lt;String, Object&gt; metadata) {</span>
-<span class="fc" id="L260">			this.id = id;</span>
-<span class="fc" id="L261">			this.created = created;</span>
-<span class="fc" id="L262">			this.size = size;</span>
-<span class="fc" id="L263">			this.repoDigests = repoDigests;</span>
-<span class="fc" id="L264">			this.rootFs = rootFs;</span>
-<span class="fc" id="L265">			this.metadata = metadata;</span>
-<span class="fc" id="L266">		}</span>
+<span class="fc" id="L264">				@JsonProperty(&quot;Metadata&quot;) Map&lt;String, Object&gt; metadata) {</span>
+<span class="fc" id="L265">			this.id = id;</span>
+<span class="fc" id="L266">			this.created = created;</span>
+<span class="fc" id="L267">			this.size = size;</span>
+<span class="fc" id="L268">			this.repoDigests = repoDigests;</span>
+<span class="fc" id="L269">			this.rootFs = rootFs;</span>
+<span class="fc" id="L270">			this.metadata = metadata;</span>
+<span class="fc" id="L271">		}</span>
 
 		public String getDigest() {
-<span class="fc" id="L269">			return repoDigests.stream()</span>
-<span class="fc" id="L270">					.filter(i -&gt; i.contains(&quot;@sha256&quot;))</span>
-<span class="fc" id="L271">					.map(i -&gt; i.substring(i.indexOf(&quot;@sha256:&quot;) + 8))</span>
-<span class="fc" id="L272">					.findFirst()</span>
-<span class="fc" id="L273">					.orElse(id + &quot;_&quot; + size + &quot;_&quot; + created + &quot;_&quot; + rootFs.hashCode() + &quot;_&quot; + metadata.hashCode());</span>
+<span class="fc" id="L274">			return repoDigests.stream()</span>
+<span class="fc" id="L275">					.filter(i -&gt; i.contains(&quot;@sha256&quot;))</span>
+<span class="fc" id="L276">					.map(i -&gt; i.substring(i.indexOf(&quot;@sha256:&quot;) + 8))</span>
+<span class="fc" id="L277">					.findFirst()</span>
+<span class="fc" id="L278">					.orElse(id + &quot;_&quot; + size + &quot;_&quot; + created + &quot;_&quot; + rootFs.hashCode() + &quot;_&quot; + metadata.hashCode());</span>
 		}
 	}
 }
