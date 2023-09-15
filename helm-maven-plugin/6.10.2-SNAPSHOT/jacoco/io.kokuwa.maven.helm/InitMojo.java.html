@@ -153,13 +153,13 @@ import lombok.SneakyThrows;
 
 <span class="fc" id="L154">		getLog().info(&quot;Initializing Helm...&quot;);</span>
 <span class="fc" id="L155">		Path outputDirectory = getOutputDirectory();</span>
-<span class="pc bpc" id="L156" title="1 of 2 branches missed.">		if (!outputDirectory.toFile().exists()) {</span>
-<span class="nc" id="L157">			getLog().info(&quot;Creating output directory...&quot;);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">		if (!outputDirectory.toFile().exists()) {</span>
+<span class="fc" id="L157">			getLog().info(&quot;Creating output directory...&quot;);</span>
 			try {
-<span class="nc" id="L159">				Files.createDirectories(outputDirectory);</span>
+<span class="fc" id="L159">				Files.createDirectories(outputDirectory);</span>
 <span class="nc" id="L160">			} catch (IOException e) {</span>
 <span class="nc" id="L161">				throw new MojoExecutionException(&quot;Unable to create output directory at &quot; + outputDirectory, e);</span>
-<span class="nc" id="L162">			}</span>
+<span class="fc" id="L162">			}</span>
 		}
 
 <span class="fc bfc" id="L165" title="All 2 branches covered.">		if (isUseLocalHelmBinary()) {</span>
