@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RunMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">k3s Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.k3s.mojo</a> &gt; <span class="el_source">RunMojo.java</span></div><h1>RunMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.k3s.mojo;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import io.kokuwa.maven.k3s.util.Await;
+
+/**
+ * Mojo for start k3s container.
+ *
+ * @author stephan.schnabel@posteo.de
+ * @since 1.0.0
+ */
+@Mojo(name = &quot;run&quot;, defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST, requiresProject = false)
+<span class="fc" id="L25">public class RunMojo extends K3sMojo {</span>
+
+	/**
+	 * k3s image registry.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.imageRegistry&quot;)
+	private String imageRegistry;
+
+	/**
+	 * k3s image repository.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.imageRepository&quot;, defaultValue = &quot;docker.io/rancher/k3s&quot;)
+	private String imageRepository;
+
+	/**
+	 * k3s image tag.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.imageTag&quot;, defaultValue = &quot;latest&quot;)
+	private String imageTag;
+
+	/**
+	 * Disable servicelb.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableServicelb&quot;, defaultValue = &quot;false&quot;)
+	private boolean disableServicelb;
+
+	/**
+	 * Disable helm controller.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableHelmController&quot;, defaultValue = &quot;true&quot;)
+	private boolean disableHelmController;
+
+	/**
+	 * Disable local storage.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableLocalStorage&quot;, defaultValue = &quot;true&quot;)
+	private boolean disableLocalStorage;
+
+	/**
+	 * Disable metrics-server.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableMetricsServer&quot;, defaultValue = &quot;true&quot;)
+	private boolean disableMetricsServer;
+
+	/**
+	 * Disable traefik.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableTraefik&quot;, defaultValue = &quot;true&quot;)
+	private boolean disableTraefik;
+
+	/**
+	 * Disable cloud-controller.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableCloudController&quot;, defaultValue = &quot;true&quot;)
+	private boolean disableCloudController;
+
+	/**
+	 * Disable network-policy.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.disableNetworkPolicy&quot;, defaultValue = &quot;true&quot;)
+	private boolean disableNetworkPolicy;
+
+	/**
+	 * Additional port bindings e.g. 8080:8080.
+	 *
+	 * @since 1.0.0
+	 */
+<span class="fc" id="L112">	@Parameter(property = &quot;k3s.portBindings&quot;)</span>
+	private List&lt;String&gt; portBindings = new ArrayList&lt;&gt;();
+
+	/**
+	 * KubeApi port to expose to host.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.portKubeApi&quot;, defaultValue = &quot;6443&quot;)
+	private int portKubeApi;
+
+	/**
+	 * Cluster Domain.
+	 *
+	 * @see &quot;https://docs.k3s.io/cli/server#networking&quot;
+	 * @since 1.2.0
+	 */
+	@Parameter(property = &quot;k3s.clusterDomain&quot;)
+	private String clusterDomain;
+
+	/**
+	 * IPv4 Cluster IP for coredns service.
+	 *
+	 * @see &quot;https://docs.k3s.io/cli/server#networking&quot;
+	 * @since 1.2.0
+	 */
+	@Parameter(property = &quot;k3s.clusterDns&quot;)
+	private String clusterDns;
+
+	/**
+	 * IPv4/IPv6 network CIDRs to use for pod IPs.
+	 *
+	 * @see &quot;https://docs.k3s.io/cli/server#networking&quot;
+	 * @since 1.2.0
+	 */
+	@Parameter(property = &quot;k3s.clusterCidr&quot;)
+	private String clusterCidr;
+
+	/**
+	 * IPv4/IPv6 network CIDRs to use for service IPs.
+	 *
+	 * @see &quot;https://docs.k3s.io/cli/server#networking&quot;
+	 * @since 1.2.0
+	 */
+	@Parameter(property = &quot;k3s.serviceCidr&quot;)
+	private String serviceCidr;
+
+	/**
+	 * Fail if docker container from previous run exists.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.failIfExists&quot;, defaultValue = &quot;true&quot;)
+	private boolean failIfExists;
+
+	/**
+	 * Replace existing docker container from previous run.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.replaceIfExists&quot;, defaultValue = &quot;false&quot;)
+	private boolean replaceIfExists;
+
+	/**
+	 * Path where kubeconfig.yaml should be placed on host.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.kubeconfig&quot;, defaultValue = &quot;${project.build.directory}/k3s.yaml&quot;)
+	private Path kubeconfig;
+
+	/**
+	 * Path to &quot;registry.yaml&quot; to mount to &quot;/etc/rancher/k3s/registries.yaml&quot;.
+	 *
+	 * @since 1.1.0
+	 */
+	@Parameter(property = &quot;k3s.registries&quot;)
+	private Path registries;
+
+	/**
+	 * Timeout in seconds to wait for nodes getting ready.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.nodeTimeout&quot;, defaultValue = &quot;30&quot;)
+	private Duration nodeTimeout;
+
+	/**
+	 * Skip running of k3s.
+	 *
+	 * @since 1.0.0
+	 */
+	@Parameter(property = &quot;k3s.skipRun&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipRun;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L210" title="All 2 branches covered.">		if (isSkip(skipRun)) {</span>
+<span class="fc" id="L211">			return;</span>
+		}
+
+		// check container
+
+<span class="fc" id="L216">		var create = true;</span>
+<span class="fc" id="L217">		var container = getDocker().getContainer().orElse(null);</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">		if (container != null) {</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">			if (failIfExists) {</span>
+<span class="fc" id="L220">				throw new MojoExecutionException(&quot;Container with id '&quot; + container.id</span>
+						+ &quot;' found. Please remove that container or set 'k3s.failIfExists' to false.&quot;);
+<span class="fc bfc" id="L222" title="All 2 branches covered.">			} else if (replaceIfExists) {</span>
+<span class="fc" id="L223">				getLog().info(&quot;Container with id '&quot; + container.id + &quot;' found, replacing&quot;);</span>
+<span class="fc" id="L224">				getDocker().removeContainer();</span>
+			} else {
+<span class="fc" id="L226">				getLog().warn(&quot;Container with id '&quot; + container.id + &quot;' found, skip creating&quot;);</span>
+<span class="fc" id="L227">				create = false;</span>
+			}
+		}
+
+		// create container
+
+<span class="fc bfc" id="L233" title="All 2 branches covered.">		if (create) {</span>
+
+			// get image name
+
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">			if (&quot;latest&quot;.equals(imageTag)) {</span>
+<span class="fc" id="L238">				getLog().warn(&quot;Using image tag 'latest' is unstable.&quot;);</span>
+			}
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">			var image = (imageRegistry == null ? &quot;&quot; : imageRegistry + &quot;/&quot;) + imageRepository + &quot;:&quot; + imageTag;</span>
+
+			// k3s command
+
+<span class="fc" id="L244">			var command = new ArrayList&lt;&gt;(List.of(&quot;server&quot;, &quot;--node-name=k3s&quot;, &quot;--https-listen-port=&quot; + portKubeApi));</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">			if (clusterDomain != null) {</span>
+<span class="nc" id="L246">				command.add(&quot;--cluster-domain=&quot; + clusterDomain);</span>
+			}
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">			if (clusterDns != null) {</span>
+<span class="nc" id="L249">				command.add(&quot;--cluster-dns=&quot; + clusterDns);</span>
+			}
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">			if (clusterCidr != null) {</span>
+<span class="nc" id="L252">				command.add(&quot;--cluster-cidr=&quot; + clusterCidr);</span>
+			}
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">			if (serviceCidr != null) {</span>
+<span class="nc" id="L255">				command.add(&quot;--service-cidr=&quot; + serviceCidr);</span>
+			}
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">			if (disableCloudController) {</span>
+<span class="fc" id="L258">				command.add(&quot;--disable-cloud-controller&quot;);</span>
+			}
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">			if (disableNetworkPolicy) {</span>
+<span class="fc" id="L261">				command.add(&quot;--disable-network-policy&quot;);</span>
+			}
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">			if (disableMetricsServer) {</span>
+<span class="fc" id="L264">				command.add(&quot;--disable=metrics-server&quot;);</span>
+			}
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">			if (disableServicelb) {</span>
+<span class="nc" id="L267">				command.add(&quot;--disable=servicelb&quot;);</span>
+			}
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">			if (disableHelmController) {</span>
+<span class="fc" id="L270">				command.add(&quot;--disable-helm-controller&quot;);</span>
+			}
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">			if (disableLocalStorage) {</span>
+<span class="fc" id="L273">				command.add(&quot;--disable=local-storage&quot;);</span>
+			}
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">			if (disableTraefik) {</span>
+<span class="fc" id="L276">				command.add(&quot;--disable=traefik&quot;);</span>
+			}
+<span class="fc" id="L278">			getLog().info(&quot;k3s &quot; + command.stream().collect(Collectors.joining(&quot; &quot;)));</span>
+
+			// create container
+
+<span class="fc bfc" id="L282" title="All 4 branches covered.">			if (registries != null &amp;&amp; !Files.isRegularFile(registries)) {</span>
+<span class="fc" id="L283">				throw new MojoExecutionException(&quot;Registries file '&quot; + registries + &quot;' not found.&quot;);</span>
+			}
+<span class="fc" id="L285">			var ports = new ArrayList&lt;&gt;(portBindings);</span>
+<span class="fc" id="L286">			ports.add(portKubeApi + &quot;:&quot; + portKubeApi);</span>
+<span class="fc" id="L287">			getDocker().createContainer(image, ports, command, registries);</span>
+<span class="fc" id="L288">			getDocker().createVolume();</span>
+
+			// wait for k3s api to be ready
+
+<span class="fc" id="L292">			var await = Await.await(getLog(), &quot;k3s api available&quot;).timeout(nodeTimeout);</span>
+<span class="fc" id="L293">			getDocker().waitForLog(await, output -&gt; output.stream().anyMatch(l -&gt; l.contains(&quot;k3s is up and running&quot;)));</span>
+		}
+
+<span class="fc" id="L296">		getDocker().copyFromContainer(&quot;/etc/rancher/k3s/k3s.yaml&quot;, kubeconfig);</span>
+<span class="fc" id="L297">		getLog().info(&quot;k3s ready: KUBECONFIG=&quot; + kubeconfig + &quot; kubectl get all --all-namespaces&quot;);</span>
+<span class="fc" id="L298">	}</span>
+
+	// setter
+
+	public void setKubeconfig(File kubeconfig) {
+<span class="fc" id="L303">		this.kubeconfig = kubeconfig.toPath().toAbsolutePath();</span>
+<span class="fc" id="L304">	}</span>
+
+	public void setNodeTimeout(int nodeTimeout) {
+<span class="fc" id="L307">		this.nodeTimeout = Duration.ofSeconds(nodeTimeout);</span>
+<span class="fc" id="L308">	}</span>
+
+	public void setImageRegistry(String imageRegistry) {
+<span class="nc" id="L311">		this.imageRegistry = imageRegistry;</span>
+<span class="nc" id="L312">	}</span>
+
+	public void setImageRepository(String imageRepository) {
+<span class="fc" id="L315">		this.imageRepository = imageRepository;</span>
+<span class="fc" id="L316">	}</span>
+
+	public void setImageTag(String imageTag) {
+<span class="fc" id="L319">		this.imageTag = imageTag;</span>
+<span class="fc" id="L320">	}</span>
+
+	public void setDisableServicelb(boolean disableServicelb) {
+<span class="fc" id="L323">		this.disableServicelb = disableServicelb;</span>
+<span class="fc" id="L324">	}</span>
+
+	public void setDisableHelmController(boolean disableHelmController) {
+<span class="fc" id="L327">		this.disableHelmController = disableHelmController;</span>
+<span class="fc" id="L328">	}</span>
+
+	public void setDisableLocalStorage(boolean disableLocalStorage) {
+<span class="fc" id="L331">		this.disableLocalStorage = disableLocalStorage;</span>
+<span class="fc" id="L332">	}</span>
+
+	public void setDisableMetricsServer(boolean disableMetricsServer) {
+<span class="fc" id="L335">		this.disableMetricsServer = disableMetricsServer;</span>
+<span class="fc" id="L336">	}</span>
+
+	public void setDisableTraefik(boolean disableTraefik) {
+<span class="fc" id="L339">		this.disableTraefik = disableTraefik;</span>
+<span class="fc" id="L340">	}</span>
+
+	public void setDisableCloudController(boolean disableCloudController) {
+<span class="fc" id="L343">		this.disableCloudController = disableCloudController;</span>
+<span class="fc" id="L344">	}</span>
+
+	public void setDisableNetworkPolicy(boolean disableNetworkPolicy) {
+<span class="fc" id="L347">		this.disableNetworkPolicy = disableNetworkPolicy;</span>
+<span class="fc" id="L348">	}</span>
+
+	public void setPortBindings(List&lt;String&gt; portBindings) {
+<span class="fc" id="L351">		this.portBindings = portBindings;</span>
+<span class="fc" id="L352">	}</span>
+
+	public void setPortKubeApi(int portKubeApi) {
+<span class="fc" id="L355">		this.portKubeApi = portKubeApi;</span>
+<span class="fc" id="L356">	}</span>
+
+	public void setFailIfExists(boolean failIfExists) {
+<span class="fc" id="L359">		this.failIfExists = failIfExists;</span>
+<span class="fc" id="L360">	}</span>
+
+	public void setReplaceIfExists(boolean replaceIfExists) {
+<span class="fc" id="L363">		this.replaceIfExists = replaceIfExists;</span>
+<span class="fc" id="L364">	}</span>
+
+	public void setSkipRun(boolean skipRun) {
+<span class="fc" id="L367">		this.skipRun = skipRun;</span>
+<span class="fc" id="L368">	}</span>
+
+	public void setRegistries(File registries) {
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">		this.registries = registries == null ? null : registries.toPath().toAbsolutePath();</span>
+<span class="fc" id="L372">	}</span>
+
+	public void setClusterDns(String clusterDns) {
+<span class="nc" id="L375">		this.clusterDns = clusterDns;</span>
+<span class="nc" id="L376">	}</span>
+
+	public void setClusterDomain(String clusterDomain) {
+<span class="nc" id="L379">		this.clusterDomain = clusterDomain;</span>
+<span class="nc" id="L380">	}</span>
+
+	public void setClusterCidr(String clusterCidr) {
+<span class="nc" id="L383">		this.clusterCidr = clusterCidr;</span>
+<span class="nc" id="L384">	}</span>
+
+	public void setServiceCidr(String serviceCidr) {
+<span class="nc" id="L387">		this.serviceCidr = serviceCidr;</span>
+<span class="nc" id="L388">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
