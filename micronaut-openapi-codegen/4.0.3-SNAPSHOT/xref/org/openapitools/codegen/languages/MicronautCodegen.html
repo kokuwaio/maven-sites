@@ -569,12 +569,12 @@
 <a class="jxr_linenumber" name="L561" href="#L561">561</a> 
 <a class="jxr_linenumber" name="L562" href="#L562">562</a> 				<strong class="jxr_keyword">var</strong> suffix = <span class="jxr_string">"Default"</span>;
 <a class="jxr_linenumber" name="L563" href="#L563">563</a> 				<strong class="jxr_keyword">var</strong> copy = copy(model);
-<a class="jxr_linenumber" name="L564" href="#L564">564</a> 				copy.name = model.name + suffix;
-<a class="jxr_linenumber" name="L565" href="#L565">565</a> 				copy.classname = model.classname + suffix;
-<a class="jxr_linenumber" name="L566" href="#L566">566</a> 				copy.classFilename = model.classFilename + suffix;
+<a class="jxr_linenumber" name="L564" href="#L564">564</a> 				copy.name = model.name + suffix + modelNameSuffix;
+<a class="jxr_linenumber" name="L565" href="#L565">565</a> 				copy.classname = model.name + suffix + modelNameSuffix;
+<a class="jxr_linenumber" name="L566" href="#L566">566</a> 				copy.classFilename = model.name + suffix + modelNameSuffix;
 <a class="jxr_linenumber" name="L567" href="#L567">567</a> 				copy.children = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L568" href="#L568">568</a> 				copy.hasChildren = false;
-<a class="jxr_linenumber" name="L569" href="#L569">569</a> 				copy.interfaces = List.of(model.name);
+<a class="jxr_linenumber" name="L569" href="#L569">569</a> 				copy.interfaces = List.of(model.name + modelNameSuffix);
 <a class="jxr_linenumber" name="L570" href="#L570">570</a> 				copy.interfaceModels = List.of(model);
 <a class="jxr_linenumber" name="L571" href="#L571">571</a> 				copy.vars = List.of();
 <a class="jxr_linenumber" name="L572" href="#L572">572</a> 

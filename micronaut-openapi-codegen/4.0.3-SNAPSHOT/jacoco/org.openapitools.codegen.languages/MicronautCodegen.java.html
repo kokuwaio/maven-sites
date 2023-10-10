@@ -561,12 +561,12 @@ public class MicronautCodegen extends AbstractJavaCodegen
 
 <span class="fc" id="L562">				var suffix = &quot;Default&quot;;</span>
 <span class="fc" id="L563">				var copy = copy(model);</span>
-<span class="fc" id="L564">				copy.name = model.name + suffix;</span>
-<span class="fc" id="L565">				copy.classname = model.classname + suffix;</span>
-<span class="fc" id="L566">				copy.classFilename = model.classFilename + suffix;</span>
+<span class="fc" id="L564">				copy.name = model.name + suffix + modelNameSuffix;</span>
+<span class="fc" id="L565">				copy.classname = model.name + suffix + modelNameSuffix;</span>
+<span class="fc" id="L566">				copy.classFilename = model.name + suffix + modelNameSuffix;</span>
 <span class="fc" id="L567">				copy.children = null;</span>
 <span class="fc" id="L568">				copy.hasChildren = false;</span>
-<span class="fc" id="L569">				copy.interfaces = List.of(model.name);</span>
+<span class="fc" id="L569">				copy.interfaces = List.of(model.name + modelNameSuffix);</span>
 <span class="fc" id="L570">				copy.interfaceModels = List.of(model);</span>
 <span class="fc" id="L571">				copy.vars = List.of();</span>
 
