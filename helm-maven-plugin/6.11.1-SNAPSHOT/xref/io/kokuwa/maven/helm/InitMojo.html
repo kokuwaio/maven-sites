@@ -407,11 +407,11 @@
 <a class="jxr_linenumber" name="L399" href="#L399">399</a> 	<strong class="jxr_keyword">private</strong> String getArchitecture() {
 <a class="jxr_linenumber" name="L400" href="#L400">400</a> 		String architecture = System.getProperty(<span class="jxr_string">"os.arch"</span>).toLowerCase(Locale.US);
 <a class="jxr_linenumber" name="L401" href="#L401">401</a> 
-<a class="jxr_linenumber" name="L402" href="#L402">402</a> 		<strong class="jxr_keyword">if</strong> (architecture.equals(<span class="jxr_string">"x86_64"</span>) || architecture.equals(<span class="jxr_string">"amd64"</span>) || architecture.equals(<span class="jxr_string">"aarch64"</span>)) {
+<a class="jxr_linenumber" name="L402" href="#L402">402</a> 		<strong class="jxr_keyword">if</strong> (architecture.equals(<span class="jxr_string">"x86_64"</span>) || architecture.equals(<span class="jxr_string">"amd64"</span>)) {
 <a class="jxr_linenumber" name="L403" href="#L403">403</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"amd64"</span>;
 <a class="jxr_linenumber" name="L404" href="#L404">404</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (architecture.equals(<span class="jxr_string">"x86"</span>) || architecture.equals(<span class="jxr_string">"i386"</span>)) {
 <a class="jxr_linenumber" name="L405" href="#L405">405</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"386"</span>;
-<a class="jxr_linenumber" name="L406" href="#L406">406</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (architecture.contains(<span class="jxr_string">"arm64"</span>)) {
+<a class="jxr_linenumber" name="L406" href="#L406">406</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (architecture.contains(<span class="jxr_string">"arm64"</span>) || architecture.equals(<span class="jxr_string">"aarch64"</span>)) {
 <a class="jxr_linenumber" name="L407" href="#L407">407</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"arm64"</span>;
 <a class="jxr_linenumber" name="L408" href="#L408">408</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (architecture.equals(<span class="jxr_string">"aarch32"</span>) || architecture.startsWith(<span class="jxr_string">"arm"</span>)) {
 <a class="jxr_linenumber" name="L409" href="#L409">409</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"arm"</span>;

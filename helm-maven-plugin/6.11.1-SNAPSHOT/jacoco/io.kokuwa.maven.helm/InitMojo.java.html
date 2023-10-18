@@ -399,11 +399,11 @@ import lombok.SneakyThrows;
 	private String getArchitecture() {
 <span class="fc" id="L400">		String architecture = System.getProperty(&quot;os.arch&quot;).toLowerCase(Locale.US);</span>
 
-<span class="pc bpc" id="L402" title="4 of 6 branches missed.">		if (architecture.equals(&quot;x86_64&quot;) || architecture.equals(&quot;amd64&quot;) || architecture.equals(&quot;aarch64&quot;)) {</span>
+<span class="pc bpc" id="L402" title="2 of 4 branches missed.">		if (architecture.equals(&quot;x86_64&quot;) || architecture.equals(&quot;amd64&quot;)) {</span>
 <span class="fc" id="L403">			return &quot;amd64&quot;;</span>
 <span class="nc bnc" id="L404" title="All 4 branches missed.">		} else if (architecture.equals(&quot;x86&quot;) || architecture.equals(&quot;i386&quot;)) {</span>
 <span class="nc" id="L405">			return &quot;386&quot;;</span>
-<span class="nc bnc" id="L406" title="All 2 branches missed.">		} else if (architecture.contains(&quot;arm64&quot;)) {</span>
+<span class="nc bnc" id="L406" title="All 4 branches missed.">		} else if (architecture.contains(&quot;arm64&quot;) || architecture.equals(&quot;aarch64&quot;)) {</span>
 <span class="nc" id="L407">			return &quot;arm64&quot;;</span>
 <span class="nc bnc" id="L408" title="All 4 branches missed.">		} else if (architecture.equals(&quot;aarch32&quot;) || architecture.startsWith(&quot;arm&quot;)) {</span>
 <span class="nc" id="L409">			return &quot;arm&quot;;</span>
