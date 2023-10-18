@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>AbstractDependencyMojo xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../apidocs/io/kokuwa/maven/helm/AbstractDependencyMojo.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> io.kokuwa.maven.helm;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> java.nio.file.Path;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> org.apache.maven.plugin.MojoExecutionException;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> org.apache.maven.plugins.annotations.Parameter;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> io.kokuwa.maven.helm.util.DependencyOverwriter;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> lombok.Setter;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_javadoccomment">/** Base class for dependency build and update mojos. */</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  @Setter
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">class</strong> <a name="AbstractDependencyMojo" href="../../../../io/kokuwa/maven/helm/AbstractDependencyMojo.html#AbstractDependencyMojo">AbstractDependencyMojo</a> <strong class="jxr_keyword">extends</strong> <a name="AbstractHelmMojo" href="../../../../io/kokuwa/maven/helm/AbstractHelmMojo.html#AbstractHelmMojo">AbstractHelmMojo</a> {
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_javadoccomment">	 * Controls whether a local path chart should be used for a chart dependency. When set to &lt;code&gt;true&lt;/code&gt;, chart</em>
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_javadoccomment">	 * dependencies on a local path chart will be overwritten with the respective properties set by</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment">	 * "helm.overwriteDependencyVersion" and "helm.overwriteDependencyRepository". This is helpful for deploying charts</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_javadoccomment">	 * with intra repository dependencies, while still being able to use local path dependencies for development builds.</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <em class="jxr_javadoccomment">	 *</em>
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <em class="jxr_javadoccomment">	 * Example usage:</em>
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_javadoccomment">	 * &lt;ul&gt;</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_javadoccomment">	 * &lt;li&gt;For development: mvn clean install&lt;/li&gt;</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <em class="jxr_javadoccomment">	 * &lt;li&gt;For deployment: mvn clean deploy -Dhelm.overwriteLocalDependencies=true&lt;/li&gt;</em>
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_javadoccomment">	 * &lt;/ul&gt;</em>
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment">	 *</em>
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment">	 * @since 6.10.0</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  	@Parameter(property = <span class="jxr_string">"helm.overwriteLocalDependencies"</span>, defaultValue = <span class="jxr_string">"false"</span>)
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  	<strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">boolean</strong> overwriteLocalDependencies;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment">	 * Value used to overwrite a local path chart's version within a chart's dependencies. The property</em>
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <em class="jxr_javadoccomment">	 * "helm.overwriteLocalDependencies" must be set to &lt;code&gt;true&lt;/code&gt; for this to apply.</em>
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <em class="jxr_javadoccomment">	 *</em>
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <em class="jxr_javadoccomment">	 * @since 6.10.0</em>
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  	@Parameter(property = <span class="jxr_string">"helm.overwriteDependencyVersion"</span>)
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  	<strong class="jxr_keyword">protected</strong> String overwriteDependencyVersion;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <em class="jxr_javadoccomment">	 * Value used to overwrite a local path chart's repository within a chart's dependencies. The property</em>
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <em class="jxr_javadoccomment">	 * "helm.overwriteLocalDependencies" must be set to &lt;code&gt;true&lt;/code&gt; for this to apply.</em>
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <em class="jxr_javadoccomment">	 *</em>
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <em class="jxr_javadoccomment">	 * @since 6.10.0</em>
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  	@Parameter(property = <span class="jxr_string">"helm.overwriteDependencyRepository"</span>)
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  	<strong class="jxr_keyword">protected</strong> String overwriteDependencyRepository;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  <em class="jxr_javadoccomment">	 * Overwrites the local path of a chart dependency with the desired repository and version when</em>
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  <em class="jxr_javadoccomment">	 * helm.overwriteLocalDependencies is set to &lt;code&gt;true&lt;/code&gt;.</em>
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  <em class="jxr_javadoccomment">	 *</em>
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  <em class="jxr_javadoccomment">	 * @param chartDirectory directory containing a Helm chart</em>
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  <em class="jxr_javadoccomment">	 * @throws MojoExecutionException Null value for 'overwriteDependencyRepository'</em>
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  <em class="jxr_javadoccomment">	 *</em>
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  <em class="jxr_javadoccomment">	 * @since 6.11.0</em>
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  	<strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> doOverwriteLocalDependencies(Path chartDirectory) <strong class="jxr_keyword">throws</strong> MojoExecutionException {
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  		<strong class="jxr_keyword">if</strong> (overwriteLocalDependencies) {
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  			<strong class="jxr_keyword">if</strong> (overwriteDependencyRepository == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  				<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> MojoExecutionException(<span class="jxr_string">"Null value for 'overwriteDependencyRepository' is "</span> +
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  						<span class="jxr_string">"not allowed when using 'overwriteLocalDependencies'. See the README for more details."</span>);
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  			}
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  			getLog().info(<span class="jxr_string">"Overwriting dependencies that contain local path charts with "</span>
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  					+ overwriteDependencyRepository);
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  			<strong class="jxr_keyword">new</strong> <a name="DependencyOverwriter" href="../../../../io/kokuwa/maven/helm/util/DependencyOverwriter.html#DependencyOverwriter">DependencyOverwriter</a>(overwriteDependencyRepository, overwriteDependencyVersion, getLog())
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  					.execute(chartDirectory);
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  		}
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  	}
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2017&#x2013;2023 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
+</body>
+</html>
