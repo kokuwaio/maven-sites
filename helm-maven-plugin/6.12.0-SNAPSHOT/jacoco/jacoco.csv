@@ -12,7 +12,7 @@ Helm Maven Plugin,io.kokuwa.maven.helm.github,Github,260,0,8,0,45,0,10,0,6,0
 Helm Maven Plugin,io.kokuwa.maven.helm.github,ReleaseCache,128,0,22,0,3,0,20,0,9,0
 Helm Maven Plugin,io.kokuwa.maven.helm.github,ReleaseResponse,84,0,14,0,2,0,14,0,7,0
 Helm Maven Plugin,io.kokuwa.maven.helm,UpgradeMojo,0,161,0,16,0,17,0,17,0,9
-Helm Maven Plugin,io.kokuwa.maven.helm,UploadMojo,95,606,19,41,17,125,14,36,0,19
+Helm Maven Plugin,io.kokuwa.maven.helm,UploadMojo,95,601,19,41,17,121,14,37,0,20
 Helm Maven Plugin,io.kokuwa.maven.helm,PackageMojo,0,184,2,16,0,27,2,17,0,10
 Helm Maven Plugin,io.kokuwa.maven.helm,RegistryLoginMojo,0,104,0,8,0,22,0,9,0,5
 Helm Maven Plugin,io.kokuwa.maven.helm,TLSHelper,10,30,0,0,3,7,1,2,1,2
