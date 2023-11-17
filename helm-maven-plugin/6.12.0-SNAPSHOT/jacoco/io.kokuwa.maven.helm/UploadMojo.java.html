@@ -3,13 +3,20 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -20,6 +27,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import io.kokuwa.maven.helm.pojo.Catalog;
 import io.kokuwa.maven.helm.pojo.HelmRepository;
 import io.kokuwa.maven.helm.pojo.RepoType;
 import lombok.Setter;
@@ -31,8 +44,11 @@ import lombok.Setter;
  * @since 1.4
  */
 @Mojo(name = &quot;upload&quot;, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
-<span class="fc" id="L34">@Setter</span>
-<span class="fc" id="L35">public class UploadMojo extends AbstractHelmMojo {</span>
+<span class="fc" id="L47">@Setter</span>
+<span class="fc" id="L48">public class UploadMojo extends AbstractHelmMojo {</span>
+
+	private static final String CATALOG_ARTIFACT_NAME = &quot;helm-catalog&quot;;
+	private static final String CATALOG_ARTIFACT_TYPE = &quot;json&quot;;
 
 	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking upload goal.
@@ -74,24 +90,39 @@ import lombok.Setter;
 	@Parameter(property = &quot;helm.upload.insecure&quot;, defaultValue = &quot;false&quot;)
 	private boolean insecure;
 
+	/**
+	 * Skips creation of a catalog file with a list of helm chart upload details.
+	 *
+	 * @since 6.11.2
+	 */
+	@Parameter(property = &quot;helm.upload.skip.catalog&quot;, defaultValue = &quot;true&quot;)
+	private boolean skipCatalog;
+
 	@Override
 	public void execute() throws MojoExecutionException {
 
-<span class="fc bfc" id="L80" title="All 4 branches covered.">		if (skip || skipUpload) {</span>
-<span class="fc" id="L81">			getLog().info(&quot;Skip upload&quot;);</span>
-<span class="fc" id="L82">			return;</span>
+<span class="fc bfc" id="L104" title="All 4 branches covered.">		if (skip || skipUpload) {</span>
+<span class="fc" id="L105">			getLog().info(&quot;Skip upload&quot;);</span>
+<span class="fc" id="L106">			return;</span>
 		}
 
-<span class="fc" id="L85">		getLog().info(&quot;Uploading to &quot; + getHelmUploadUrl() + &quot;\n&quot;);</span>
-<span class="fc bfc" id="L86" title="All 2 branches covered.">		for (Path chart : getChartArchives()) {</span>
-<span class="fc" id="L87">			getLog().info(&quot;Uploading &quot; + chart + &quot;...&quot;);</span>
+<span class="fc" id="L109">		getLog().info(&quot;Uploading to &quot; + getHelmUploadUrl() + &quot;\n&quot;);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		for (Path chart : getChartArchives()) {</span>
+<span class="fc" id="L111">			getLog().info(&quot;Uploading &quot; + chart + &quot;...&quot;);</span>
 			try {
-<span class="fc" id="L89">				uploadSingle(chart);</span>
-<span class="fc" id="L90">			} catch (IOException e) {</span>
-<span class="fc" id="L91">				throw new MojoExecutionException(&quot;Upload failed.&quot;, e);</span>
-<span class="fc" id="L92">			}</span>
-<span class="fc" id="L93">		}</span>
-<span class="fc" id="L94">	}</span>
+<span class="fc" id="L113">				uploadSingle(chart);</span>
+<span class="fc" id="L114">			} catch (IOException e) {</span>
+<span class="fc" id="L115">				throw new MojoExecutionException(&quot;Upload failed.&quot;, e);</span>
+<span class="fc" id="L116">			}</span>
+<span class="fc" id="L117">		}</span>
+
+<span class="fc bfc" id="L119" title="All 2 branches covered.">		if (!skipCatalog) {</span>
+<span class="fc" id="L120">			Path catalogPath = getCatalogFilePath();</span>
+<span class="fc" id="L121">			getLog().info(&quot;Attaching catalog artifact: &quot; + catalogPath);</span>
+<span class="fc" id="L122">			mavenProjectHelper.attachArtifact(mavenProject, CATALOG_ARTIFACT_TYPE, CATALOG_ARTIFACT_NAME,</span>
+<span class="fc" id="L123">					catalogPath.toFile());</span>
+		}
+<span class="fc" id="L125">	}</span>
 
 	/**
 	 * Returns the proper upload URL based on the provided chart version. Charts w/ an SNAPSHOT suffix will be uploaded
@@ -100,139 +131,226 @@ import lombok.Setter;
 	 * @return Upload URL based on chart version
 	 */
 	private String getHelmUploadUrl() {
-<span class="fc" id="L103">		String chartVersion = getChartVersion();</span>
-<span class="fc" id="L104">		HelmRepository uploadRepoStable = getUploadRepoStable();</span>
-<span class="fc" id="L105">		HelmRepository uploadRepoSnapshot = getUploadRepoSnapshot();</span>
-<span class="fc" id="L106">		String uploadUrl = uploadRepoStable.getUrl();</span>
-<span class="pc bpc" id="L107" title="5 of 6 branches missed.">		if (chartVersion != null &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)</span>
+<span class="fc" id="L134">		String chartVersion = getChartVersion();</span>
+<span class="fc" id="L135">		HelmRepository uploadRepoStable = getUploadRepoStable();</span>
+<span class="fc" id="L136">		HelmRepository uploadRepoSnapshot = getUploadRepoSnapshot();</span>
+
+<span class="fc" id="L138">		String uploadUrl = uploadRepoStable.getUrl();</span>
+<span class="pc bpc" id="L139" title="5 of 6 branches missed.">		if (chartVersion != null &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)</span>
 				&amp;&amp; uploadRepoSnapshot != null
-<span class="nc bnc" id="L109" title="All 2 branches missed.">				&amp;&amp; StringUtils.isNotEmpty(uploadRepoSnapshot.getUrl())) {</span>
-<span class="nc" id="L110">			uploadUrl = uploadRepoSnapshot.getUrl();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">				&amp;&amp; StringUtils.isNotEmpty(uploadRepoSnapshot.getUrl())) {</span>
+<span class="nc" id="L142">			uploadUrl = uploadRepoSnapshot.getUrl();</span>
 		}
 
-<span class="fc" id="L113">		return uploadUrl;</span>
+<span class="fc" id="L145">		return uploadUrl;</span>
 	}
 
+	/**
+	 * Reads the catalog file and deserializes its content as a POJO.
+	 *
+	 * @param catalogFile instance of catalog file
+	 * @return list of Catalog
+	 * @throws MojoExecutionException when IOException is encountered
+	 */
+	List&lt;Catalog&gt; readCatalog(File catalogFile) throws MojoExecutionException {
+<span class="fc" id="L156">		List&lt;Catalog&gt; catalogList = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L157" title="1 of 4 branches missed.">		if (catalogFile == null || !catalogFile.exists()) {</span>
+<span class="fc" id="L158">			return catalogList;</span>
+		}
+<span class="fc" id="L160">		ObjectMapper mapper = new ObjectMapper();</span>
+		try {
+<span class="nc" id="L162">			return Arrays.asList(mapper.readValue(catalogFile, Catalog[].class));</span>
+<span class="fc" id="L163">		} catch (DatabindException e) {</span>
+<span class="fc" id="L164">			getLog().warn(&quot;Unable to parse the existing catalog file content. Overwriting data.&quot;);</span>
+<span class="nc" id="L165">		} catch (IOException e) {</span>
+<span class="nc" id="L166">			throw new MojoExecutionException(&quot;Failure occurred while reading the catalog file.&quot;, e);</span>
+<span class="fc" id="L167">		}</span>
+<span class="fc" id="L168">		return catalogList;</span>
+	}
+
+	/**
+	 * Reads the existing helm catalog content file and merges the new
+	 * catalog data with it.
+	 *
+	 * @param data helm chart upload info represented as the Catalog object
+	 * @return pretty string json representation of the updated helm catalog contents
+	 */
+	private String createCatalogContent(Catalog data) throws MojoExecutionException {
+<span class="fc" id="L179">		ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L180">		File file = getCatalogFilePath().toFile();</span>
+<span class="fc" id="L181">		List&lt;Catalog&gt; catalog = readCatalog(file);</span>
+<span class="fc" id="L182">		catalog.add(data);</span>
+<span class="fc" id="L183">		mapper.enable(SerializationFeature.INDENT_OUTPUT);</span>
+		try {
+<span class="fc" id="L185">			return mapper.writeValueAsString(catalog);</span>
+<span class="nc" id="L186">		} catch (JsonProcessingException e) {</span>
+<span class="nc" id="L187">			throw new MojoExecutionException(&quot;Failure occurred while writing the catalog content as a JSON string.&quot;, e);</span>
+		}
+	}
+
+	/**
+	 * Returns the path where the catalog file is to be created.
+	 * The catalog file is created in the maven project build directory.
+	 *
+	 * @return Path of the catalog file
+	 */
+	protected Path getCatalogFilePath() {
+<span class="fc" id="L198">		String catalogFileName = String.format(&quot;%s.%s&quot;, CATALOG_ARTIFACT_NAME, CATALOG_ARTIFACT_TYPE);</span>
+<span class="fc" id="L199">		return Paths.get(mavenProject.getBuild().getDirectory(), catalogFileName);</span>
+	}
+
+	/**
+	 * Writes the catalog data to the catalog file.
+	 *
+	 * @param content Helm upload catalog data in string form
+	 * @throws MojoExecutionException when writing catalog data to the file
+	 */
+	private void catalogHelmChart(String content) throws MojoExecutionException {
+<span class="fc" id="L209">		Path catalogPath = getCatalogFilePath();</span>
+<span class="fc" id="L210">		File catalogFile = catalogPath.toFile();</span>
+<span class="fc" id="L211">		getLog().debug(&quot;Writing content to catalog file: &quot; + content);</span>
+
+<span class="fc" id="L213">		try (OutputStream out = Files.newOutputStream(catalogFile.toPath())) {</span>
+			// FIXME: It is better to use the encoding either from
+			// project.build.sourceEncoding or project.reporting.outputEncoding
+<span class="fc" id="L216">			OutputStreamWriter fileWriter = new OutputStreamWriter(out, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L217">			fileWriter.write(content);</span>
+<span class="fc" id="L218">			fileWriter.close();</span>
+		}
+<span class="nc" id="L220">		catch (IOException e) {</span>
+<span class="nc" id="L221">			throw new MojoExecutionException(&quot;Failure occurred while writing the catalog file.&quot;, e);</span>
+<span class="fc" id="L222">		}</span>
+<span class="fc" id="L223">	}</span>
+
 	private void uploadSingle(Path chart) throws MojoExecutionException, IOException {
-<span class="fc" id="L117">		File fileToUpload = chart.toFile();</span>
-<span class="fc" id="L118">		HelmRepository uploadRepo = getHelmUploadRepo();</span>
+<span class="fc" id="L226">		File fileToUpload = chart.toFile();</span>
+<span class="fc" id="L227">		HelmRepository uploadRepo = getHelmUploadRepo();</span>
 
 		HttpURLConnection connection;
-<span class="fc bfc" id="L121" title="All 2 branches covered.">		if (uploadRepo.getType() == null) {</span>
-<span class="fc" id="L122">			throw new IllegalArgumentException(&quot;Repository type missing. Check your plugin configuration.&quot;);</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">		if (uploadRepo.getType() == null) {</span>
+<span class="fc" id="L231">			throw new IllegalArgumentException(&quot;Repository type missing. Check your plugin configuration.&quot;);</span>
 		}
 
-<span class="pc bpc" id="L125" title="1 of 4 branches missed.">		switch (uploadRepo.getType()) {</span>
+<span class="pc bpc" id="L234" title="1 of 4 branches missed.">		switch (uploadRepo.getType()) {</span>
 			case ARTIFACTORY:
-<span class="fc" id="L127">				connection = getConnectionForUploadToArtifactory(fileToUpload, uploadRepo);</span>
-<span class="fc" id="L128">				break;</span>
+<span class="fc" id="L236">				connection = getConnectionForUploadToArtifactory(fileToUpload, uploadRepo);</span>
+<span class="fc" id="L237">				break;</span>
 			case CHARTMUSEUM:
-<span class="fc" id="L130">				connection = getConnectionForUploadToChartMuseum();</span>
-<span class="fc" id="L131">				break;</span>
+<span class="fc" id="L239">				connection = getConnectionForUploadToChartMuseum();</span>
+<span class="fc" id="L240">				break;</span>
 			case NEXUS:
-<span class="fc" id="L133">				connection = getConnectionForUploadToNexus(fileToUpload);</span>
-<span class="fc" id="L134">				break;</span>
+<span class="fc" id="L242">				connection = getConnectionForUploadToNexus(fileToUpload);</span>
+<span class="fc" id="L243">				break;</span>
 			default:
-<span class="nc" id="L136">				throw new IllegalArgumentException(&quot;Unsupported repository type for upload.&quot;);</span>
+<span class="nc" id="L245">				throw new IllegalArgumentException(&quot;Unsupported repository type for upload.&quot;);</span>
 		}
 
-<span class="pc bpc" id="L139" title="1 of 4 branches missed.">		if (insecure &amp;&amp; connection instanceof HttpsURLConnection) {</span>
-<span class="fc" id="L140">			getLog().info(&quot;Use insecure TLS connection for [&quot; + connection.getURL() + &quot;]&quot;);</span>
-<span class="fc" id="L141">			TLSHelper.insecure((HttpsURLConnection) connection);</span>
+<span class="pc bpc" id="L248" title="1 of 4 branches missed.">		if (insecure &amp;&amp; connection instanceof HttpsURLConnection) {</span>
+<span class="fc" id="L249">			getLog().info(&quot;Use insecure TLS connection for [&quot; + connection.getURL() + &quot;]&quot;);</span>
+<span class="fc" id="L250">			TLSHelper.insecure((HttpsURLConnection) connection);</span>
 		}
 
-<span class="fc" id="L144">		try (FileInputStream fileInputStream = new FileInputStream(fileToUpload)) {</span>
-<span class="fc" id="L145">			IOUtils.copy(fileInputStream, connection.getOutputStream());</span>
+<span class="fc" id="L253">		try (FileInputStream fileInputStream = new FileInputStream(fileToUpload)) {</span>
+<span class="fc" id="L254">			IOUtils.copy(fileInputStream, connection.getOutputStream());</span>
 		}
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">		if (connection.getResponseCode() &gt;= 300) {</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">		if (connection.getResponseCode() &gt;= 300) {</span>
 			String response;
-<span class="nc bnc" id="L149" title="All 2 branches missed.">			if (connection.getErrorStream() != null) {</span>
-<span class="nc" id="L150">				response = new String(IOUtils.toByteArray(connection.getErrorStream()), StandardCharsets.UTF_8);</span>
-<span class="nc bnc" id="L151" title="All 2 branches missed.">			} else if (connection.getInputStream() != null) {</span>
-<span class="nc" id="L152">				response = new String(IOUtils.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">			if (connection.getErrorStream() != null) {</span>
+<span class="nc" id="L259">				response = new String(IOUtils.toByteArray(connection.getErrorStream()), StandardCharsets.UTF_8);</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">			} else if (connection.getInputStream() != null) {</span>
+<span class="nc" id="L261">				response = new String(IOUtils.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8);</span>
 			} else {
-<span class="nc" id="L154">				response = &quot;No details provided&quot;;</span>
+<span class="nc" id="L263">				response = &quot;No details provided&quot;;</span>
 			}
-<span class="nc" id="L156">			throw new MojoExecutionException(&quot;Failed to upload: &quot; + response);</span>
-		} else {
-<span class="fc" id="L158">			String message = &quot;Returned: &quot; + connection.getResponseCode();</span>
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">			if (connection.getInputStream() != null) {</span>
-<span class="fc" id="L160">				String details = new String(IOUtils.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8);</span>
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">				if (!details.isEmpty()) {</span>
-<span class="nc" id="L162">					message += &quot; - &quot; + details;</span>
-				}
-			}
-<span class="fc" id="L165">			getLog().info(message);</span>
+<span class="nc" id="L265">			throw new MojoExecutionException(&quot;Failed to upload: &quot; + response);</span>
 		}
-<span class="fc" id="L167">		connection.disconnect();</span>
-<span class="fc" id="L168">	}</span>
+<span class="fc" id="L267">		String message = &quot;Returned: &quot; + connection.getResponseCode();</span>
+<span class="fc" id="L268">		String details = &quot;&quot;;</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">		if (connection.getInputStream() != null) {</span>
+<span class="fc" id="L270">			details = new String(IOUtils.toByteArray(connection.getInputStream()), StandardCharsets.UTF_8);</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">			if (!details.isEmpty()) {</span>
+<span class="nc" id="L272">				message += &quot; - &quot; + details;</span>
+			}
+		}
+<span class="fc" id="L275">		getLog().info(message);</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">		if (!skipCatalog) {</span>
+<span class="fc" id="L277">			Catalog data = new Catalog(</span>
+				chart,
+<span class="fc" id="L279">				connection.getURL(),</span>
+<span class="fc" id="L280">				connection.getContentType(),</span>
+				details
+			);
+<span class="fc" id="L283">			catalogHelmChart(createCatalogContent(data));</span>
+		}
+<span class="fc" id="L285">		connection.disconnect();</span>
+<span class="fc" id="L286">	}</span>
 
 	private HttpURLConnection getConnectionForUploadToChartMuseum() throws IOException, MojoExecutionException {
-<span class="fc" id="L171">		HttpURLConnection connection = (HttpURLConnection) new URL(getHelmUploadUrl()).openConnection();</span>
-<span class="fc" id="L172">		connection.setDoOutput(true);</span>
-<span class="fc" id="L173">		connection.setRequestMethod(&quot;POST&quot;);</span>
-<span class="fc" id="L174">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
+<span class="fc" id="L289">		HttpURLConnection connection = (HttpURLConnection) new URL(getHelmUploadUrl()).openConnection();</span>
+<span class="fc" id="L290">		connection.setDoOutput(true);</span>
+<span class="fc" id="L291">		connection.setRequestMethod(&quot;POST&quot;);</span>
+<span class="fc" id="L292">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
 
-<span class="fc" id="L176">		setBasicAuthHeader(connection);</span>
+<span class="fc" id="L294">		setBasicAuthHeader(connection);</span>
 
-<span class="fc" id="L178">		return connection;</span>
+<span class="fc" id="L296">		return connection;</span>
 	}
 
 	private void setBasicAuthHeader(HttpURLConnection connection) throws MojoExecutionException {
-<span class="fc" id="L182">		PasswordAuthentication authentication = getAuthentication(getHelmUploadRepo());</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">		if (authentication != null) {</span>
-<span class="fc" id="L184">			String encoded = Base64.getEncoder()</span>
-<span class="fc" id="L185">					.encodeToString((authentication.getUserName() + &quot;:&quot; + new String(authentication.getPassword()))</span>
-<span class="fc" id="L186">							.getBytes(StandardCharsets.UTF_8));</span>
-<span class="fc" id="L187">			connection.setRequestProperty(&quot;Authorization&quot;, &quot;Basic &quot; + encoded);</span>
+<span class="fc" id="L300">		PasswordAuthentication authentication = getAuthentication(getHelmUploadRepo());</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">		if (authentication != null) {</span>
+<span class="fc" id="L302">			String encoded = Base64.getEncoder()</span>
+<span class="fc" id="L303">					.encodeToString((authentication.getUserName() + &quot;:&quot; + new String(authentication.getPassword()))</span>
+<span class="fc" id="L304">							.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L305">			connection.setRequestProperty(&quot;Authorization&quot;, &quot;Basic &quot; + encoded);</span>
 		}
-<span class="fc" id="L189">	}</span>
+<span class="fc" id="L307">	}</span>
 
 	private HttpURLConnection getConnectionForUploadToArtifactory(File file, HelmRepository repo)
 			throws IOException, MojoExecutionException {
-<span class="fc" id="L193">		String uploadUrl = getHelmUploadUrl();</span>
+<span class="fc" id="L311">		String uploadUrl = getHelmUploadUrl();</span>
 		// Append slash if not already in place
-<span class="pc bpc" id="L195" title="1 of 2 branches missed.">		if (!uploadUrl.endsWith(&quot;/&quot;)) {</span>
-<span class="fc" id="L196">			uploadUrl += &quot;/&quot;;</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">		if (!uploadUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L314">			uploadUrl += &quot;/&quot;;</span>
 		}
-<span class="fc bfc" id="L198" title="All 2 branches covered.">		if (repo.isUseGroupId()) {</span>
-<span class="fc" id="L199">			uploadUrl += projectGroupId.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot;;</span>
+<span class="fc bfc" id="L316" title="All 2 branches covered.">		if (repo.isUseGroupId()) {</span>
+<span class="fc" id="L317">			uploadUrl += projectGroupId.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot;;</span>
 		}
-<span class="fc bfc" id="L201" title="All 2 branches covered.">		if (repo.isUseArtifactId()) {</span>
-<span class="fc" id="L202">			uploadUrl += projectArtifactId.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot;;</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">		if (repo.isUseArtifactId()) {</span>
+<span class="fc" id="L320">			uploadUrl += projectArtifactId.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot;;</span>
 		}
-<span class="fc bfc" id="L204" title="All 4 branches covered.">		if (repo.isUseGroupId() || repo.isUseArtifactId()) {</span>
-<span class="fc" id="L205">			uploadUrl += projectVersion + &quot;/&quot;;</span>
+<span class="fc bfc" id="L322" title="All 4 branches covered.">		if (repo.isUseGroupId() || repo.isUseArtifactId()) {</span>
+<span class="fc" id="L323">			uploadUrl += projectVersion + &quot;/&quot;;</span>
 		}
 
-<span class="fc" id="L208">		uploadUrl = uploadUrl + file.getName();</span>
+<span class="fc" id="L326">		uploadUrl = uploadUrl + file.getName();</span>
 
-<span class="fc" id="L210">		HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();</span>
-<span class="fc" id="L211">		connection.setDoOutput(true);</span>
-<span class="fc" id="L212">		connection.setRequestMethod(&quot;PUT&quot;);</span>
-<span class="fc" id="L213">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
+<span class="fc" id="L328">		HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();</span>
+<span class="fc" id="L329">		connection.setDoOutput(true);</span>
+<span class="fc" id="L330">		connection.setRequestMethod(&quot;PUT&quot;);</span>
+<span class="fc" id="L331">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
 
-<span class="fc" id="L215">		verifyAndSetAuthentication(true);</span>
+<span class="fc" id="L333">		verifyAndSetAuthentication(true);</span>
 
-<span class="fc" id="L217">		return connection;</span>
+<span class="fc" id="L335">		return connection;</span>
 	}
 
 	private HttpURLConnection getConnectionForUploadToNexus(File file) throws IOException, MojoExecutionException {
-<span class="fc" id="L221">		String uploadUrl = getHelmUploadUrl();</span>
+<span class="fc" id="L339">		String uploadUrl = getHelmUploadUrl();</span>
 		// Append slash if not already in place
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">		if (!uploadUrl.endsWith(&quot;/&quot;)) {</span>
-<span class="fc" id="L224">			uploadUrl += &quot;/&quot;;</span>
+<span class="pc bpc" id="L341" title="1 of 2 branches missed.">		if (!uploadUrl.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L342">			uploadUrl += &quot;/&quot;;</span>
 		}
-<span class="fc" id="L226">		uploadUrl = uploadUrl + file.getName();</span>
+<span class="fc" id="L344">		uploadUrl = uploadUrl + file.getName();</span>
 
-<span class="fc" id="L228">		HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();</span>
-<span class="fc" id="L229">		connection.setDoOutput(true);</span>
-<span class="fc" id="L230">		connection.setRequestMethod(&quot;PUT&quot;);</span>
-<span class="fc" id="L231">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
+<span class="fc" id="L346">		HttpURLConnection connection = (HttpURLConnection) new URL(uploadUrl).openConnection();</span>
+<span class="fc" id="L347">		connection.setDoOutput(true);</span>
+<span class="fc" id="L348">		connection.setRequestMethod(&quot;PUT&quot;);</span>
+<span class="fc" id="L349">		connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/gzip&quot;);</span>
 
-<span class="fc" id="L233">		verifyAndSetAuthentication(false);</span>
+<span class="fc" id="L351">		verifyAndSetAuthentication(false);</span>
 
-<span class="fc" id="L235">		return connection;</span>
+<span class="fc" id="L353">		return connection;</span>
 	}
 
 	/**
@@ -243,17 +361,17 @@ import lombok.Setter;
 	 */
 	private void verifyAndSetAuthentication(boolean requireCredentials) throws MojoExecutionException {
 
-<span class="fc" id="L246">		PasswordAuthentication authentication = getAuthentication(getHelmUploadRepo());</span>
-<span class="fc bfc" id="L247" title="All 2 branches covered.">		if (authentication != null) {</span>
-<span class="fc" id="L248">			Authenticator.setDefault(new Authenticator() {</span>
+<span class="fc" id="L364">		PasswordAuthentication authentication = getAuthentication(getHelmUploadRepo());</span>
+<span class="fc bfc" id="L365" title="All 2 branches covered.">		if (authentication != null) {</span>
+<span class="fc" id="L366">			Authenticator.setDefault(new Authenticator() {</span>
 				@Override
 				protected PasswordAuthentication getPasswordAuthentication() {
-<span class="fc" id="L251">					return authentication;</span>
+<span class="fc" id="L369">					return authentication;</span>
 				}
 			});
-<span class="fc bfc" id="L254" title="All 2 branches covered.">		} else if (requireCredentials) {</span>
-<span class="fc" id="L255">			throw new IllegalArgumentException(&quot;Credentials has to be configured for uploading to Artifactory.&quot;);</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">		} else if (requireCredentials) {</span>
+<span class="fc" id="L373">			throw new IllegalArgumentException(&quot;Credentials has to be configured for uploading to Artifactory.&quot;);</span>
 		}
-<span class="fc" id="L257">	}</span>
+<span class="fc" id="L375">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -51,6 +51,8 @@
        <li class="none"><a href="invoker-report.html" title="Invoker">Invoker</a></li>
        <li class="none"><a href="jacoco/index.html" title="JaCoCo">JaCoCo</a></li>
        <li class="none"><a href="checkstyle.html" title="Checkstyle">Checkstyle</a></li>
+       <li class="none"><a href="pmd.html" title="PMD">PMD</a></li>
+       <li class="none"><a href="cpd.html" title="CPD">CPD</a></li>
        <li class="none"><a href="taglist.html" title="Tag List">Tag List</a></li>
       </ul></li>
     </ul>
@@ -90,6 +92,14 @@
 <td>jar</td>
 <td>false</td></tr>
 <tr class="b">
+<td align="left">org.apache.maven</td>
+<td>maven-core</td>
+<td>3.2.5</td>
+<td>provided</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
 <td align="left">org.apache.maven.plugin-tools</td>
 <td>maven-plugin-annotations</td>
 <td>3.9.0</td>
@@ -97,7 +107,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="a">
+<tr class="b">
 <td align="left">org.codehaus.plexus</td>
 <td>plexus-sec-dispatcher</td>
 <td>2.0</td>
@@ -105,7 +115,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="b">
+<tr class="a">
 <td align="left">org.apache.commons</td>
 <td>commons-compress</td>
 <td>1.24.0</td>
@@ -113,7 +123,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="a">
+<tr class="b">
 <td align="left">org.projectlombok</td>
 <td>lombok</td>
 <td>1.18.30</td>
@@ -121,7 +131,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="b">
+<tr class="a">
 <td align="left">com.fasterxml.jackson.core</td>
 <td>jackson-databind</td>
 <td>2.15.3</td>
@@ -129,7 +139,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="a">
+<tr class="b">
 <td align="left">com.fasterxml.jackson.dataformat</td>
 <td>jackson-dataformat-yaml</td>
 <td>2.15.3</td>
@@ -137,7 +147,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="b">
+<tr class="a">
 <td align="left">org.junit.jupiter</td>
 <td>junit-jupiter-api</td>
 <td>5.10.0</td>
@@ -145,7 +155,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="a">
+<tr class="b">
 <td align="left">com.github.tomakehurst</td>
 <td>wiremock-jre8</td>
 <td>2.35.1</td>
@@ -172,6 +182,14 @@
 <td>jar</td>
 <td>false</td></tr>
 <tr class="a">
+<td align="left">org.apache.maven</td>
+<td>maven-model</td>
+<td>3.2.5</td>
+<td>provided</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="b">
 <td align="left">org.codehaus.plexus</td>
 <td>plexus-utils</td>
 <td>3.4.1</td>
@@ -179,7 +197,7 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="b">
+<tr class="a">
 <td align="left">org.codehaus.plexus</td>
 <td>plexus-cipher</td>
 <td>2.0</td>
@@ -187,11 +205,19 @@
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
-<tr class="a">
+<tr class="b">
 <td align="left">org.apache.httpcomponents.core5</td>
 <td>httpcore5</td>
 <td>5.1.3</td>
 <td>test</td>
+<td>-</td>
+<td>jar</td>
+<td>false</td></tr>
+<tr class="a">
+<td align="left">com.fasterxml.jackson.core</td>
+<td>jackson-core</td>
+<td>2.15.3</td>
+<td>compile</td>
 <td>-</td>
 <td>jar</td>
 <td>false</td></tr>
