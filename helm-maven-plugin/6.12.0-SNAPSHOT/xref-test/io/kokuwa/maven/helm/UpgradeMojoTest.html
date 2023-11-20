@@ -80,15 +80,37 @@
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>  		assertHelm(mojo, <span class="jxr_string">"upgrade foo src/test/resources/simple"</span>);
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  	}
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  	@DisplayName(<span class="jxr_string">"with values overrides"</span>)
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  	@DisplayName(<span class="jxr_string">"with flag plain-http"</span>)
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  	@Test
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>  	<strong class="jxr_keyword">void</strong> valuesFile(UpgradeMojo mojo) {
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  	<strong class="jxr_keyword">void</strong> plainHttp(UpgradeMojo mojo) {
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  		mojo.setSkipUpgrade(false);
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  		mojo.setReleaseName(<span class="jxr_string">"foo"</span>);
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		mojo.setValues(<strong class="jxr_keyword">new</strong> ValueOverride().setYamlFile(<span class="jxr_string">"bar.yaml"</span>));
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		assertHelm(mojo, <span class="jxr_string">"upgrade foo src/test/resources/simple --values bar.yaml --install"</span>);
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>  	}
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>  }
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		mojo.setPlainHttp(false);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		mojo.setUpgradePlainHttp(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  		assertHelm(mojo, <span class="jxr_string">"upgrade src/test/resources/simple --install"</span>);
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  		mojo.setPlainHttp(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  		mojo.setUpgradePlainHttp(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  		assertHelm(mojo, <span class="jxr_string">"upgrade src/test/resources/simple --install --plain-http"</span>);
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		mojo.setPlainHttp(false);
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  		mojo.setUpgradePlainHttp(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  		assertHelm(mojo, <span class="jxr_string">"upgrade src/test/resources/simple --install --plain-http"</span>);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  		mojo.setPlainHttp(false);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  		mojo.setUpgradePlainHttp(false);
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  		assertHelm(mojo, <span class="jxr_string">"upgrade src/test/resources/simple --install"</span>);
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  	}
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  	@DisplayName(<span class="jxr_string">"with values overrides"</span>)
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  	@Test
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  	<strong class="jxr_keyword">void</strong> valuesFile(UpgradeMojo mojo) {
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> 		mojo.setSkipUpgrade(false);
+<a class="jxr_linenumber" name="L101" href="#L101">101</a> 		mojo.setReleaseName(<span class="jxr_string">"foo"</span>);
+<a class="jxr_linenumber" name="L102" href="#L102">102</a> 		mojo.setValues(<strong class="jxr_keyword">new</strong> ValueOverride().setYamlFile(<span class="jxr_string">"bar.yaml"</span>));
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 		assertHelm(mojo, <span class="jxr_string">"upgrade foo src/test/resources/simple --values bar.yaml --install"</span>);
+<a class="jxr_linenumber" name="L104" href="#L104">104</a> 	}
+<a class="jxr_linenumber" name="L105" href="#L105">105</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2017&#x2013;2023 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>

@@ -205,12 +205,20 @@ import lombok.Setter;
 <span class="nc" id="L205">	private String helmSecurity;</span>
 
 	/**
+	 * Global Flag: Use insecure HTTP connections for the chart download.
+	 *
+	 * @since 6.12.0
+	 */
+	@Parameter(property = &quot;helm.plain-http&quot;, defaultValue = &quot;false&quot;)
+<span class="nc" id="L213">	private boolean plainHttp;</span>
+
+	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip all goals.
 	 *
 	 * @since 3.2
 	 */
 	@Parameter(property = &quot;helm.skip&quot;, defaultValue = &quot;false&quot;)
-<span class="nc" id="L213">	protected boolean skip;</span>
+<span class="nc" id="L221">	protected boolean skip;</span>
 
 	/**
 	 * Deprecated, use: &quot;helm.kube*&quot;
@@ -220,11 +228,11 @@ import lombok.Setter;
 	 */
 	@Deprecated // java8 (since = &quot;6.3.0&quot;, forRemoval = true)
 	@Parameter
-<span class="nc" id="L223">	private K8SCluster k8sCluster;</span>
+<span class="nc" id="L231">	private K8SCluster k8sCluster;</span>
 
 	/** The current user system settings for use in Maven. */
 	@Parameter(defaultValue = &quot;${settings}&quot;, readonly = true)
-<span class="fc" id="L227">	protected Settings settings;</span>
+<span class="fc" id="L235">	protected Settings settings;</span>
 
 	/**
 	 * Namespace scope for this request.
@@ -232,7 +240,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.namespace&quot;)
-<span class="nc" id="L235">	private String namespace;</span>
+<span class="nc" id="L243">	private String namespace;</span>
 
 	/**
 	 * The address and the port for the Kubernetes API server.
@@ -240,7 +248,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeApiServer&quot;)
-<span class="nc" id="L243">	private String kubeApiServer;</span>
+<span class="nc" id="L251">	private String kubeApiServer;</span>
 
 	/**
 	 * Skip tls certificate checks for the operation. Also known as `helm --kube-insecure-skip-tls-verify`.
@@ -248,7 +256,7 @@ import lombok.Setter;
 	 * @since 6.10.0
 	 */
 	@Parameter(property = &quot;helm.kubeInsecure&quot;)
-<span class="nc" id="L251">	private boolean kubeInsecure;</span>
+<span class="nc" id="L259">	private boolean kubeInsecure;</span>
 
 	/**
 	 * Username to impersonate for the operation.
@@ -256,7 +264,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeAsUser&quot;)
-<span class="nc" id="L259">	private String kubeAsUser;</span>
+<span class="nc" id="L267">	private String kubeAsUser;</span>
 
 	/**
 	 * Group to impersonate for the operation, this flag can be repeated to specify multiple groups.
@@ -264,7 +272,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeAsGroup&quot;)
-<span class="nc" id="L267">	private String kubeAsGroup;</span>
+<span class="nc" id="L275">	private String kubeAsGroup;</span>
 
 	/**
 	 * Bearer token used for authentication.
@@ -272,7 +280,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeToken&quot;)
-<span class="nc" id="L275">	private String kubeToken;</span>
+<span class="nc" id="L283">	private String kubeToken;</span>
 
 	/**
 	 * The certificate authority file for the Kubernetes API server connection.
@@ -280,113 +288,113 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeCaFile&quot;)
-<span class="nc" id="L283">	private File kubeCaFile;</span>
+<span class="nc" id="L291">	private File kubeCaFile;</span>
 
 	Path getHelmExecutablePath() throws MojoExecutionException {
 		Stream&lt;Path&gt; optional;
-<span class="fc bfc" id="L287" title="All 4 branches covered.">		if (useLocalHelmBinary &amp;&amp; autoDetectLocalHelmBinary) {</span>
-<span class="fc" id="L288">			optional = Stream.of(System.getenv(&quot;PATH&quot;).split(Pattern.quote(File.pathSeparator))).map(Paths::get);</span>
-<span class="pc bpc" id="L289" title="1 of 2 branches missed.">			if (helmExecutableDirectory != null) {</span>
+<span class="fc bfc" id="L295" title="All 4 branches covered.">		if (useLocalHelmBinary &amp;&amp; autoDetectLocalHelmBinary) {</span>
+<span class="fc" id="L296">			optional = Stream.of(System.getenv(&quot;PATH&quot;).split(Pattern.quote(File.pathSeparator))).map(Paths::get);</span>
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">			if (helmExecutableDirectory != null) {</span>
 				// if defined, search also in helm executable directory (eg. used for fallback binary download)
-<span class="fc" id="L291">				optional = Stream.concat(optional, Stream.of(helmExecutableDirectory.toPath()));</span>
+<span class="fc" id="L299">				optional = Stream.concat(optional, Stream.of(helmExecutableDirectory.toPath()));</span>
 			}
 		} else {
-<span class="fc" id="L294">			optional = Stream.of(helmExecutableDirectory.toPath());</span>
+<span class="fc" id="L302">			optional = Stream.of(helmExecutableDirectory.toPath());</span>
 		}
-<span class="fc" id="L296">		return optional</span>
-<span class="fc" id="L297">				.map(directory -&gt; directory.resolve(helmExecutableName))</span>
-<span class="fc" id="L298">				.map(Path::toAbsolutePath)</span>
-<span class="fc" id="L299">				.filter(Files::isRegularFile)</span>
-<span class="fc" id="L300">				.filter(Files::isExecutable)</span>
-<span class="fc" id="L301">				.findFirst()</span>
-<span class="fc" id="L302">				.orElseThrow(() -&gt; new MojoExecutionException(&quot;Helm executable not found.&quot;));</span>
+<span class="fc" id="L304">		return optional</span>
+<span class="fc" id="L305">				.map(directory -&gt; directory.resolve(helmExecutableName))</span>
+<span class="fc" id="L306">				.map(Path::toAbsolutePath)</span>
+<span class="fc" id="L307">				.filter(Files::isRegularFile)</span>
+<span class="fc" id="L308">				.filter(Files::isExecutable)</span>
+<span class="fc" id="L309">				.findFirst()</span>
+<span class="fc" id="L310">				.orElseThrow(() -&gt; new MojoExecutionException(&quot;Helm executable not found.&quot;));</span>
 	}
 
 	HelmExecutable helm() throws MojoExecutionException {
-<span class="fc" id="L306">		HelmExecutable helm = new HelmExecutable(getLog(), getHelmExecutablePath());</span>
-<span class="fc bfc" id="L307" title="All 2 branches covered.">		if (k8sCluster != null) {</span>
-<span class="fc" id="L308">			boolean logDeprecated = false;</span>
-<span class="fc bfc" id="L309" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getApiUrl())) {</span>
-<span class="fc" id="L310">				helm.flag(&quot;kube-apiserver&quot;, k8sCluster.getApiUrl());</span>
-<span class="fc" id="L311">				logDeprecated = true;</span>
-			}
-<span class="pc bpc" id="L313" title="1 of 2 branches missed.">			if (StringUtils.isNotEmpty(k8sCluster.getNamespace())) {</span>
-<span class="nc" id="L314">				helm.flag(&quot;namespace&quot;, k8sCluster.getNamespace());</span>
-<span class="nc" id="L315">				logDeprecated = true;</span>
-			}
-<span class="fc bfc" id="L317" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getAsUser())) {</span>
-<span class="fc" id="L318">				helm.flag(&quot;kube-as-user&quot;, k8sCluster.getAsUser());</span>
+<span class="fc" id="L314">		HelmExecutable helm = new HelmExecutable(getLog(), getHelmExecutablePath());</span>
+<span class="fc bfc" id="L315" title="All 2 branches covered.">		if (k8sCluster != null) {</span>
+<span class="fc" id="L316">			boolean logDeprecated = false;</span>
+<span class="fc bfc" id="L317" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getApiUrl())) {</span>
+<span class="fc" id="L318">				helm.flag(&quot;kube-apiserver&quot;, k8sCluster.getApiUrl());</span>
 <span class="fc" id="L319">				logDeprecated = true;</span>
 			}
-<span class="fc bfc" id="L321" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getAsGroup())) {</span>
-<span class="fc" id="L322">				helm.flag(&quot;kube-as-group&quot;, k8sCluster.getAsGroup());</span>
-<span class="fc" id="L323">				logDeprecated = true;</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">			if (StringUtils.isNotEmpty(k8sCluster.getNamespace())) {</span>
+<span class="nc" id="L322">				helm.flag(&quot;namespace&quot;, k8sCluster.getNamespace());</span>
+<span class="nc" id="L323">				logDeprecated = true;</span>
 			}
-<span class="fc bfc" id="L325" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getToken())) {</span>
-<span class="fc" id="L326">				helm.flag(&quot;kube-token&quot;, k8sCluster.getToken());</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getAsUser())) {</span>
+<span class="fc" id="L326">				helm.flag(&quot;kube-as-user&quot;, k8sCluster.getAsUser());</span>
 <span class="fc" id="L327">				logDeprecated = true;</span>
 			}
-<span class="fc bfc" id="L329" title="All 2 branches covered.">			if (logDeprecated) {</span>
-<span class="fc" id="L330">				getLog().warn(&quot;NOTE: &lt;k8sCluster&gt; option will be removed in future major release.&quot;);</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getAsGroup())) {</span>
+<span class="fc" id="L330">				helm.flag(&quot;kube-as-group&quot;, k8sCluster.getAsGroup());</span>
+<span class="fc" id="L331">				logDeprecated = true;</span>
+			}
+<span class="fc bfc" id="L333" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getToken())) {</span>
+<span class="fc" id="L334">				helm.flag(&quot;kube-token&quot;, k8sCluster.getToken());</span>
+<span class="fc" id="L335">				logDeprecated = true;</span>
+			}
+<span class="fc bfc" id="L337" title="All 2 branches covered.">			if (logDeprecated) {</span>
+<span class="fc" id="L338">				getLog().warn(&quot;NOTE: &lt;k8sCluster&gt; option will be removed in future major release.&quot;);</span>
 			}
 		}
-<span class="fc" id="L333">		return helm</span>
-<span class="fc" id="L334">				.flag(&quot;debug&quot;, debug)</span>
-<span class="fc" id="L335">				.flag(&quot;kube-apiserver&quot;, kubeApiServer)</span>
-<span class="fc" id="L336">				.flag(&quot;kube-as-group&quot;, kubeAsUser)</span>
-<span class="fc" id="L337">				.flag(&quot;kube-as-user&quot;, kubeAsGroup)</span>
-<span class="fc" id="L338">				.flag(&quot;kube-ca-file&quot;, kubeCaFile)</span>
-<span class="fc" id="L339">				.flag(&quot;kube-insecure-skip-tls-verify&quot;, kubeInsecure)</span>
-<span class="fc" id="L340">				.flag(&quot;kube-token&quot;, kubeToken)</span>
-<span class="fc" id="L341">				.flag(&quot;namespace&quot;, namespace)</span>
-<span class="fc" id="L342">				.flag(&quot;registry-config&quot;, registryConfig)</span>
-<span class="fc" id="L343">				.flag(&quot;repository-cache&quot;, repositoryCache)</span>
-<span class="fc" id="L344">				.flag(&quot;repository-config&quot;, repositoryConfig);</span>
+<span class="fc" id="L341">		return helm</span>
+<span class="fc" id="L342">				.flag(&quot;debug&quot;, debug)</span>
+<span class="fc" id="L343">				.flag(&quot;kube-apiserver&quot;, kubeApiServer)</span>
+<span class="fc" id="L344">				.flag(&quot;kube-as-group&quot;, kubeAsUser)</span>
+<span class="fc" id="L345">				.flag(&quot;kube-as-user&quot;, kubeAsGroup)</span>
+<span class="fc" id="L346">				.flag(&quot;kube-ca-file&quot;, kubeCaFile)</span>
+<span class="fc" id="L347">				.flag(&quot;kube-insecure-skip-tls-verify&quot;, kubeInsecure)</span>
+<span class="fc" id="L348">				.flag(&quot;kube-token&quot;, kubeToken)</span>
+<span class="fc" id="L349">				.flag(&quot;namespace&quot;, namespace)</span>
+<span class="fc" id="L350">				.flag(&quot;registry-config&quot;, registryConfig)</span>
+<span class="fc" id="L351">				.flag(&quot;repository-cache&quot;, repositoryCache)</span>
+<span class="fc" id="L352">				.flag(&quot;repository-config&quot;, repositoryConfig);</span>
 	}
 
 	List&lt;Path&gt; getChartDirectories() throws MojoExecutionException {
 
-<span class="fc" id="L349">		List&lt;String&gt; exclusions = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L350" title="All 2 branches covered.">		if (excludes != null) {</span>
-<span class="fc" id="L351">			exclusions.addAll(Arrays.asList(excludes));</span>
+<span class="fc" id="L357">		List&lt;String&gt; exclusions = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">		if (excludes != null) {</span>
+<span class="fc" id="L359">			exclusions.addAll(Arrays.asList(excludes));</span>
 		}
-<span class="fc" id="L353">		exclusions.addAll(FileUtils.getDefaultExcludesAsList());</span>
-<span class="fc" id="L354">		MatchPatterns exclusionPatterns = MatchPatterns.from(exclusions);</span>
+<span class="fc" id="L361">		exclusions.addAll(FileUtils.getDefaultExcludesAsList());</span>
+<span class="fc" id="L362">		MatchPatterns exclusionPatterns = MatchPatterns.from(exclusions);</span>
 
-<span class="fc" id="L356">		try (Stream&lt;Path&gt; files = Files.walk(chartDirectory.toPath(), FileVisitOption.FOLLOW_LINKS)) {</span>
-<span class="fc" id="L357">			List&lt;Path&gt; chartDirectories = files</span>
-<span class="fc" id="L358">					.filter(p -&gt; p.getFileName().toString().equalsIgnoreCase(&quot;chart.yaml&quot;))</span>
-<span class="fc" id="L359">					.map(Path::getParent)</span>
-<span class="fc bfc" id="L360" title="All 2 branches covered.">					.filter(p -&gt; !exclusionPatterns.matches(p.toString(), false))</span>
-<span class="fc" id="L361">					.sorted(Comparator.reverseOrder())</span>
-<span class="fc" id="L362">					.collect(Collectors.toList());</span>
-<span class="pc bpc" id="L363" title="1 of 2 branches missed.">			if (chartDirectories.isEmpty()) {</span>
-<span class="nc" id="L364">				getLog().warn(&quot;No Charts detected - no Chart.yaml files found below &quot; + chartDirectory);</span>
+<span class="fc" id="L364">		try (Stream&lt;Path&gt; files = Files.walk(chartDirectory.toPath(), FileVisitOption.FOLLOW_LINKS)) {</span>
+<span class="fc" id="L365">			List&lt;Path&gt; chartDirectories = files</span>
+<span class="fc" id="L366">					.filter(p -&gt; p.getFileName().toString().equalsIgnoreCase(&quot;chart.yaml&quot;))</span>
+<span class="fc" id="L367">					.map(Path::getParent)</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">					.filter(p -&gt; !exclusionPatterns.matches(p.toString(), false))</span>
+<span class="fc" id="L369">					.sorted(Comparator.reverseOrder())</span>
+<span class="fc" id="L370">					.collect(Collectors.toList());</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">			if (chartDirectories.isEmpty()) {</span>
+<span class="nc" id="L372">				getLog().warn(&quot;No Charts detected - no Chart.yaml files found below &quot; + chartDirectory);</span>
 			}
-<span class="fc" id="L366">			return chartDirectories;</span>
-<span class="nc" id="L367">		} catch (IOException e) {</span>
-<span class="nc" id="L368">			throw new MojoExecutionException(&quot;Unable to scan chart directory at &quot; + chartDirectory, e);</span>
+<span class="fc" id="L374">			return chartDirectories;</span>
+<span class="nc" id="L375">		} catch (IOException e) {</span>
+<span class="nc" id="L376">			throw new MojoExecutionException(&quot;Unable to scan chart directory at &quot; + chartDirectory, e);</span>
 		}
 	}
 
 	List&lt;Path&gt; getChartArchives() throws MojoExecutionException {
-<span class="fc" id="L373">		try (Stream&lt;Path&gt; files = Files.walk(getOutputDirectory())) {</span>
-<span class="fc" id="L374">			return files</span>
-<span class="fc" id="L375">					.filter(s -&gt; Stream.of(&quot;.tgz&quot;, &quot;tgz.prov&quot;).anyMatch(e -&gt; s.getFileName().toString().endsWith(e)))</span>
-<span class="fc" id="L376">					.peek(p -&gt; getLog().debug(&quot;Found chart file for upload: &quot; + p))</span>
-<span class="fc" id="L377">					.collect(Collectors.toList());</span>
-<span class="nc" id="L378">		} catch (IOException e) {</span>
-<span class="nc" id="L379">			throw new MojoExecutionException(&quot;Unable to scan repo directory at &quot; + outputDirectory, e);</span>
+<span class="fc" id="L381">		try (Stream&lt;Path&gt; files = Files.walk(getOutputDirectory())) {</span>
+<span class="fc" id="L382">			return files</span>
+<span class="fc" id="L383">					.filter(s -&gt; Stream.of(&quot;.tgz&quot;, &quot;tgz.prov&quot;).anyMatch(e -&gt; s.getFileName().toString().endsWith(e)))</span>
+<span class="fc" id="L384">					.peek(p -&gt; getLog().debug(&quot;Found chart file for upload: &quot; + p))</span>
+<span class="fc" id="L385">					.collect(Collectors.toList());</span>
+<span class="nc" id="L386">		} catch (IOException e) {</span>
+<span class="nc" id="L387">			throw new MojoExecutionException(&quot;Unable to scan repo directory at &quot; + outputDirectory, e);</span>
 		}
 	}
 
 	HelmRepository getHelmUploadRepo() {
-<span class="pc bpc" id="L384" title="5 of 6 branches missed.">		if (chartVersion != null &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)</span>
+<span class="pc bpc" id="L392" title="5 of 6 branches missed.">		if (chartVersion != null &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)</span>
 				&amp;&amp; uploadRepoSnapshot != null
-<span class="nc bnc" id="L386" title="All 2 branches missed.">				&amp;&amp; StringUtils.isNotEmpty(uploadRepoSnapshot.getUrl())) {</span>
-<span class="nc" id="L387">			return uploadRepoSnapshot;</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">				&amp;&amp; StringUtils.isNotEmpty(uploadRepoSnapshot.getUrl())) {</span>
+<span class="nc" id="L395">			return uploadRepoSnapshot;</span>
 		}
-<span class="fc" id="L389">		return uploadRepoStable;</span>
+<span class="fc" id="L397">		return uploadRepoStable;</span>
 	}
 
 	/**
@@ -400,55 +408,59 @@ import lombok.Setter;
 	 */
 	PasswordAuthentication getAuthentication(HelmRepository repository)
 			throws IllegalArgumentException, MojoExecutionException {
-<span class="fc" id="L403">		String id = repository.getName();</span>
+<span class="fc" id="L411">		String id = repository.getName();</span>
 
-<span class="fc bfc" id="L405" title="All 2 branches covered.">		if (repository.getUsername() != null) {</span>
-<span class="pc bpc" id="L406" title="1 of 2 branches missed.">			if (repository.getPassword() == null) {</span>
-<span class="nc" id="L407">				throw new IllegalArgumentException(&quot;Repo &quot; + id + &quot; has a username but no password defined.&quot;);</span>
+<span class="fc bfc" id="L413" title="All 2 branches covered.">		if (repository.getUsername() != null) {</span>
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">			if (repository.getPassword() == null) {</span>
+<span class="nc" id="L415">				throw new IllegalArgumentException(&quot;Repo &quot; + id + &quot; has a username but no password defined.&quot;);</span>
 			}
-<span class="fc" id="L409">			getLog().debug(&quot;Repo &quot; + id + &quot; has credentials defined, skip searching in server list.&quot;);</span>
-<span class="fc" id="L410">			return new PasswordAuthentication(repository.getUsername(), repository.getPassword().toCharArray());</span>
+<span class="fc" id="L417">			getLog().debug(&quot;Repo &quot; + id + &quot; has credentials defined, skip searching in server list.&quot;);</span>
+<span class="fc" id="L418">			return new PasswordAuthentication(repository.getUsername(), repository.getPassword().toCharArray());</span>
 		}
 
-<span class="fc" id="L413">		Server server = settings.getServer(id);</span>
-<span class="fc bfc" id="L414" title="All 2 branches covered.">		if (server == null) {</span>
-<span class="fc" id="L415">			getLog().info(&quot;No credentials found for &quot; + id + &quot; in configuration or settings.xml server list.&quot;);</span>
-<span class="fc" id="L416">			return null;</span>
+<span class="fc" id="L421">		Server server = settings.getServer(id);</span>
+<span class="fc bfc" id="L422" title="All 2 branches covered.">		if (server == null) {</span>
+<span class="fc" id="L423">			getLog().info(&quot;No credentials found for &quot; + id + &quot; in configuration or settings.xml server list.&quot;);</span>
+<span class="fc" id="L424">			return null;</span>
 		}
 
-<span class="fc" id="L419">		getLog().debug(&quot;Use credentials from server list for &quot; + id + &quot;.&quot;);</span>
-<span class="pc bpc" id="L420" title="2 of 4 branches missed.">		if (server.getUsername() == null || server.getPassword() == null) {</span>
-<span class="nc" id="L421">			throw new IllegalArgumentException(&quot;Repo &quot;</span>
+<span class="fc" id="L427">		getLog().debug(&quot;Use credentials from server list for &quot; + id + &quot;.&quot;);</span>
+<span class="pc bpc" id="L428" title="2 of 4 branches missed.">		if (server.getUsername() == null || server.getPassword() == null) {</span>
+<span class="nc" id="L429">			throw new IllegalArgumentException(&quot;Repo &quot;</span>
 					+ id
 					+ &quot; was found in server list but has no username/password.&quot;);
 		}
 
 		try {
-<span class="pc bpc" id="L427" title="1 of 2 branches missed.">			if (securityDispatcher instanceof DefaultSecDispatcher) {</span>
-<span class="fc" id="L428">				((DefaultSecDispatcher) securityDispatcher).setConfigurationFile(helmSecurity);</span>
+<span class="pc bpc" id="L435" title="1 of 2 branches missed.">			if (securityDispatcher instanceof DefaultSecDispatcher) {</span>
+<span class="fc" id="L436">				((DefaultSecDispatcher) securityDispatcher).setConfigurationFile(helmSecurity);</span>
 			}
-<span class="fc" id="L430">			return new PasswordAuthentication(server.getUsername(),</span>
-<span class="fc" id="L431">					securityDispatcher.decrypt(server.getPassword()).toCharArray());</span>
-<span class="nc" id="L432">		} catch (SecDispatcherException e) {</span>
-<span class="nc" id="L433">			throw new MojoExecutionException(e.getMessage());</span>
+<span class="fc" id="L438">			return new PasswordAuthentication(server.getUsername(),</span>
+<span class="fc" id="L439">					securityDispatcher.decrypt(server.getPassword()).toCharArray());</span>
+<span class="nc" id="L440">		} catch (SecDispatcherException e) {</span>
+<span class="nc" id="L441">			throw new MojoExecutionException(e.getMessage());</span>
 		}
 	}
 
 	// getter
 
 	public String getHelmVersion() throws MojoExecutionException {
-<span class="pc bpc" id="L440" title="1 of 2 branches missed.">		if (helmVersion == null) {</span>
-<span class="nc" id="L441">			helmVersion = new Github(getLog(), tmpDir.toPath(), githubUserAgent).getHelmVersion();</span>
+<span class="pc bpc" id="L448" title="1 of 2 branches missed.">		if (helmVersion == null) {</span>
+<span class="nc" id="L449">			helmVersion = new Github(getLog(), tmpDir.toPath(), githubUserAgent).getHelmVersion();</span>
 		}
-<span class="fc" id="L443">		return helmVersion;</span>
+<span class="fc" id="L451">		return helmVersion;</span>
+	}
+
+	public boolean isPlainHttp(Boolean mojoPlainHttp) {
+<span class="fc bfc" id="L455" title="All 2 branches covered.">		return mojoPlainHttp != null ? mojoPlainHttp : plainHttp;</span>
 	}
 
 	public Path getOutputDirectory() {
-<span class="fc" id="L447">		return outputDirectory.toPath();</span>
+<span class="fc" id="L459">		return outputDirectory.toPath();</span>
 	}
 
 	public Path getHelmExecutableDirectory() {
-<span class="fc" id="L451">		return helmExecutableDirectory.toPath();</span>
+<span class="fc" id="L463">		return helmExecutableDirectory.toPath();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
