@@ -295,7 +295,7 @@ import lombok.Setter;
 <span class="fc bfc" id="L295" title="All 4 branches covered.">		if (useLocalHelmBinary &amp;&amp; autoDetectLocalHelmBinary) {</span>
 <span class="fc" id="L296">			optional = Stream.of(System.getenv(&quot;PATH&quot;).split(Pattern.quote(File.pathSeparator))).map(Paths::get);</span>
 <span class="pc bpc" id="L297" title="1 of 2 branches missed.">			if (helmExecutableDirectory != null) {</span>
-				// if defined, search also in helm executable directory (eg. used for fallback binary download)
+				// if defined, search also in helm executable directory (e.g. used for fallback binary download)
 <span class="fc" id="L299">				optional = Stream.concat(optional, Stream.of(helmExecutableDirectory.toPath()));</span>
 			}
 		} else {

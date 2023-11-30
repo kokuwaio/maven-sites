@@ -303,7 +303,7 @@
 <a class="jxr_linenumber" name="L295" href="#L295">295</a> 		<strong class="jxr_keyword">if</strong> (useLocalHelmBinary &amp;&amp; autoDetectLocalHelmBinary) {
 <a class="jxr_linenumber" name="L296" href="#L296">296</a> 			optional = Stream.of(System.getenv(<span class="jxr_string">"PATH"</span>).split(Pattern.quote(File.pathSeparator))).map(Paths::get);
 <a class="jxr_linenumber" name="L297" href="#L297">297</a> 			<strong class="jxr_keyword">if</strong> (helmExecutableDirectory != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L298" href="#L298">298</a> 				<em class="jxr_comment">// if defined, search also in helm executable directory (eg. used for fallback binary download)</em>
+<a class="jxr_linenumber" name="L298" href="#L298">298</a> 				<em class="jxr_comment">// if defined, search also in helm executable directory (e.g. used for fallback binary download)</em>
 <a class="jxr_linenumber" name="L299" href="#L299">299</a> 				optional = Stream.concat(optional, Stream.of(helmExecutableDirectory.toPath()));
 <a class="jxr_linenumber" name="L300" href="#L300">300</a> 			}
 <a class="jxr_linenumber" name="L301" href="#L301">301</a> 		} <strong class="jxr_keyword">else</strong> {
