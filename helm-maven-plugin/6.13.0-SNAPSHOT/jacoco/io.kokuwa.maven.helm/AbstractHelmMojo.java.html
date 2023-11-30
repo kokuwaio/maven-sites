@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractHelmMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">AbstractHelmMojo.java</span></div><h1>AbstractHelmMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.PasswordAuthentication;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.MatchPatterns;
+import org.codehaus.plexus.util.Os;
+import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
+
+import io.kokuwa.maven.helm.github.Github;
+import io.kokuwa.maven.helm.pojo.HelmExecutable;
+import io.kokuwa.maven.helm.pojo.HelmRepository;
+import io.kokuwa.maven.helm.pojo.K8SCluster;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Base class for mojos
+ *
+ * @author Fabian Schlegel
+ * @since 1.0
+ */
+@Getter
+<span class="pc" id="L48">@Setter</span>
+<span class="fc" id="L49">public abstract class AbstractHelmMojo extends AbstractMojo {</span>
+
+	/** Path of helm executable. */
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">	private final Path helmExecutableName = Paths.get(Os.isFamily(Os.FAMILY_WINDOWS) ? &quot;helm.exe&quot; : &quot;helm&quot;);</span>
+
+	@Component(role = SecDispatcher.class, hint = &quot;default&quot;)
+<span class="nc" id="L55">	private SecDispatcher securityDispatcher;</span>
+
+	@Component
+<span class="nc" id="L58">	protected MavenProjectHelper mavenProjectHelper;</span>
+
+	/**
+	 * The maven project
+	 *
+	 * @since 6.12.0
+	 */
+	@Parameter(defaultValue = &quot;${project}&quot;, readonly = true, required = true)
+<span class="fc" id="L66">	protected MavenProject mavenProject;</span>
+
+	/**
+	 * Controls whether a local binary should be used instead of downloading it. If set to &lt;code&gt;true&lt;/code&gt; path has to
+	 * be set with property &quot;helm.executableDirectory&quot;.
+	 *
+	 * @since 4.0
+	 */
+	@Parameter(property = &quot;helm.useLocalHelmBinary&quot;, defaultValue = &quot;false&quot;)
+<span class="fc" id="L75">	private boolean useLocalHelmBinary;</span>
+
+	/**
+	 * Controls whether the local binary should be auto-detected from PATH environment variable. If set to
+	 * &lt;code&gt;false&lt;/code&gt; the binary in &quot;helm.executableDirectory&quot; is used. This property has no effect unless
+	 * &quot;helm.useLocalHelmBinary&quot; is set to &lt;code&gt;true&lt;/code&gt;.
+	 *
+	 * @since 4.1
+	 */
+	@Parameter(property = &quot;helm.autoDetectLocalHelmBinary&quot;, defaultValue = &quot;true&quot;)
+<span class="nc" id="L85">	private boolean autoDetectLocalHelmBinary;</span>
+
+	/**
+	 * Directory of your helm installation.
+	 *
+	 * @since 1.3
+	 */
+	@Parameter(property = &quot;helm.executableDirectory&quot;, defaultValue = &quot;${project.build.directory}/helm&quot;)
+	private File helmExecutableDirectory;
+
+	/**
+	 * Chart output directory.
+	 *
+	 * @since 1.0
+	 */
+	@Parameter(property = &quot;helm.outputDirectory&quot;, defaultValue = &quot;${project.build.directory}/helm/repo&quot;)
+	private File outputDirectory;
+
+	/**
+	 * List of chart directories to exclude.
+	 *
+	 * @since 1.0
+	 */
+	@Parameter(property = &quot;helm.excludes&quot;)
+<span class="nc" id="L109">	private String[] excludes;</span>
+
+	/**
+	 * Root directory of your charts.
+	 *
+	 * @since 1.0
+	 */
+	@Parameter(property = &quot;helm.chartDirectory&quot;, required = true)
+<span class="nc" id="L117">	private File chartDirectory;</span>
+
+	/**
+	 * Version of the charts. The version have to be in the SEMVER-Format (https://semver.org/), required by helm.
+	 *
+	 * @since 1.5
+	 */
+	@Parameter(property = &quot;helm.chartVersion&quot;)
+<span class="fc" id="L125">	private String chartVersion;</span>
+
+	/**
+	 * Upload repository for stable charts.
+	 *
+	 * @since 1.10
+	 */
+	@Parameter
+<span class="fc" id="L133">	private HelmRepository uploadRepoStable;</span>
+
+	/**
+	 * Upload repository for snapshot charts (determined by version postfix 'SNAPSHOT').
+	 *
+	 * @since 1.10
+	 */
+	@Parameter
+<span class="fc" id="L141">	private HelmRepository uploadRepoSnapshot;</span>
+
+	/**
+	 * Version of helm to download.
+	 *
+	 * @since 5.5
+	 */
+	@Parameter(property = &quot;helm.version&quot;)
+	private String helmVersion;
+
+	/**
+	 * UserAgent to use for accessing Github api to identify latest version.
+	 *
+	 * @since 6.1.0
+	 */
+	@Parameter(property = &quot;helm.githubUserAgent&quot;, defaultValue = &quot;kokuwaio/helm-maven-plugin&quot;)
+<span class="nc" id="L157">	private String githubUserAgent;</span>
+
+	/**
+	 * Directory where to store Github cache.
+	 *
+	 * @since 6.1.0
+	 */
+	@Parameter(property = &quot;helm.tmpDir&quot;, defaultValue = &quot;${java.io.tmpdir}/helm-maven-plugin&quot;)
+<span class="nc" id="L165">	private File tmpDir;</span>
+
+	/**
+	 * Enable verbose output.
+	 *
+	 * @since 6.2.0
+	 */
+	@Parameter(property = &quot;helm.debug&quot;, defaultValue = &quot;false&quot;)
+<span class="nc" id="L173">	private boolean debug;</span>
+
+	/**
+	 * Path to the registry config file (default ~/.config/helm/registry/config.json).
+	 *
+	 * @since 5.0
+	 */
+	@Parameter(property = &quot;helm.registryConfig&quot;)
+<span class="nc" id="L181">	private File registryConfig;</span>
+
+	/**
+	 * Path to the file containing cached repository indexes (default ~/.cache/helm/repository).
+	 *
+	 * @since 5.0
+	 */
+	@Parameter(property = &quot;helm.repositoryCache&quot;)
+<span class="nc" id="L189">	private File repositoryCache;</span>
+
+	/**
+	 * Path to the file containing repository names and URLs (default ~/.config/helm/repositories.yaml).
+	 *
+	 * @since 5.0
+	 */
+	@Parameter(property = &quot;helm.repositoryConfig&quot;)
+<span class="nc" id="L197">	private File repositoryConfig;</span>
+
+	/**
+	 * Path to security settings.
+	 *
+	 * @since 3.0
+	 */
+	@Parameter(property = &quot;helm.security&quot;, defaultValue = &quot;~/.m2/settings-security.xml&quot;)
+<span class="nc" id="L205">	private String helmSecurity;</span>
+
+	/**
+	 * Global Flag: Use insecure HTTP connections for the chart download.
+	 *
+	 * @since 6.12.0
+	 */
+	@Parameter(property = &quot;helm.plain-http&quot;, defaultValue = &quot;false&quot;)
+<span class="nc" id="L213">	private boolean plainHttp;</span>
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip all goals.
+	 *
+	 * @since 3.2
+	 */
+	@Parameter(property = &quot;helm.skip&quot;, defaultValue = &quot;false&quot;)
+<span class="nc" id="L221">	protected boolean skip;</span>
+
+	/**
+	 * Deprecated, use: &quot;helm.kube*&quot;
+	 *
+	 * @since 5.10
+	 * @deprecated Duplicate with flags in {@link AbstractHelmMojo}. Will be removed in 7.x
+	 */
+	@Deprecated // java8 (since = &quot;6.3.0&quot;, forRemoval = true)
+	@Parameter
+<span class="nc" id="L231">	private K8SCluster k8sCluster;</span>
+
+	/** The current user system settings for use in Maven. */
+	@Parameter(defaultValue = &quot;${settings}&quot;, readonly = true)
+<span class="fc" id="L235">	protected Settings settings;</span>
+
+	/**
+	 * Namespace scope for this request.
+	 *
+	 * @since 6.4.0
+	 */
+	@Parameter(property = &quot;helm.namespace&quot;)
+<span class="nc" id="L243">	private String namespace;</span>
+
+	/**
+	 * The address and the port for the Kubernetes API server.
+	 *
+	 * @since 6.4.0
+	 */
+	@Parameter(property = &quot;helm.kubeApiServer&quot;)
+<span class="nc" id="L251">	private String kubeApiServer;</span>
+
+	/**
+	 * Skip tls certificate checks for the operation. Also known as `helm --kube-insecure-skip-tls-verify`.
+	 *
+	 * @since 6.10.0
+	 */
+	@Parameter(property = &quot;helm.kubeInsecure&quot;)
+<span class="nc" id="L259">	private boolean kubeInsecure;</span>
+
+	/**
+	 * Username to impersonate for the operation.
+	 *
+	 * @since 6.4.0
+	 */
+	@Parameter(property = &quot;helm.kubeAsUser&quot;)
+<span class="nc" id="L267">	private String kubeAsUser;</span>
+
+	/**
+	 * Group to impersonate for the operation, this flag can be repeated to specify multiple groups.
+	 *
+	 * @since 6.4.0
+	 */
+	@Parameter(property = &quot;helm.kubeAsGroup&quot;)
+<span class="nc" id="L275">	private String kubeAsGroup;</span>
+
+	/**
+	 * Bearer token used for authentication.
+	 *
+	 * @since 6.4.0
+	 */
+	@Parameter(property = &quot;helm.kubeToken&quot;)
+<span class="nc" id="L283">	private String kubeToken;</span>
+
+	/**
+	 * The certificate authority file for the Kubernetes API server connection.
+	 *
+	 * @since 6.4.0
+	 */
+	@Parameter(property = &quot;helm.kubeCaFile&quot;)
+<span class="nc" id="L291">	private File kubeCaFile;</span>
+
+	Path getHelmExecutablePath() throws MojoExecutionException {
+		Stream&lt;Path&gt; optional;
+<span class="fc bfc" id="L295" title="All 4 branches covered.">		if (useLocalHelmBinary &amp;&amp; autoDetectLocalHelmBinary) {</span>
+<span class="fc" id="L296">			optional = Stream.of(System.getenv(&quot;PATH&quot;).split(Pattern.quote(File.pathSeparator))).map(Paths::get);</span>
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">			if (helmExecutableDirectory != null) {</span>
+				// if defined, search also in helm executable directory (eg. used for fallback binary download)
+<span class="fc" id="L299">				optional = Stream.concat(optional, Stream.of(helmExecutableDirectory.toPath()));</span>
+			}
+		} else {
+<span class="fc" id="L302">			optional = Stream.of(helmExecutableDirectory.toPath());</span>
+		}
+<span class="fc" id="L304">		return optional</span>
+<span class="fc" id="L305">				.map(directory -&gt; directory.resolve(helmExecutableName))</span>
+<span class="fc" id="L306">				.map(Path::toAbsolutePath)</span>
+<span class="fc" id="L307">				.filter(Files::isRegularFile)</span>
+<span class="fc" id="L308">				.filter(Files::isExecutable)</span>
+<span class="fc" id="L309">				.findFirst()</span>
+<span class="fc" id="L310">				.orElseThrow(() -&gt; new MojoExecutionException(&quot;Helm executable not found.&quot;));</span>
+	}
+
+	HelmExecutable helm() throws MojoExecutionException {
+<span class="fc" id="L314">		HelmExecutable helm = new HelmExecutable(getLog(), getHelmExecutablePath());</span>
+<span class="fc bfc" id="L315" title="All 2 branches covered.">		if (k8sCluster != null) {</span>
+<span class="fc" id="L316">			boolean logDeprecated = false;</span>
+<span class="fc bfc" id="L317" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getApiUrl())) {</span>
+<span class="fc" id="L318">				helm.flag(&quot;kube-apiserver&quot;, k8sCluster.getApiUrl());</span>
+<span class="fc" id="L319">				logDeprecated = true;</span>
+			}
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">			if (StringUtils.isNotEmpty(k8sCluster.getNamespace())) {</span>
+<span class="nc" id="L322">				helm.flag(&quot;namespace&quot;, k8sCluster.getNamespace());</span>
+<span class="nc" id="L323">				logDeprecated = true;</span>
+			}
+<span class="fc bfc" id="L325" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getAsUser())) {</span>
+<span class="fc" id="L326">				helm.flag(&quot;kube-as-user&quot;, k8sCluster.getAsUser());</span>
+<span class="fc" id="L327">				logDeprecated = true;</span>
+			}
+<span class="fc bfc" id="L329" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getAsGroup())) {</span>
+<span class="fc" id="L330">				helm.flag(&quot;kube-as-group&quot;, k8sCluster.getAsGroup());</span>
+<span class="fc" id="L331">				logDeprecated = true;</span>
+			}
+<span class="fc bfc" id="L333" title="All 2 branches covered.">			if (StringUtils.isNotEmpty(k8sCluster.getToken())) {</span>
+<span class="fc" id="L334">				helm.flag(&quot;kube-token&quot;, k8sCluster.getToken());</span>
+<span class="fc" id="L335">				logDeprecated = true;</span>
+			}
+<span class="fc bfc" id="L337" title="All 2 branches covered.">			if (logDeprecated) {</span>
+<span class="fc" id="L338">				getLog().warn(&quot;NOTE: &lt;k8sCluster&gt; option will be removed in future major release.&quot;);</span>
+			}
+		}
+<span class="fc" id="L341">		return helm</span>
+<span class="fc" id="L342">				.flag(&quot;debug&quot;, debug)</span>
+<span class="fc" id="L343">				.flag(&quot;kube-apiserver&quot;, kubeApiServer)</span>
+<span class="fc" id="L344">				.flag(&quot;kube-as-group&quot;, kubeAsUser)</span>
+<span class="fc" id="L345">				.flag(&quot;kube-as-user&quot;, kubeAsGroup)</span>
+<span class="fc" id="L346">				.flag(&quot;kube-ca-file&quot;, kubeCaFile)</span>
+<span class="fc" id="L347">				.flag(&quot;kube-insecure-skip-tls-verify&quot;, kubeInsecure)</span>
+<span class="fc" id="L348">				.flag(&quot;kube-token&quot;, kubeToken)</span>
+<span class="fc" id="L349">				.flag(&quot;namespace&quot;, namespace)</span>
+<span class="fc" id="L350">				.flag(&quot;registry-config&quot;, registryConfig)</span>
+<span class="fc" id="L351">				.flag(&quot;repository-cache&quot;, repositoryCache)</span>
+<span class="fc" id="L352">				.flag(&quot;repository-config&quot;, repositoryConfig);</span>
+	}
+
+	List&lt;Path&gt; getChartDirectories() throws MojoExecutionException {
+
+<span class="fc" id="L357">		List&lt;String&gt; exclusions = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">		if (excludes != null) {</span>
+<span class="fc" id="L359">			exclusions.addAll(Arrays.asList(excludes));</span>
+		}
+<span class="fc" id="L361">		exclusions.addAll(FileUtils.getDefaultExcludesAsList());</span>
+<span class="fc" id="L362">		MatchPatterns exclusionPatterns = MatchPatterns.from(exclusions);</span>
+
+<span class="fc" id="L364">		try (Stream&lt;Path&gt; files = Files.walk(chartDirectory.toPath(), FileVisitOption.FOLLOW_LINKS)) {</span>
+<span class="fc" id="L365">			List&lt;Path&gt; chartDirectories = files</span>
+<span class="fc" id="L366">					.filter(p -&gt; p.getFileName().toString().equalsIgnoreCase(&quot;chart.yaml&quot;))</span>
+<span class="fc" id="L367">					.map(Path::getParent)</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">					.filter(p -&gt; !exclusionPatterns.matches(p.toString(), false))</span>
+<span class="fc" id="L369">					.sorted(Comparator.reverseOrder())</span>
+<span class="fc" id="L370">					.collect(Collectors.toList());</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">			if (chartDirectories.isEmpty()) {</span>
+<span class="nc" id="L372">				getLog().warn(&quot;No Charts detected - no Chart.yaml files found below &quot; + chartDirectory);</span>
+			}
+<span class="fc" id="L374">			return chartDirectories;</span>
+<span class="nc" id="L375">		} catch (IOException e) {</span>
+<span class="nc" id="L376">			throw new MojoExecutionException(&quot;Unable to scan chart directory at &quot; + chartDirectory, e);</span>
+		}
+	}
+
+	List&lt;Path&gt; getChartArchives() throws MojoExecutionException {
+<span class="fc" id="L381">		try (Stream&lt;Path&gt; files = Files.walk(getOutputDirectory())) {</span>
+<span class="fc" id="L382">			return files</span>
+<span class="fc" id="L383">					.filter(s -&gt; Stream.of(&quot;.tgz&quot;, &quot;tgz.prov&quot;).anyMatch(e -&gt; s.getFileName().toString().endsWith(e)))</span>
+<span class="fc" id="L384">					.peek(p -&gt; getLog().debug(&quot;Found chart file for upload: &quot; + p))</span>
+<span class="fc" id="L385">					.collect(Collectors.toList());</span>
+<span class="nc" id="L386">		} catch (IOException e) {</span>
+<span class="nc" id="L387">			throw new MojoExecutionException(&quot;Unable to scan repo directory at &quot; + outputDirectory, e);</span>
+		}
+	}
+
+	HelmRepository getHelmUploadRepo() {
+<span class="pc bpc" id="L392" title="5 of 6 branches missed.">		if (chartVersion != null &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)</span>
+				&amp;&amp; uploadRepoSnapshot != null
+<span class="nc bnc" id="L394" title="All 2 branches missed.">				&amp;&amp; StringUtils.isNotEmpty(uploadRepoSnapshot.getUrl())) {</span>
+<span class="nc" id="L395">			return uploadRepoSnapshot;</span>
+		}
+<span class="fc" id="L397">		return uploadRepoStable;</span>
+	}
+
+	/**
+	 * Get credentials for given helm repo. If username is not provided the repo name will be used to search for
+	 * credentials in &lt;code&gt;settings.xml&lt;/code&gt;.
+	 *
+	 * @param repository Helm repo with id and optional credentials.
+	 * @return Authentication object or &lt;code&gt;null&lt;/code&gt; if no credentials are present.
+	 * @throws IllegalArgumentException Unable to get authentication because of misconfiguration.
+	 * @throws MojoExecutionException   Unable to get password from settings.xml
+	 */
+	PasswordAuthentication getAuthentication(HelmRepository repository)
+			throws IllegalArgumentException, MojoExecutionException {
+<span class="fc" id="L411">		String id = repository.getName();</span>
+
+<span class="fc bfc" id="L413" title="All 2 branches covered.">		if (repository.getUsername() != null) {</span>
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">			if (repository.getPassword() == null) {</span>
+<span class="nc" id="L415">				throw new IllegalArgumentException(&quot;Repo &quot; + id + &quot; has a username but no password defined.&quot;);</span>
+			}
+<span class="fc" id="L417">			getLog().debug(&quot;Repo &quot; + id + &quot; has credentials defined, skip searching in server list.&quot;);</span>
+<span class="fc" id="L418">			return new PasswordAuthentication(repository.getUsername(), repository.getPassword().toCharArray());</span>
+		}
+
+<span class="fc" id="L421">		Server server = settings.getServer(id);</span>
+<span class="fc bfc" id="L422" title="All 2 branches covered.">		if (server == null) {</span>
+<span class="fc" id="L423">			getLog().info(&quot;No credentials found for &quot; + id + &quot; in configuration or settings.xml server list.&quot;);</span>
+<span class="fc" id="L424">			return null;</span>
+		}
+
+<span class="fc" id="L427">		getLog().debug(&quot;Use credentials from server list for &quot; + id + &quot;.&quot;);</span>
+<span class="pc bpc" id="L428" title="2 of 4 branches missed.">		if (server.getUsername() == null || server.getPassword() == null) {</span>
+<span class="nc" id="L429">			throw new IllegalArgumentException(&quot;Repo &quot;</span>
+					+ id
+					+ &quot; was found in server list but has no username/password.&quot;);
+		}
+
+		try {
+<span class="pc bpc" id="L435" title="1 of 2 branches missed.">			if (securityDispatcher instanceof DefaultSecDispatcher) {</span>
+<span class="fc" id="L436">				((DefaultSecDispatcher) securityDispatcher).setConfigurationFile(helmSecurity);</span>
+			}
+<span class="fc" id="L438">			return new PasswordAuthentication(server.getUsername(),</span>
+<span class="fc" id="L439">					securityDispatcher.decrypt(server.getPassword()).toCharArray());</span>
+<span class="nc" id="L440">		} catch (SecDispatcherException e) {</span>
+<span class="nc" id="L441">			throw new MojoExecutionException(e.getMessage());</span>
+		}
+	}
+
+	// getter
+
+	public String getHelmVersion() throws MojoExecutionException {
+<span class="pc bpc" id="L448" title="1 of 2 branches missed.">		if (helmVersion == null) {</span>
+<span class="nc" id="L449">			helmVersion = new Github(getLog(), tmpDir.toPath(), githubUserAgent).getHelmVersion();</span>
+		}
+<span class="fc" id="L451">		return helmVersion;</span>
+	}
+
+	public boolean isPlainHttp(Boolean mojoPlainHttp) {
+<span class="fc bfc" id="L455" title="All 2 branches covered.">		return mojoPlainHttp != null ? mojoPlainHttp : plainHttp;</span>
+	}
+
+	public Path getOutputDirectory() {
+<span class="fc" id="L459">		return outputDirectory.toPath();</span>
+	}
+
+	public Path getHelmExecutableDirectory() {
+<span class="fc" id="L463">		return helmExecutableDirectory.toPath();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

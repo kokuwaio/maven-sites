@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DependencyOverwriter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm.util</a> &gt; <span class="el_source">DependencyOverwriter.java</span></div><h1>DependencyOverwriter.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm.util;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+
+import io.kokuwa.maven.helm.pojo.Dependencies;
+import io.kokuwa.maven.helm.pojo.Dependencies.Dependency;
+
+/**
+ * Utility class for overwriting a local path charts within a chart's dependencies.
+ *
+ * @since 6.10.0
+ */
+public class DependencyOverwriter {
+
+<span class="fc" id="L28">	private static final ObjectMapper MAPPER = new YAMLMapper()</span>
+<span class="fc" id="L29">			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);</span>
+
+	private final Log log;
+	private final String overwriteRepository;
+	private final String overwriteVersion;
+	private Path writeDirectory;
+
+	/**
+	 * Constructor for setting constants
+	 *
+	 * @param overwriteRepository used to overwrite a local path chart's repository
+	 * @param overwriteVersion    used to overwrite a local path chart's version
+	 * @param log                 used to write output from the util
+	 */
+<span class="fc" id="L43">	public DependencyOverwriter(String overwriteRepository, String overwriteVersion, Log log) {</span>
+<span class="fc" id="L44">		this.overwriteRepository = overwriteRepository;</span>
+<span class="fc" id="L45">		this.overwriteVersion = overwriteVersion;</span>
+<span class="fc" id="L46">		this.log = log;</span>
+<span class="fc" id="L47">	}</span>
+
+	/**
+	 * Used in testing for setting a custom filePath to write the new Chart.yaml to
+	 *
+	 * @param writeDirectory {@link Path} directory to write the new Chart.yaml to
+	 */
+	public void setWriteDirectory(Path writeDirectory) {
+<span class="fc" id="L55">		this.writeDirectory = writeDirectory;</span>
+<span class="fc" id="L56">	}</span>
+
+	/**
+	 * Utility class for overwriting local chart dependencies when making use of helm.overwriteLocalDependencies
+	 *
+	 * @param directory {@link Path} directory to overwrite the Chart.yaml
+	 * @throws MojoExecutionException Must set a value for helm.overwriteDependencyRepository
+	 */
+	public void execute(Path directory) throws MojoExecutionException {
+
+		// read dependencies from chart file
+
+<span class="fc" id="L68">		Path chartFile = directory.resolve(&quot;Chart.yaml&quot;);</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">		if (!Files.isRegularFile(chartFile)) {</span>
+<span class="nc" id="L70">			log.warn(&quot;No Charts detected - no Chart.yaml files found below &quot; + directory);</span>
+<span class="nc" id="L71">			return;</span>
+		}
+		List&lt;Dependency&gt; dependencies;
+		try {
+<span class="fc" id="L75">			dependencies = MAPPER.readValue(chartFile.toFile(), Dependencies.class).getDependencies();</span>
+<span class="nc" id="L76">		} catch (IOException e) {</span>
+<span class="nc" id="L77">			throw new MojoExecutionException(&quot;Unable to read chart dependencies from &quot; + chartFile, e);</span>
+<span class="fc" id="L78">		}</span>
+<span class="pc bpc" id="L79" title="1 of 4 branches missed.">		if (dependencies == null || dependencies.isEmpty()) {</span>
+<span class="fc" id="L80">			log.info(&quot;No dependencies found for &quot; + chartFile);</span>
+<span class="fc" id="L81">			return;</span>
+		}
+
+		// Sets the boolean for the {@link Dependency} that need to be overwritten
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		for (Dependency dependency : dependencies) {</span>
+<span class="fc bfc" id="L87" title="All 4 branches covered.">			if (dependency.getRepository() != null &amp;&amp; dependency.getRepository().startsWith(&quot;file://&quot;)) {</span>
+<span class="fc" id="L88">				dependency.setOverwrite(true);</span>
+			}
+<span class="fc" id="L90">		}</span>
+
+		// check if any dependencies need to be overwritten
+
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">		if (dependencies.stream().anyMatch(Dependency::isOverwrite)) {</span>
+<span class="fc" id="L95">			overwriteDependencies(dependencies, directory, chartFile);</span>
+		}
+<span class="fc" id="L97">	}</span>
+
+	/**
+	 * Overwrite the dependencies with their new values to the Chart.yaml
+	 *
+	 * @param dependencies {@link ArrayList}&lt;{@link Dependency}&gt;
+	 * @param chartFile    Chart.yaml file to read
+	 * @param directory    Directory to write the new Chart.yaml to
+	 * @throws MojoExecutionException unable to read/write Chart.yaml
+	 */
+	private void overwriteDependencies(List&lt;Dependency&gt; dependencies, Path directory, Path chartFile)
+			throws MojoExecutionException {
+
+		// delete the outdated Chart.lock
+
+<span class="fc" id="L112">		Path chartLock = directory.resolve(&quot;Chart.lock&quot;);</span>
+		try {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">			if (Files.deleteIfExists(chartLock)) {</span>
+<span class="nc" id="L115">				log.info(&quot;Lock deleted at &quot; + chartLock);</span>
+			} else {
+<span class="fc" id="L117">				log.info(&quot;No lock file found at &quot; + chartLock);</span>
+			}
+<span class="nc" id="L119">		} catch (IOException e) {</span>
+<span class="nc" id="L120">			log.warn(&quot;Failed to delete &quot; + chartLock);</span>
+<span class="fc" id="L121">		}</span>
+
+<span class="fc" id="L123">		List&lt;String&gt; overwrittenChart = new ArrayList&lt;&gt;();</span>
+		List&lt;String&gt; originalChart;
+		try {
+<span class="fc" id="L126">			originalChart = Files.readAllLines(chartFile, StandardCharsets.UTF_8);</span>
+<span class="nc" id="L127">		} catch (IOException e) {</span>
+<span class="nc" id="L128">			throw new MojoExecutionException(&quot;Unable to read &quot; + chartFile, e);</span>
+<span class="fc" id="L129">		}</span>
+
+		// Used for determining when a dependency has been read
+		boolean name, repository, version, isDependencies;
+<span class="fc" id="L133">		name = version = repository = isDependencies = false;</span>
+
+<span class="fc" id="L135">		Iterator&lt;Dependency&gt; dependencyIterator = dependencies.iterator();</span>
+<span class="fc" id="L136">		Dependency currentDependency = dependencyIterator.next();</span>
+
+<span class="fc bfc" id="L138" title="All 2 branches covered.">		for (String line : originalChart) {</span>
+			// check for lines that need to be overwritten
+<span class="fc bfc" id="L140" title="All 2 branches covered.">			if (isDependencies) {</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">				if (line.contains(&quot;version:&quot;)) {</span>
+<span class="fc" id="L142">					version = true;</span>
+
+					// if no overwrite value is provided for the version, the original will be used
+<span class="pc bpc" id="L145" title="1 of 6 branches missed.">					if (currentDependency.isOverwrite() &amp;&amp; overwriteVersion != null &amp;&amp; !overwriteVersion.isEmpty()) {</span>
+<span class="fc" id="L146">						log.info(&quot;Overwriting dependency '&quot; + currentDependency.getName() + &quot;' with new version:&quot;);</span>
+<span class="fc" id="L147">						log.info(&quot;\tOld Value:&quot;);</span>
+<span class="fc" id="L148">						log.info(line);</span>
+
+						// preserve any characters/spacing that may appear around the attribute
+<span class="fc" id="L151">						line = line.replace(currentDependency.getVersion(), overwriteVersion);</span>
+
+<span class="fc" id="L153">						log.info(&quot;\tNew Value:&quot;);</span>
+<span class="fc" id="L154">						log.info(line);</span>
+					}
+<span class="fc bfc" id="L156" title="All 2 branches covered.">				} else if (line.contains(&quot;repository:&quot;)) {</span>
+<span class="fc" id="L157">					repository = true;</span>
+
+<span class="fc bfc" id="L159" title="All 2 branches covered.">					if (currentDependency.isOverwrite()) {</span>
+<span class="fc" id="L160">						log.info(&quot;Overwriting dependency '&quot; + currentDependency.getName() + &quot;' with new repository:&quot;);</span>
+<span class="fc" id="L161">						log.info(&quot;\tOld Value:&quot;);</span>
+<span class="fc" id="L162">						log.info(line);</span>
+
+						// preserve any characters/spacing that may appear around the attribute
+<span class="fc" id="L165">						line = line.replace(currentDependency.getRepository(), overwriteRepository);</span>
+
+<span class="fc" id="L167">						log.info(&quot;\tNew Value:&quot;);</span>
+<span class="fc" id="L168">						log.info(line);</span>
+					}
+<span class="fc bfc" id="L170" title="All 2 branches covered.">				} else if (line.contains(&quot;name:&quot;)) {</span>
+<span class="fc" id="L171">					name = true;</span>
+				}
+
+				// Repository is not a required field so could be null
+<span class="fc bfc" id="L175" title="All 2 branches covered.">				if (currentDependency.getRepository() == null) {</span>
+<span class="fc" id="L176">					repository = true;</span>
+				}
+
+				// check if the current dependency has been read completely
+<span class="fc bfc" id="L180" title="All 6 branches covered.">				if (name &amp;&amp; version &amp;&amp; repository) {</span>
+<span class="fc" id="L181">					name = version = repository = false;</span>
+
+					// check if there are any remaining dependencies
+<span class="fc bfc" id="L184" title="All 2 branches covered.">					if (dependencyIterator.hasNext()) {</span>
+<span class="fc" id="L185">						currentDependency = dependencyIterator.next();</span>
+					} else {
+<span class="fc" id="L187">						isDependencies = false;</span>
+					}
+				}
+<span class="fc bfc" id="L190" title="All 2 branches covered.">			} else if (line.contains(&quot;dependencies:&quot;)) {</span>
+				// determines whether currently in the dependencies section of the yaml
+<span class="fc" id="L192">				isDependencies = true;</span>
+			}
+
+<span class="fc" id="L195">			overwrittenChart.add(line);</span>
+<span class="fc" id="L196">		}</span>
+
+		// overwrite the existing Chart.yaml with the new values
+		try {
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">			Path path = writeDirectory != null ? writeDirectory.resolve(&quot;Chart.yaml&quot;) : chartFile;</span>
+<span class="fc" id="L201">			Files.write(path, overwrittenChart, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L202">			log.info(&quot;Overwriting successful for &quot; + path);</span>
+<span class="nc" id="L203">		} catch (IOException e) {</span>
+<span class="nc" id="L204">			throw new MojoExecutionException(&quot;Unable to overwrite Chart.yaml at &quot; + directory, e);</span>
+<span class="fc" id="L205">		}</span>
+<span class="fc" id="L206">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
