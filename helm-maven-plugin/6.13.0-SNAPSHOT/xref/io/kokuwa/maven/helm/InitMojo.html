@@ -276,7 +276,7 @@
 <a class="jxr_linenumber" name="L268" href="#L268">268</a> 
 <a class="jxr_linenumber" name="L269" href="#L269">269</a> 		<strong class="jxr_keyword">try</strong> (InputStream dis = openConnection(url).getInputStream();
 <a class="jxr_linenumber" name="L270" href="#L270">270</a> 				InputStream cis = createCompressorInputStream(dis);
-<a class="jxr_linenumber" name="L271" href="#L271">271</a> 				ArchiveInputStream is = createArchiverInputStream(cis)) {
+<a class="jxr_linenumber" name="L271" href="#L271">271</a> 				ArchiveInputStream&lt;?&gt; is = createArchiverInputStream(cis)) {
 <a class="jxr_linenumber" name="L272" href="#L272">272</a> 
 <a class="jxr_linenumber" name="L273" href="#L273">273</a> 			<em class="jxr_comment">// create directory if not present</em>
 <a class="jxr_linenumber" name="L274" href="#L274">274</a> 			Files.createDirectories(directory);
@@ -367,7 +367,7 @@
 <a class="jxr_linenumber" name="L359" href="#L359">359</a> 		}
 <a class="jxr_linenumber" name="L360" href="#L360">360</a> 	}
 <a class="jxr_linenumber" name="L361" href="#L361">361</a> 
-<a class="jxr_linenumber" name="L362" href="#L362">362</a> 	<strong class="jxr_keyword">private</strong> ArchiveInputStream createArchiverInputStream(InputStream is) <strong class="jxr_keyword">throws</strong> MojoExecutionException {
+<a class="jxr_linenumber" name="L362" href="#L362">362</a> 	<strong class="jxr_keyword">private</strong> ArchiveInputStream&lt;?&gt; createArchiverInputStream(InputStream is) <strong class="jxr_keyword">throws</strong> MojoExecutionException {
 <a class="jxr_linenumber" name="L363" href="#L363">363</a> 
 <a class="jxr_linenumber" name="L364" href="#L364">364</a> 		<em class="jxr_comment">// Stream must support mark to allow for auto detection of compressor</em>
 <a class="jxr_linenumber" name="L365" href="#L365">365</a> 		InputStream inputStream = is.markSupported() ? is : <strong class="jxr_keyword">new</strong> BufferedInputStream(is);

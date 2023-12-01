@@ -268,7 +268,7 @@ import lombok.SneakyThrows;
 
 <span class="fc" id="L269">		try (InputStream dis = openConnection(url).getInputStream();</span>
 <span class="fc" id="L270">				InputStream cis = createCompressorInputStream(dis);</span>
-<span class="fc" id="L271">				ArchiveInputStream is = createArchiverInputStream(cis)) {</span>
+<span class="fc" id="L271">				ArchiveInputStream&lt;?&gt; is = createArchiverInputStream(cis)) {</span>
 
 			// create directory if not present
 <span class="fc" id="L274">			Files.createDirectories(directory);</span>
@@ -359,7 +359,7 @@ import lombok.SneakyThrows;
 		}
 <span class="fc" id="L360">	}</span>
 
-	private ArchiveInputStream createArchiverInputStream(InputStream is) throws MojoExecutionException {
+	private ArchiveInputStream&lt;?&gt; createArchiverInputStream(InputStream is) throws MojoExecutionException {
 
 		// Stream must support mark to allow for auto detection of compressor
 <span class="pc bpc" id="L365" title="1 of 2 branches missed.">		InputStream inputStream = is.markSupported() ? is : new BufferedInputStream(is);</span>
