@@ -109,8 +109,8 @@ public class HelmExecutable {
 <span class="fc" id="L109">				try (InputStream input = process.getInputStream()) {</span>
 <span class="fc" id="L110">					BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));</span>
 					String line;
-<span class="pc bpc" id="L112" title="1 of 2 branches missed.">					while ((line = reader.readLine()) != null) {</span>
-<span class="nc" id="L113">						log.info(line);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">					while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L113">						log.info(line);</span>
 					}
 <span class="nc" id="L115">				} catch (IOException e) {</span>
 <span class="nc" id="L116">					log.error(&quot;Failed to redirect input&quot;, e);</span>
@@ -120,8 +120,8 @@ public class HelmExecutable {
 <span class="fc" id="L120">				try (InputStream error = process.getErrorStream()) {</span>
 <span class="fc" id="L121">					BufferedReader reader = new BufferedReader(new InputStreamReader(error, StandardCharsets.UTF_8));</span>
 					String line;
-<span class="pc bpc" id="L123" title="1 of 2 branches missed.">					while ((line = reader.readLine()) != null) {</span>
-<span class="nc" id="L124">						log.error(line);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">					while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L124">						log.error(line);</span>
 					}
 <span class="nc" id="L126">				} catch (IOException e) {</span>
 <span class="nc" id="L127">					log.error(&quot;Failed to redirect errors&quot;, e);</span>
@@ -130,8 +130,8 @@ public class HelmExecutable {
 
 			// wait for process to finish
 
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">			if (process.waitFor() != 0) {</span>
-<span class="nc" id="L134">				throw new MojoExecutionException(errorMessage);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">			if (process.waitFor() != 0) {</span>
+<span class="fc" id="L134">				throw new MojoExecutionException(errorMessage);</span>
 			}
 
 <span class="nc" id="L137">		} catch (IOException | InterruptedException e) {</span>

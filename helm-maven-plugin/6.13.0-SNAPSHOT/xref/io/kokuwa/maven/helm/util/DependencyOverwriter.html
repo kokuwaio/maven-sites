@@ -23,8 +23,8 @@
 <a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.ObjectMapper;
 <a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 <a class="jxr_linenumber" name="L17" href="#L17">17</a>  
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.helm.pojo.Dependencies;
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.helm.pojo.Dependencies.Dependency;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.helm.pojo.HelmChart;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.helm.pojo.HelmChart.Dependency;
 <a class="jxr_linenumber" name="L20" href="#L20">20</a>  
 <a class="jxr_linenumber" name="L21" href="#L21">21</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_javadoccomment"> * Utility class for overwriting a local path charts within a chart's dependencies.</em>
@@ -80,7 +80,7 @@
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>  		}
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  		List&lt;Dependency&gt; dependencies;
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  		<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  			dependencies = MAPPER.readValue(chartFile.toFile(), Dependencies.<strong class="jxr_keyword">class</strong>).getDependencies();
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  			dependencies = MAPPER.readValue(chartFile.toFile(), HelmChart.<strong class="jxr_keyword">class</strong>).getDependencies();
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  		} <strong class="jxr_keyword">catch</strong> (IOException e) {
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> MojoExecutionException(<span class="jxr_string">"Unable to read chart dependencies from "</span> + chartFile, e);
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  		}
