@@ -501,62 +501,71 @@ public class MicronautCodegen extends AbstractJavaCodegen
 <span class="fc bfc" id="L501" title="All 6 branches covered.">		if (dateTimeRelaxed &amp;&amp; (parameter.isDate || parameter.isDateTime)) {</span>
 <span class="fc" id="L502">			addSupportingFile(sourceFolder, invokerPackage, &quot;TimeTypeConverterRegistrar&quot;);</span>
 		}
-<span class="fc" id="L504">		parameter.vendorExtensions.put(&quot;x-datatype-without-validation&quot;, removeValidation(parameter.dataType));</span>
-<span class="fc" id="L505">	}</span>
+<span class="fc bfc" id="L504" title="All 4 branches covered.">		if (parameter.isArray</span>
+				&amp;&amp; parameter.items.allowableValues != null
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">				&amp;&amp; !parameter.items.allowableValues.isEmpty()) {</span>
+<span class="fc" id="L507">			parameter.dataType = parameter.datatypeWithEnum = parameter.dataType.replace(&quot;@javax.validation.Valid &quot;,</span>
+					&quot;&quot;);
+		}
+<span class="fc" id="L510">		parameter.vendorExtensions.put(&quot;x-datatype-without-validation&quot;, removeValidation(parameter.dataType));</span>
+<span class="fc" id="L511">	}</span>
 
 	@Override
 	public void postProcessResponseWithProperty(CodegenResponse response, CodegenProperty property) {
-<span class="pc bpc" id="L509" title="2 of 6 branches missed.">		if (property != null &amp;&amp; property.dataType != null &amp;&amp; property.dataType.contains(&quot;@javax.validation&quot;)) {</span>
-<span class="fc" id="L510">			property.dataType = removeValidation(property.dataType);</span>
+<span class="pc bpc" id="L515" title="2 of 6 branches missed.">		if (property != null &amp;&amp; property.dataType != null &amp;&amp; property.dataType.contains(&quot;@javax.validation&quot;)) {</span>
+<span class="fc" id="L516">			property.dataType = removeValidation(property.dataType);</span>
 		}
-<span class="pc bpc" id="L512" title="2 of 6 branches missed.">		if (response != null &amp;&amp; response.dataType != null &amp;&amp; response.dataType.contains(&quot;@javax.validation&quot;)) {</span>
-<span class="fc" id="L513">			response.dataType = removeValidation(response.dataType);</span>
+<span class="pc bpc" id="L518" title="2 of 6 branches missed.">		if (response != null &amp;&amp; response.dataType != null &amp;&amp; response.dataType.contains(&quot;@javax.validation&quot;)) {</span>
+<span class="fc" id="L519">			response.dataType = removeValidation(response.dataType);</span>
 		}
-<span class="fc" id="L515">	}</span>
+<span class="fc" id="L521">	}</span>
 
 	@Override
 	public void postProcessModelProperty(CodegenModel model, CodegenProperty property) {
-<span class="fc" id="L519">		super.postProcessModelProperty(model, property);</span>
+<span class="fc" id="L525">		super.postProcessModelProperty(model, property);</span>
 
-<span class="fc bfc" id="L521" title="All 6 branches covered.">		if (openApiNullable &amp;&amp; !property.required &amp;&amp; property.isNullable) {</span>
-<span class="fc" id="L522">			property.getVendorExtensions().put(&quot;x-jackson-nullable&quot;, true);</span>
+<span class="fc bfc" id="L527" title="All 6 branches covered.">		if (openApiNullable &amp;&amp; !property.required &amp;&amp; property.isNullable) {</span>
+<span class="fc" id="L528">			property.getVendorExtensions().put(&quot;x-jackson-nullable&quot;, true);</span>
 		}
-<span class="fc" id="L524">	}</span>
+<span class="pc bpc" id="L530" title="1 of 6 branches missed.">		if (property.isArray &amp;&amp; property.items.allowableValues != null &amp;&amp; !property.items.allowableValues.isEmpty()) {</span>
+<span class="fc" id="L531">			property.dataType = property.datatypeWithEnum = property.dataType.replace(&quot;@javax.validation.Valid &quot;, &quot;&quot;);</span>
+		}
+<span class="fc" id="L533">	}</span>
 
 	@Override
 	public boolean isDataTypeString(String dataType) {
-<span class="pc bpc" id="L528" title="1 of 4 branches missed.">		return &quot;java.lang.String&quot;.equals(dataType) || &quot;String&quot;.equals(dataType);</span>
+<span class="pc bpc" id="L537" title="1 of 4 branches missed.">		return &quot;java.lang.String&quot;.equals(dataType) || &quot;String&quot;.equals(dataType);</span>
 	}
 
 	@Override
 	public String getTypeDeclaration(@SuppressWarnings(&quot;rawtypes&quot;) Schema p) {
-<span class="fc" id="L533">		var schema = unaliasSchema(p);</span>
-<span class="fc bfc" id="L534" title="All 2 branches covered.">		var target = ModelUtils.isGenerateAliasAsModel() ? p : schema;</span>
-<span class="fc bfc" id="L535" title="All 4 branches covered.">		if (useBeanValidation &amp;&amp; ModelUtils.isArraySchema(target)) {</span>
-<span class="fc" id="L536">			var items = unaliasSchema(getSchemaItems((ArraySchema) target));</span>
-<span class="fc" id="L537">			var itemType = getTypeDeclaration(items);</span>
-<span class="fc" id="L538">			var annotations = getBeanValidation(items).stream().map(n -&gt; n + &quot; &quot;).collect(Collectors.joining());</span>
-<span class="fc" id="L539">			var index = itemType.lastIndexOf(&quot;.&quot;);</span>
-<span class="fc bfc" id="L540" title="All 2 branches covered.">			return getSchemaType(target) + &quot;&lt;&quot; + (index == -1 ? annotations + itemType</span>
-<span class="fc" id="L541">					: (itemType.substring(0, index + 1) + annotations + itemType.substring(index + 1))) + &quot;&gt;&quot;;</span>
+<span class="fc" id="L542">		var schema = unaliasSchema(p);</span>
+<span class="fc bfc" id="L543" title="All 2 branches covered.">		var target = ModelUtils.isGenerateAliasAsModel() ? p : schema;</span>
+<span class="fc bfc" id="L544" title="All 4 branches covered.">		if (useBeanValidation &amp;&amp; ModelUtils.isArraySchema(target)) {</span>
+<span class="fc" id="L545">			var items = unaliasSchema(getSchemaItems((ArraySchema) target));</span>
+<span class="fc" id="L546">			var itemType = getTypeDeclaration(items);</span>
+<span class="fc" id="L547">			var annotations = getBeanValidation(items).stream().map(n -&gt; n + &quot; &quot;).collect(Collectors.joining());</span>
+<span class="fc" id="L548">			var index = itemType.lastIndexOf(&quot;.&quot;);</span>
+<span class="fc bfc" id="L549" title="All 2 branches covered.">			return getSchemaType(target) + &quot;&lt;&quot; + (index == -1 ? annotations + itemType</span>
+<span class="fc" id="L550">					: (itemType.substring(0, index + 1) + annotations + itemType.substring(index + 1))) + &quot;&gt;&quot;;</span>
 		}
-<span class="fc" id="L543">		return super.getTypeDeclaration(p);</span>
+<span class="fc" id="L552">		return super.getTypeDeclaration(p);</span>
 	}
 
 	@Override
 	public String toDefaultValue(CodegenProperty property, @SuppressWarnings(&quot;rawtypes&quot;) Schema schema) {
-<span class="fc bfc" id="L548" title="All 4 branches covered.">		if (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != null) {</span>
-<span class="fc" id="L549">			return &quot;new &quot; + getSchemaType(schema) + &quot;()&quot;;</span>
+<span class="fc bfc" id="L557" title="All 4 branches covered.">		if (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != null) {</span>
+<span class="fc" id="L558">			return &quot;new &quot; + getSchemaType(schema) + &quot;()&quot;;</span>
 		}
-<span class="fc" id="L551">		return super.toDefaultValue(property, schema);</span>
+<span class="fc" id="L560">		return super.toDefaultValue(property, schema);</span>
 	}
 
 	@Override
 	public String toDefaultValue(@SuppressWarnings(&quot;rawtypes&quot;) Schema schema) {
-<span class="pc bpc" id="L556" title="3 of 4 branches missed.">		if (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != null) {</span>
-<span class="nc" id="L557">			return &quot;new &quot; + getSchemaType(schema) + &quot;()&quot;;</span>
+<span class="pc bpc" id="L565" title="3 of 4 branches missed.">		if (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != null) {</span>
+<span class="nc" id="L566">			return &quot;new &quot; + getSchemaType(schema) + &quot;()&quot;;</span>
 		}
-<span class="fc" id="L559">		return super.toDefaultValue(schema);</span>
+<span class="fc" id="L568">		return super.toDefaultValue(schema);</span>
 	}
 
 	@Override
@@ -566,199 +575,199 @@ public class MicronautCodegen extends AbstractJavaCodegen
 		// second choice: use the default provided by the spec
 		// special handling for enum: if no example or default is provided, use the first value
 		@SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L569">		Optional&lt;String&gt; value = Optional</span>
-<span class="fc" id="L570">				.ofNullable(schema.getExample())</span>
-<span class="fc" id="L571">				.or(() -&gt; Optional.ofNullable(schema.getDefault()))</span>
-<span class="fc" id="L572">				.or(() -&gt; Optional.ofNullable(schema.getEnum()).flatMap(e -&gt; e.stream().findFirst()))</span>
-<span class="fc" id="L573">				.map(Object::toString);</span>
+<span class="fc" id="L578">		Optional&lt;String&gt; value = Optional</span>
+<span class="fc" id="L579">				.ofNullable(schema.getExample())</span>
+<span class="fc" id="L580">				.or(() -&gt; Optional.ofNullable(schema.getDefault()))</span>
+<span class="fc" id="L581">				.or(() -&gt; Optional.ofNullable(schema.getEnum()).flatMap(e -&gt; e.stream().findFirst()))</span>
+<span class="fc" id="L582">				.map(Object::toString);</span>
 
 		// third choice: set type-specific default examples
 
-<span class="fc bfc" id="L577" title="All 2 branches covered.">		if (ModelUtils.isBooleanSchema(schema)) {</span>
-<span class="fc" id="L578">			return value.orElse(&quot;false&quot;);</span>
+<span class="fc bfc" id="L586" title="All 2 branches covered.">		if (ModelUtils.isBooleanSchema(schema)) {</span>
+<span class="fc" id="L587">			return value.orElse(&quot;false&quot;);</span>
 		}
-<span class="fc bfc" id="L580" title="All 2 branches covered.">		if (ModelUtils.isLongSchema(schema)) {</span>
-<span class="fc" id="L581">			return value.orElse(&quot;100L&quot;) + &quot;L&quot;;</span>
+<span class="fc bfc" id="L589" title="All 2 branches covered.">		if (ModelUtils.isLongSchema(schema)) {</span>
+<span class="fc" id="L590">			return value.orElse(&quot;100L&quot;) + &quot;L&quot;;</span>
 		}
-<span class="fc bfc" id="L583" title="All 2 branches covered.">		if (ModelUtils.isFloatSchema(schema)) {</span>
-<span class="fc" id="L584">			return value.orElse(&quot;12.34&quot;) + &quot;F&quot;;</span>
+<span class="fc bfc" id="L592" title="All 2 branches covered.">		if (ModelUtils.isFloatSchema(schema)) {</span>
+<span class="fc" id="L593">			return value.orElse(&quot;12.34&quot;) + &quot;F&quot;;</span>
 		}
-<span class="fc bfc" id="L586" title="All 2 branches covered.">		if (ModelUtils.isDoubleSchema(schema)) {</span>
-<span class="fc" id="L587">			return value.orElse(&quot;43.21&quot;) + &quot;D&quot;;</span>
+<span class="fc bfc" id="L595" title="All 2 branches covered.">		if (ModelUtils.isDoubleSchema(schema)) {</span>
+<span class="fc" id="L596">			return value.orElse(&quot;43.21&quot;) + &quot;D&quot;;</span>
 		}
-<span class="pc bpc" id="L589" title="1 of 4 branches missed.">		if (ModelUtils.isIntegerSchema(schema) || ModelUtils.isShortSchema(schema)) {</span>
-<span class="fc" id="L590">			return value.orElse(&quot;12&quot;);</span>
+<span class="pc bpc" id="L598" title="1 of 4 branches missed.">		if (ModelUtils.isIntegerSchema(schema) || ModelUtils.isShortSchema(schema)) {</span>
+<span class="fc" id="L599">			return value.orElse(&quot;12&quot;);</span>
 		}
-<span class="fc bfc" id="L592" title="All 2 branches covered.">		if (ModelUtils.isNumberSchema(schema)) {</span>
-<span class="pc" id="L593">			return value.map(v -&gt; &quot;java.lang.Number.valueOf(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;12.34&quot;);</span>
-		}
-
-<span class="fc bfc" id="L596" title="All 2 branches covered.">		if (ModelUtils.isDateSchema(schema)) {</span>
-<span class="pc bpc" id="L597" title="1 of 2 branches missed.">			if (&quot;java.time.LocalDate&quot;.equals(typeMapping.get(schema.getType()))) {</span>
-<span class="nc" id="L598">				return &quot;java.time.LocalDate.&quot; + value.map(v -&gt; &quot;parse(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;now()&quot;);</span>
-			}
-			// we cannot provide a valid example for all possible date types
-<span class="fc" id="L601">			return &quot;null&quot;;</span>
-		}
-<span class="fc bfc" id="L603" title="All 2 branches covered.">		if (ModelUtils.isDateTimeSchema(schema)) {</span>
-<span class="pc bpc" id="L604" title="1 of 2 branches missed.">			if (&quot;java.time.Instant&quot;.equals(typeMapping.get(schema.getType()))) {</span>
-<span class="nc" id="L605">				return &quot;java.time.Instant.&quot; + value.map(v -&gt; &quot;parse(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;now()&quot;);</span>
-			}
-			// we cannot provide a valid example for all possible date types
-<span class="fc" id="L608">			return &quot;null&quot;;</span>
-		}
-<span class="fc bfc" id="L610" title="All 4 branches covered.">		if (ModelUtils.isByteArraySchema(schema) || ModelUtils.isBinarySchema(schema)) {</span>
-<span class="fc" id="L611">			return value.orElse(&quot;\&quot;byteArray\&quot;.getBytes()&quot;);</span>
-		}
-<span class="pc bpc" id="L613" title="1 of 2 branches missed.">		if (ModelUtils.isFileSchema(schema)) {</span>
-<span class="nc" id="L614">			return value.orElse(&quot;\&quot;myFile\&quot;.getBytes()&quot;);</span>
-		}
-<span class="fc bfc" id="L616" title="All 2 branches covered.">		if (ModelUtils.isUUIDSchema(schema)) {</span>
-<span class="pc" id="L617">			return &quot;java.util.UUID.&quot; + value.map(v -&gt; &quot;fromString(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;randomUUID()&quot;);</span>
-		}
-<span class="pc bpc" id="L619" title="1 of 2 branches missed.">		if (ModelUtils.isURISchema(schema)) {</span>
-<span class="nc" id="L620">			return &quot;java.net.URI.create(\&quot;&quot; + value.orElse(&quot;my:uri&quot;) + &quot;\&quot;)&quot;;</span>
-		}
-<span class="fc bfc" id="L622" title="All 2 branches covered.">		if (ModelUtils.isEmailSchema(schema)) {</span>
-<span class="fc" id="L623">			return '&quot;' + value.orElse(&quot;mail@example.org&quot;) + '&quot;';</span>
-		}
-<span class="fc bfc" id="L625" title="All 2 branches covered.">		if (ModelUtils.isStringSchema(schema)) {</span>
-<span class="fc" id="L626">			return '&quot;' + value.orElse(&quot;string&quot;) + '&quot;';</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">		if (ModelUtils.isNumberSchema(schema)) {</span>
+<span class="pc" id="L602">			return value.map(v -&gt; &quot;java.lang.Number.valueOf(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;12.34&quot;);</span>
 		}
 
-<span class="fc bfc" id="L629" title="All 2 branches covered.">		if (ModelUtils.isMapSchema(schema)) {</span>
-<span class="fc" id="L630">			return &quot;java.util.Map.&quot; + value</span>
-<span class="fc" id="L631">					.map(v -&gt; (Map&lt;?, ?&gt;) new org.yaml.snakeyaml.Yaml().loadAs(v, Map.class))</span>
-<span class="pc bpc" id="L632" title="1 of 2 branches missed.">					.filter(map -&gt; !map.isEmpty())</span>
-<span class="fc" id="L633">					.map(map -&gt; map.entrySet().stream()</span>
-<span class="fc" id="L634">							.map(e -&gt; &quot;new java.util.AbstractMap.SimpleEntry(\&quot;&quot;</span>
-<span class="fc" id="L635">									+ e.getKey() + &quot;\&quot;, \&quot;&quot; + e.getValue() + &quot;\&quot;)&quot;)</span>
-<span class="fc" id="L636">							.collect(Collectors.joining(&quot;, &quot;)))</span>
-<span class="fc" id="L637">					.map(map -&gt; &quot;ofEntries(&quot; + map + &quot;)&quot;)</span>
-<span class="fc" id="L638">					.orElse(&quot;of()&quot;);</span>
+<span class="fc bfc" id="L605" title="All 2 branches covered.">		if (ModelUtils.isDateSchema(schema)) {</span>
+<span class="pc bpc" id="L606" title="1 of 2 branches missed.">			if (&quot;java.time.LocalDate&quot;.equals(typeMapping.get(schema.getType()))) {</span>
+<span class="nc" id="L607">				return &quot;java.time.LocalDate.&quot; + value.map(v -&gt; &quot;parse(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;now()&quot;);</span>
+			}
+			// we cannot provide a valid example for all possible date types
+<span class="fc" id="L610">			return &quot;null&quot;;</span>
 		}
-<span class="fc bfc" id="L640" title="All 2 branches covered.">		if (ModelUtils.isSet(schema)) {</span>
-<span class="fc" id="L641">			return &quot;java.util.Set.of(&quot; + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(&quot;&quot;) + &quot;)&quot;;</span>
+<span class="fc bfc" id="L612" title="All 2 branches covered.">		if (ModelUtils.isDateTimeSchema(schema)) {</span>
+<span class="pc bpc" id="L613" title="1 of 2 branches missed.">			if (&quot;java.time.Instant&quot;.equals(typeMapping.get(schema.getType()))) {</span>
+<span class="nc" id="L614">				return &quot;java.time.Instant.&quot; + value.map(v -&gt; &quot;parse(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;now()&quot;);</span>
+			}
+			// we cannot provide a valid example for all possible date types
+<span class="fc" id="L617">			return &quot;null&quot;;</span>
 		}
-<span class="fc bfc" id="L643" title="All 2 branches covered.">		if (ModelUtils.isArraySchema(schema)) {</span>
-<span class="fc" id="L644">			return &quot;java.util.List.of(&quot; + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(&quot;&quot;) + &quot;)&quot;;</span>
+<span class="fc bfc" id="L619" title="All 4 branches covered.">		if (ModelUtils.isByteArraySchema(schema) || ModelUtils.isBinarySchema(schema)) {</span>
+<span class="fc" id="L620">			return value.orElse(&quot;\&quot;byteArray\&quot;.getBytes()&quot;);</span>
+		}
+<span class="pc bpc" id="L622" title="1 of 2 branches missed.">		if (ModelUtils.isFileSchema(schema)) {</span>
+<span class="nc" id="L623">			return value.orElse(&quot;\&quot;myFile\&quot;.getBytes()&quot;);</span>
+		}
+<span class="fc bfc" id="L625" title="All 2 branches covered.">		if (ModelUtils.isUUIDSchema(schema)) {</span>
+<span class="pc" id="L626">			return &quot;java.util.UUID.&quot; + value.map(v -&gt; &quot;fromString(\&quot;&quot; + v + &quot;\&quot;)&quot;).orElse(&quot;randomUUID()&quot;);</span>
+		}
+<span class="pc bpc" id="L628" title="1 of 2 branches missed.">		if (ModelUtils.isURISchema(schema)) {</span>
+<span class="nc" id="L629">			return &quot;java.net.URI.create(\&quot;&quot; + value.orElse(&quot;my:uri&quot;) + &quot;\&quot;)&quot;;</span>
+		}
+<span class="fc bfc" id="L631" title="All 2 branches covered.">		if (ModelUtils.isEmailSchema(schema)) {</span>
+<span class="fc" id="L632">			return '&quot;' + value.orElse(&quot;mail@example.org&quot;) + '&quot;';</span>
+		}
+<span class="fc bfc" id="L634" title="All 2 branches covered.">		if (ModelUtils.isStringSchema(schema)) {</span>
+<span class="fc" id="L635">			return '&quot;' + value.orElse(&quot;string&quot;) + '&quot;';</span>
+		}
+
+<span class="fc bfc" id="L638" title="All 2 branches covered.">		if (ModelUtils.isMapSchema(schema)) {</span>
+<span class="fc" id="L639">			return &quot;java.util.Map.&quot; + value</span>
+<span class="fc" id="L640">					.map(v -&gt; (Map&lt;?, ?&gt;) new org.yaml.snakeyaml.Yaml().loadAs(v, Map.class))</span>
+<span class="pc bpc" id="L641" title="1 of 2 branches missed.">					.filter(map -&gt; !map.isEmpty())</span>
+<span class="fc" id="L642">					.map(map -&gt; map.entrySet().stream()</span>
+<span class="fc" id="L643">							.map(e -&gt; &quot;new java.util.AbstractMap.SimpleEntry(\&quot;&quot;</span>
+<span class="fc" id="L644">									+ e.getKey() + &quot;\&quot;, \&quot;&quot; + e.getValue() + &quot;\&quot;)&quot;)</span>
+<span class="fc" id="L645">							.collect(Collectors.joining(&quot;, &quot;)))</span>
+<span class="fc" id="L646">					.map(map -&gt; &quot;ofEntries(&quot; + map + &quot;)&quot;)</span>
+<span class="fc" id="L647">					.orElse(&quot;of()&quot;);</span>
+		}
+<span class="fc bfc" id="L649" title="All 2 branches covered.">		if (ModelUtils.isSet(schema)) {</span>
+<span class="fc" id="L650">			return &quot;java.util.Set.of(&quot; + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(&quot;&quot;) + &quot;)&quot;;</span>
+		}
+<span class="fc bfc" id="L652" title="All 2 branches covered.">		if (ModelUtils.isArraySchema(schema)) {</span>
+<span class="fc" id="L653">			return &quot;java.util.List.of(&quot; + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(&quot;&quot;) + &quot;)&quot;;</span>
 		}
 
 		// if no example can be generated, leave it null.
-<span class="fc" id="L648">		return &quot;null&quot;;</span>
+<span class="fc" id="L657">		return &quot;null&quot;;</span>
 	}
 
 	// enum
 
 	@Override
 	public String toEnumName(CodegenProperty property) {
-<span class="fc" id="L655">		return property.nameInCamelCase;</span>
+<span class="fc" id="L664">		return property.nameInCamelCase;</span>
 	}
 
 	@Override
 	public String toEnumVarName(String value, String datatype) {
-<span class="fc" id="L660">		return super.toEnumVarName(value, datatype.replace(&quot;java.lang.&quot;, &quot;&quot;));</span>
+<span class="fc" id="L669">		return super.toEnumVarName(value, datatype.replace(&quot;java.lang.&quot;, &quot;&quot;));</span>
 	}
 
 	@Override
 	public String toEnumValue(String value, String datatype) {
-<span class="fc bfc" id="L665" title="All 2 branches covered.">		if (List.of(&quot;int&quot;, &quot;Integer&quot;, &quot;java.lang.Integer&quot;).contains(datatype)) {</span>
-<span class="fc" id="L666">			return value;</span>
+<span class="fc bfc" id="L674" title="All 2 branches covered.">		if (List.of(&quot;int&quot;, &quot;Integer&quot;, &quot;java.lang.Integer&quot;).contains(datatype)) {</span>
+<span class="fc" id="L675">			return value;</span>
 		}
-<span class="pc bpc" id="L668" title="1 of 2 branches missed.">		if (List.of(&quot;long&quot;, &quot;Long&quot;, &quot;java.lang.Long&quot;).contains(datatype)) {</span>
-<span class="nc" id="L669">			return value + &quot;L&quot;;</span>
+<span class="pc bpc" id="L677" title="1 of 2 branches missed.">		if (List.of(&quot;long&quot;, &quot;Long&quot;, &quot;java.lang.Long&quot;).contains(datatype)) {</span>
+<span class="nc" id="L678">			return value + &quot;L&quot;;</span>
 		}
-<span class="pc bpc" id="L671" title="1 of 2 branches missed.">		if (List.of(&quot;float&quot;, &quot;Float&quot;, &quot;java.lang.Float&quot;).contains(datatype)) {</span>
-<span class="nc" id="L672">			return value + &quot;F&quot;;</span>
+<span class="pc bpc" id="L680" title="1 of 2 branches missed.">		if (List.of(&quot;float&quot;, &quot;Float&quot;, &quot;java.lang.Float&quot;).contains(datatype)) {</span>
+<span class="nc" id="L681">			return value + &quot;F&quot;;</span>
 		}
-<span class="fc bfc" id="L674" title="All 2 branches covered.">		if (List.of(&quot;double&quot;, &quot;Double&quot;, &quot;java.lang.Double&quot;).contains(datatype)) {</span>
-<span class="fc" id="L675">			return value + &quot;D&quot;;</span>
+<span class="fc bfc" id="L683" title="All 2 branches covered.">		if (List.of(&quot;double&quot;, &quot;Double&quot;, &quot;java.lang.Double&quot;).contains(datatype)) {</span>
+<span class="fc" id="L684">			return value + &quot;D&quot;;</span>
 		}
-<span class="fc" id="L677">		return super.toEnumValue(value, datatype);</span>
+<span class="fc" id="L686">		return super.toEnumValue(value, datatype);</span>
 	}
 
 	// setter
 
 	@Override
 	public void setUseBeanValidation(boolean useBeanValidation) {
-<span class="nc" id="L684">		this.useBeanValidation = useBeanValidation;</span>
-<span class="nc" id="L685">	}</span>
+<span class="nc" id="L693">		this.useBeanValidation = useBeanValidation;</span>
+<span class="nc" id="L694">	}</span>
 
 	@Override
 	public void setUseGenericResponse(boolean useGenericResponse) {
-<span class="nc" id="L689">		this.useGenericResponse = useGenericResponse;</span>
-<span class="nc" id="L690">	}</span>
+<span class="nc" id="L698">		this.useGenericResponse = useGenericResponse;</span>
+<span class="nc" id="L699">	}</span>
 
 	@Override
 	public void setUseOptional(boolean useOptional) {
-<span class="nc" id="L694">		this.useOptional = useOptional;</span>
-<span class="nc" id="L695">	}</span>
+<span class="nc" id="L703">		this.useOptional = useOptional;</span>
+<span class="nc" id="L704">	}</span>
 
 	// internal
 
 	private void addSupportingFile(String folder, String packageString, String file) {
-<span class="fc" id="L700">		var templateFile = &quot;support/&quot; + file + &quot;.mustache&quot;;</span>
-<span class="fc" id="L701">		var destinationFilename = folder + &quot;/&quot; + packageString.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot; + file + &quot;.java&quot;;</span>
-<span class="fc" id="L702">		var supportingFile = new SupportingFile(templateFile, destinationFilename);</span>
-<span class="fc bfc" id="L703" title="All 2 branches covered.">		if (!supportingFiles.contains(supportingFile)) {</span>
-<span class="fc" id="L704">			supportingFiles.add(supportingFile);</span>
+<span class="fc" id="L709">		var templateFile = &quot;support/&quot; + file + &quot;.mustache&quot;;</span>
+<span class="fc" id="L710">		var destinationFilename = folder + &quot;/&quot; + packageString.replace(&quot;.&quot;, &quot;/&quot;) + &quot;/&quot; + file + &quot;.java&quot;;</span>
+<span class="fc" id="L711">		var supportingFile = new SupportingFile(templateFile, destinationFilename);</span>
+<span class="fc bfc" id="L712" title="All 2 branches covered.">		if (!supportingFiles.contains(supportingFile)) {</span>
+<span class="fc" id="L713">			supportingFiles.add(supportingFile);</span>
 		}
-<span class="fc" id="L706">	}</span>
+<span class="fc" id="L715">	}</span>
 
 	private List&lt;String&gt; getBeanValidation(Schema&lt;?&gt; schema) {
-<span class="fc" id="L709">		var annotations = new ArrayList&lt;String&gt;();</span>
-<span class="fc bfc" id="L710" title="All 2 branches covered.">		if (!ModelUtils.isNullable(schema)) {</span>
-<span class="fc" id="L711">			annotations.add(&quot;@javax.validation.constraints.NotNull&quot;);</span>
+<span class="fc" id="L718">		var annotations = new ArrayList&lt;String&gt;();</span>
+<span class="fc bfc" id="L719" title="All 2 branches covered.">		if (!ModelUtils.isNullable(schema)) {</span>
+<span class="fc" id="L720">			annotations.add(&quot;@javax.validation.constraints.NotNull&quot;);</span>
 		}
-<span class="fc bfc" id="L713" title="All 2 branches covered.">		if (ModelUtils.isStringSchema(schema)</span>
-<span class="pc bpc" id="L714" title="1 of 2 branches missed.">				&amp;&amp; !ModelUtils.isByteArraySchema(schema)</span>
-<span class="pc bpc" id="L715" title="1 of 2 branches missed.">				&amp;&amp; !ModelUtils.isBinarySchema(schema)) {</span>
-<span class="pc bpc" id="L716" title="1 of 4 branches missed.">			if (schema.getPattern() != null &amp;&amp; !schema.getPattern().isBlank()) {</span>
-<span class="fc" id="L717">				annotations.add(&quot;@javax.validation.constraints.Pattern(&quot;</span>
-<span class="fc" id="L718">						+ &quot;regexp = \&quot;&quot; + schema.getPattern().replace(&quot;\\&quot;, &quot;\\\\&quot;) + &quot;\&quot;)&quot;);</span>
+<span class="fc bfc" id="L722" title="All 2 branches covered.">		if (ModelUtils.isStringSchema(schema)</span>
+<span class="pc bpc" id="L723" title="1 of 2 branches missed.">				&amp;&amp; !ModelUtils.isByteArraySchema(schema)</span>
+<span class="pc bpc" id="L724" title="1 of 2 branches missed.">				&amp;&amp; !ModelUtils.isBinarySchema(schema)) {</span>
+<span class="pc bpc" id="L725" title="1 of 4 branches missed.">			if (schema.getPattern() != null &amp;&amp; !schema.getPattern().isBlank()) {</span>
+<span class="fc" id="L726">				annotations.add(&quot;@javax.validation.constraints.Pattern(&quot;</span>
+<span class="fc" id="L727">						+ &quot;regexp = \&quot;&quot; + schema.getPattern().replace(&quot;\\&quot;, &quot;\\\\&quot;) + &quot;\&quot;)&quot;);</span>
 			}
-<span class="fc bfc" id="L720" title="All 2 branches covered.">			if (ModelUtils.isEmailSchema(schema)) {</span>
-<span class="fc" id="L721">				annotations.add(&quot;@javax.validation.constraints.Email&quot;);</span>
+<span class="fc bfc" id="L729" title="All 2 branches covered.">			if (ModelUtils.isEmailSchema(schema)) {</span>
+<span class="fc" id="L730">				annotations.add(&quot;@javax.validation.constraints.Email&quot;);</span>
 			}
-<span class="fc bfc" id="L723" title="All 4 branches covered.">			if (schema.getMinLength() != null &amp;&amp; schema.getMaxLength() != null) {</span>
-<span class="fc" id="L724">				annotations.add(&quot;@javax.validation.constraints.Size(&quot;</span>
-<span class="fc" id="L725">						+ &quot;min = &quot; + schema.getMinLength() + &quot;, &quot;</span>
-<span class="fc" id="L726">						+ &quot;max = &quot; + schema.getMaxLength() + &quot;)&quot;);</span>
-<span class="fc bfc" id="L727" title="All 2 branches covered.">			} else if (schema.getMinLength() != null) {</span>
-<span class="fc" id="L728">				annotations.add(&quot;@javax.validation.constraints.Size(min = &quot; + schema.getMinLength() + &quot;)&quot;);</span>
-<span class="fc bfc" id="L729" title="All 2 branches covered.">			} else if (schema.getMaxLength() != null) {</span>
-<span class="fc" id="L730">				annotations.add(&quot;@javax.validation.constraints.Size(max = &quot; + schema.getMaxLength() + &quot;)&quot;);</span>
+<span class="fc bfc" id="L732" title="All 4 branches covered.">			if (schema.getMinLength() != null &amp;&amp; schema.getMaxLength() != null) {</span>
+<span class="fc" id="L733">				annotations.add(&quot;@javax.validation.constraints.Size(&quot;</span>
+<span class="fc" id="L734">						+ &quot;min = &quot; + schema.getMinLength() + &quot;, &quot;</span>
+<span class="fc" id="L735">						+ &quot;max = &quot; + schema.getMaxLength() + &quot;)&quot;);</span>
+<span class="fc bfc" id="L736" title="All 2 branches covered.">			} else if (schema.getMinLength() != null) {</span>
+<span class="fc" id="L737">				annotations.add(&quot;@javax.validation.constraints.Size(min = &quot; + schema.getMinLength() + &quot;)&quot;);</span>
+<span class="fc bfc" id="L738" title="All 2 branches covered.">			} else if (schema.getMaxLength() != null) {</span>
+<span class="fc" id="L739">				annotations.add(&quot;@javax.validation.constraints.Size(max = &quot; + schema.getMaxLength() + &quot;)&quot;);</span>
 			}
-<span class="fc bfc" id="L732" title="All 2 branches covered.">		} else if (ModelUtils.isNumberSchema(schema)) {</span>
-<span class="fc bfc" id="L733" title="All 2 branches covered.">			if (schema.getMinimum() != null) {</span>
-<span class="fc" id="L734">				annotations.add(&quot;@javax.validation.constraints.DecimalMin(&quot;</span>
-<span class="fc" id="L735">						+ &quot;value = \&quot;&quot; + schema.getMinimum() + &quot;\&quot;, &quot;</span>
-<span class="fc bfc" id="L736" title="All 2 branches covered.">						+ &quot;inclusive = &quot; + !Optional.ofNullable(schema.getExclusiveMinimum()).orElse(false) + &quot;)&quot;);</span>
-			}
-<span class="fc bfc" id="L738" title="All 2 branches covered.">			if (schema.getMaximum() != null) {</span>
-<span class="fc" id="L739">				annotations.add(&quot;@javax.validation.constraints.DecimalMax(&quot;</span>
-<span class="fc" id="L740">						+ &quot;value = \&quot;&quot; + schema.getMaximum() + &quot;\&quot;, &quot;</span>
-<span class="fc bfc" id="L741" title="All 2 branches covered.">						+ &quot;inclusive = &quot; + !Optional.ofNullable(schema.getExclusiveMaximum()).orElse(false) + &quot;)&quot;);</span>
-			}
-<span class="fc bfc" id="L743" title="All 2 branches covered.">		} else if (ModelUtils.isIntegerSchema(schema)) {</span>
-<span class="fc bfc" id="L744" title="All 2 branches covered.">			if (schema.getMinimum() != null) {</span>
-<span class="fc" id="L745">				annotations.add(&quot;@javax.validation.constraints.Min(&quot; + schema.getMinimum().longValue() + &quot;)&quot;);</span>
+<span class="fc bfc" id="L741" title="All 2 branches covered.">		} else if (ModelUtils.isNumberSchema(schema)) {</span>
+<span class="fc bfc" id="L742" title="All 2 branches covered.">			if (schema.getMinimum() != null) {</span>
+<span class="fc" id="L743">				annotations.add(&quot;@javax.validation.constraints.DecimalMin(&quot;</span>
+<span class="fc" id="L744">						+ &quot;value = \&quot;&quot; + schema.getMinimum() + &quot;\&quot;, &quot;</span>
+<span class="fc bfc" id="L745" title="All 2 branches covered.">						+ &quot;inclusive = &quot; + !Optional.ofNullable(schema.getExclusiveMinimum()).orElse(false) + &quot;)&quot;);</span>
 			}
 <span class="fc bfc" id="L747" title="All 2 branches covered.">			if (schema.getMaximum() != null) {</span>
-<span class="fc" id="L748">				annotations.add(&quot;@javax.validation.constraints.Max(&quot; + schema.getMaximum().longValue() + &quot;)&quot;);</span>
+<span class="fc" id="L748">				annotations.add(&quot;@javax.validation.constraints.DecimalMax(&quot;</span>
+<span class="fc" id="L749">						+ &quot;value = \&quot;&quot; + schema.getMaximum() + &quot;\&quot;, &quot;</span>
+<span class="fc bfc" id="L750" title="All 2 branches covered.">						+ &quot;inclusive = &quot; + !Optional.ofNullable(schema.getExclusiveMaximum()).orElse(false) + &quot;)&quot;);</span>
 			}
-<span class="pc bpc" id="L750" title="2 of 4 branches missed.">		} else if (ModelUtils.isTypeObjectSchema(schema) || schema.getType() == null) {</span>
-<span class="fc" id="L751">			annotations.add(&quot;@javax.validation.Valid&quot;);</span>
+<span class="fc bfc" id="L752" title="All 2 branches covered.">		} else if (ModelUtils.isIntegerSchema(schema)) {</span>
+<span class="fc bfc" id="L753" title="All 2 branches covered.">			if (schema.getMinimum() != null) {</span>
+<span class="fc" id="L754">				annotations.add(&quot;@javax.validation.constraints.Min(&quot; + schema.getMinimum().longValue() + &quot;)&quot;);</span>
+			}
+<span class="fc bfc" id="L756" title="All 2 branches covered.">			if (schema.getMaximum() != null) {</span>
+<span class="fc" id="L757">				annotations.add(&quot;@javax.validation.constraints.Max(&quot; + schema.getMaximum().longValue() + &quot;)&quot;);</span>
+			}
+<span class="pc bpc" id="L759" title="2 of 4 branches missed.">		} else if (ModelUtils.isTypeObjectSchema(schema) || schema.getType() == null) {</span>
+<span class="fc" id="L760">			annotations.add(&quot;@javax.validation.Valid&quot;);</span>
 		}
-<span class="fc" id="L753">		return annotations;</span>
+<span class="fc" id="L762">		return annotations;</span>
 	}
 
 	private String removeValidation(String dataType) {
-<span class="fc" id="L757">		var tmp = dataType;</span>
-<span class="fc" id="L758">		tmp = tmp.replace(&quot;@javax.validation.Valid &quot;, &quot;&quot;);</span>
-<span class="fc" id="L759">		tmp = tmp.replace(&quot;@javax.validation.constraints.NotNull &quot;, &quot;&quot;);</span>
-<span class="fc" id="L760">		tmp = tmp.replace(&quot;@javax.validation.constraints.Email &quot;, &quot;&quot;);</span>
-<span class="fc" id="L761">		return tmp.replaceAll(</span>
+<span class="fc" id="L766">		var tmp = dataType;</span>
+<span class="fc" id="L767">		tmp = tmp.replace(&quot;@javax.validation.Valid &quot;, &quot;&quot;);</span>
+<span class="fc" id="L768">		tmp = tmp.replace(&quot;@javax.validation.constraints.NotNull &quot;, &quot;&quot;);</span>
+<span class="fc" id="L769">		tmp = tmp.replace(&quot;@javax.validation.constraints.Email &quot;, &quot;&quot;);</span>
+<span class="fc" id="L770">		return tmp.replaceAll(</span>
 				&quot;@javax\\.validation\\.constraints\\.(Pattern|Size|DecimalMin|DecimalMax|Min|Max)\\(.*\\) &quot;, &quot;&quot;);
 	}
 }

@@ -509,267 +509,276 @@
 <a class="jxr_linenumber" name="L501" href="#L501">501</a> 		<strong class="jxr_keyword">if</strong> (dateTimeRelaxed &amp;&amp; (parameter.isDate || parameter.isDateTime)) {
 <a class="jxr_linenumber" name="L502" href="#L502">502</a> 			addSupportingFile(sourceFolder, invokerPackage, <span class="jxr_string">"TimeTypeConverterRegistrar"</span>);
 <a class="jxr_linenumber" name="L503" href="#L503">503</a> 		}
-<a class="jxr_linenumber" name="L504" href="#L504">504</a> 		parameter.vendorExtensions.put(<span class="jxr_string">"x-datatype-without-validation"</span>, removeValidation(parameter.dataType));
-<a class="jxr_linenumber" name="L505" href="#L505">505</a> 	}
-<a class="jxr_linenumber" name="L506" href="#L506">506</a> 
-<a class="jxr_linenumber" name="L507" href="#L507">507</a> 	@Override
-<a class="jxr_linenumber" name="L508" href="#L508">508</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> postProcessResponseWithProperty(CodegenResponse response, CodegenProperty property) {
-<a class="jxr_linenumber" name="L509" href="#L509">509</a> 		<strong class="jxr_keyword">if</strong> (property != <strong class="jxr_keyword">null</strong> &amp;&amp; property.dataType != <strong class="jxr_keyword">null</strong> &amp;&amp; property.dataType.contains(<span class="jxr_string">"@javax.validation"</span>)) {
-<a class="jxr_linenumber" name="L510" href="#L510">510</a> 			property.dataType = removeValidation(property.dataType);
-<a class="jxr_linenumber" name="L511" href="#L511">511</a> 		}
-<a class="jxr_linenumber" name="L512" href="#L512">512</a> 		<strong class="jxr_keyword">if</strong> (response != <strong class="jxr_keyword">null</strong> &amp;&amp; response.dataType != <strong class="jxr_keyword">null</strong> &amp;&amp; response.dataType.contains(<span class="jxr_string">"@javax.validation"</span>)) {
-<a class="jxr_linenumber" name="L513" href="#L513">513</a> 			response.dataType = removeValidation(response.dataType);
-<a class="jxr_linenumber" name="L514" href="#L514">514</a> 		}
-<a class="jxr_linenumber" name="L515" href="#L515">515</a> 	}
-<a class="jxr_linenumber" name="L516" href="#L516">516</a> 
-<a class="jxr_linenumber" name="L517" href="#L517">517</a> 	@Override
-<a class="jxr_linenumber" name="L518" href="#L518">518</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> postProcessModelProperty(CodegenModel model, CodegenProperty property) {
-<a class="jxr_linenumber" name="L519" href="#L519">519</a> 		<strong class="jxr_keyword">super</strong>.postProcessModelProperty(model, property);
-<a class="jxr_linenumber" name="L520" href="#L520">520</a> 
-<a class="jxr_linenumber" name="L521" href="#L521">521</a> 		<strong class="jxr_keyword">if</strong> (openApiNullable &amp;&amp; !property.required &amp;&amp; property.isNullable) {
-<a class="jxr_linenumber" name="L522" href="#L522">522</a> 			property.getVendorExtensions().put(<span class="jxr_string">"x-jackson-nullable"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L523" href="#L523">523</a> 		}
-<a class="jxr_linenumber" name="L524" href="#L524">524</a> 	}
-<a class="jxr_linenumber" name="L525" href="#L525">525</a> 
-<a class="jxr_linenumber" name="L526" href="#L526">526</a> 	@Override
-<a class="jxr_linenumber" name="L527" href="#L527">527</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isDataTypeString(String dataType) {
-<a class="jxr_linenumber" name="L528" href="#L528">528</a> 		<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.lang.String"</span>.equals(dataType) || <span class="jxr_string">"String"</span>.equals(dataType);
-<a class="jxr_linenumber" name="L529" href="#L529">529</a> 	}
-<a class="jxr_linenumber" name="L530" href="#L530">530</a> 
-<a class="jxr_linenumber" name="L531" href="#L531">531</a> 	@Override
-<a class="jxr_linenumber" name="L532" href="#L532">532</a> 	<strong class="jxr_keyword">public</strong> String getTypeDeclaration(@SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema p) {
-<a class="jxr_linenumber" name="L533" href="#L533">533</a> 		<strong class="jxr_keyword">var</strong> schema = unaliasSchema(p);
-<a class="jxr_linenumber" name="L534" href="#L534">534</a> 		<strong class="jxr_keyword">var</strong> target = ModelUtils.isGenerateAliasAsModel() ? p : schema;
-<a class="jxr_linenumber" name="L535" href="#L535">535</a> 		<strong class="jxr_keyword">if</strong> (useBeanValidation &amp;&amp; ModelUtils.isArraySchema(target)) {
-<a class="jxr_linenumber" name="L536" href="#L536">536</a> 			<strong class="jxr_keyword">var</strong> items = unaliasSchema(getSchemaItems((ArraySchema) target));
-<a class="jxr_linenumber" name="L537" href="#L537">537</a> 			<strong class="jxr_keyword">var</strong> itemType = getTypeDeclaration(items);
-<a class="jxr_linenumber" name="L538" href="#L538">538</a> 			<strong class="jxr_keyword">var</strong> annotations = getBeanValidation(items).stream().map(n -&gt; n + <span class="jxr_string">" "</span>).collect(Collectors.joining());
-<a class="jxr_linenumber" name="L539" href="#L539">539</a> 			<strong class="jxr_keyword">var</strong> index = itemType.lastIndexOf(<span class="jxr_string">"."</span>);
-<a class="jxr_linenumber" name="L540" href="#L540">540</a> 			<strong class="jxr_keyword">return</strong> getSchemaType(target) + <span class="jxr_string">"&lt;"</span> + (index == -1 ? annotations + itemType
-<a class="jxr_linenumber" name="L541" href="#L541">541</a> 					: (itemType.substring(0, index + 1) + annotations + itemType.substring(index + 1))) + <span class="jxr_string">"&gt;"</span>;
-<a class="jxr_linenumber" name="L542" href="#L542">542</a> 		}
-<a class="jxr_linenumber" name="L543" href="#L543">543</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.getTypeDeclaration(p);
-<a class="jxr_linenumber" name="L544" href="#L544">544</a> 	}
-<a class="jxr_linenumber" name="L545" href="#L545">545</a> 
-<a class="jxr_linenumber" name="L546" href="#L546">546</a> 	@Override
-<a class="jxr_linenumber" name="L547" href="#L547">547</a> 	<strong class="jxr_keyword">public</strong> String toDefaultValue(CodegenProperty property, @SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema schema) {
-<a class="jxr_linenumber" name="L548" href="#L548">548</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L549" href="#L549">549</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"new "</span> + getSchemaType(schema) + <span class="jxr_string">"()"</span>;
-<a class="jxr_linenumber" name="L550" href="#L550">550</a> 		}
-<a class="jxr_linenumber" name="L551" href="#L551">551</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toDefaultValue(property, schema);
-<a class="jxr_linenumber" name="L552" href="#L552">552</a> 	}
-<a class="jxr_linenumber" name="L553" href="#L553">553</a> 
-<a class="jxr_linenumber" name="L554" href="#L554">554</a> 	@Override
-<a class="jxr_linenumber" name="L555" href="#L555">555</a> 	<strong class="jxr_keyword">public</strong> String toDefaultValue(@SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema schema) {
-<a class="jxr_linenumber" name="L556" href="#L556">556</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L557" href="#L557">557</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"new "</span> + getSchemaType(schema) + <span class="jxr_string">"()"</span>;
-<a class="jxr_linenumber" name="L558" href="#L558">558</a> 		}
-<a class="jxr_linenumber" name="L559" href="#L559">559</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toDefaultValue(schema);
-<a class="jxr_linenumber" name="L560" href="#L560">560</a> 	}
-<a class="jxr_linenumber" name="L561" href="#L561">561</a> 
-<a class="jxr_linenumber" name="L562" href="#L562">562</a> 	@Override
-<a class="jxr_linenumber" name="L563" href="#L563">563</a> 	<strong class="jxr_keyword">public</strong> String toExampleValue(@SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema schema) {
-<a class="jxr_linenumber" name="L564" href="#L564">564</a> 
-<a class="jxr_linenumber" name="L565" href="#L565">565</a> 		<em class="jxr_comment">// first choice: use the example, provided from the spec</em>
-<a class="jxr_linenumber" name="L566" href="#L566">566</a> 		<em class="jxr_comment">// second choice: use the default provided by the spec</em>
-<a class="jxr_linenumber" name="L567" href="#L567">567</a> 		<em class="jxr_comment">// special handling for enum: if no example or default is provided, use the first value</em>
-<a class="jxr_linenumber" name="L568" href="#L568">568</a> 		@SuppressWarnings(<span class="jxr_string">"unchecked"</span>)
-<a class="jxr_linenumber" name="L569" href="#L569">569</a> 		Optional&lt;String&gt; value = Optional
-<a class="jxr_linenumber" name="L570" href="#L570">570</a> 				.ofNullable(schema.getExample())
-<a class="jxr_linenumber" name="L571" href="#L571">571</a> 				.or(() -&gt; Optional.ofNullable(schema.getDefault()))
-<a class="jxr_linenumber" name="L572" href="#L572">572</a> 				.or(() -&gt; Optional.ofNullable(schema.getEnum()).flatMap(e -&gt; e.stream().findFirst()))
-<a class="jxr_linenumber" name="L573" href="#L573">573</a> 				.map(Object::toString);
-<a class="jxr_linenumber" name="L574" href="#L574">574</a> 
-<a class="jxr_linenumber" name="L575" href="#L575">575</a> 		<em class="jxr_comment">// third choice: set type-specific default examples</em>
-<a class="jxr_linenumber" name="L576" href="#L576">576</a> 
-<a class="jxr_linenumber" name="L577" href="#L577">577</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isBooleanSchema(schema)) {
-<a class="jxr_linenumber" name="L578" href="#L578">578</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"false"</span>);
-<a class="jxr_linenumber" name="L579" href="#L579">579</a> 		}
-<a class="jxr_linenumber" name="L580" href="#L580">580</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isLongSchema(schema)) {
-<a class="jxr_linenumber" name="L581" href="#L581">581</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"100L"</span>) + <span class="jxr_string">"L"</span>;
-<a class="jxr_linenumber" name="L582" href="#L582">582</a> 		}
-<a class="jxr_linenumber" name="L583" href="#L583">583</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isFloatSchema(schema)) {
-<a class="jxr_linenumber" name="L584" href="#L584">584</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"12.34"</span>) + <span class="jxr_string">"F"</span>;
-<a class="jxr_linenumber" name="L585" href="#L585">585</a> 		}
-<a class="jxr_linenumber" name="L586" href="#L586">586</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDoubleSchema(schema)) {
-<a class="jxr_linenumber" name="L587" href="#L587">587</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"43.21"</span>) + <span class="jxr_string">"D"</span>;
+<a class="jxr_linenumber" name="L504" href="#L504">504</a> 		<strong class="jxr_keyword">if</strong> (parameter.isArray
+<a class="jxr_linenumber" name="L505" href="#L505">505</a> 				&amp;&amp; parameter.items.allowableValues != <strong class="jxr_keyword">null</strong>
+<a class="jxr_linenumber" name="L506" href="#L506">506</a> 				&amp;&amp; !parameter.items.allowableValues.isEmpty()) {
+<a class="jxr_linenumber" name="L507" href="#L507">507</a> 			parameter.dataType = parameter.datatypeWithEnum = parameter.dataType.replace(<span class="jxr_string">"@javax.validation.Valid "</span>,
+<a class="jxr_linenumber" name="L508" href="#L508">508</a> 					<span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L509" href="#L509">509</a> 		}
+<a class="jxr_linenumber" name="L510" href="#L510">510</a> 		parameter.vendorExtensions.put(<span class="jxr_string">"x-datatype-without-validation"</span>, removeValidation(parameter.dataType));
+<a class="jxr_linenumber" name="L511" href="#L511">511</a> 	}
+<a class="jxr_linenumber" name="L512" href="#L512">512</a> 
+<a class="jxr_linenumber" name="L513" href="#L513">513</a> 	@Override
+<a class="jxr_linenumber" name="L514" href="#L514">514</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> postProcessResponseWithProperty(CodegenResponse response, CodegenProperty property) {
+<a class="jxr_linenumber" name="L515" href="#L515">515</a> 		<strong class="jxr_keyword">if</strong> (property != <strong class="jxr_keyword">null</strong> &amp;&amp; property.dataType != <strong class="jxr_keyword">null</strong> &amp;&amp; property.dataType.contains(<span class="jxr_string">"@javax.validation"</span>)) {
+<a class="jxr_linenumber" name="L516" href="#L516">516</a> 			property.dataType = removeValidation(property.dataType);
+<a class="jxr_linenumber" name="L517" href="#L517">517</a> 		}
+<a class="jxr_linenumber" name="L518" href="#L518">518</a> 		<strong class="jxr_keyword">if</strong> (response != <strong class="jxr_keyword">null</strong> &amp;&amp; response.dataType != <strong class="jxr_keyword">null</strong> &amp;&amp; response.dataType.contains(<span class="jxr_string">"@javax.validation"</span>)) {
+<a class="jxr_linenumber" name="L519" href="#L519">519</a> 			response.dataType = removeValidation(response.dataType);
+<a class="jxr_linenumber" name="L520" href="#L520">520</a> 		}
+<a class="jxr_linenumber" name="L521" href="#L521">521</a> 	}
+<a class="jxr_linenumber" name="L522" href="#L522">522</a> 
+<a class="jxr_linenumber" name="L523" href="#L523">523</a> 	@Override
+<a class="jxr_linenumber" name="L524" href="#L524">524</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> postProcessModelProperty(CodegenModel model, CodegenProperty property) {
+<a class="jxr_linenumber" name="L525" href="#L525">525</a> 		<strong class="jxr_keyword">super</strong>.postProcessModelProperty(model, property);
+<a class="jxr_linenumber" name="L526" href="#L526">526</a> 
+<a class="jxr_linenumber" name="L527" href="#L527">527</a> 		<strong class="jxr_keyword">if</strong> (openApiNullable &amp;&amp; !property.required &amp;&amp; property.isNullable) {
+<a class="jxr_linenumber" name="L528" href="#L528">528</a> 			property.getVendorExtensions().put(<span class="jxr_string">"x-jackson-nullable"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L529" href="#L529">529</a> 		}
+<a class="jxr_linenumber" name="L530" href="#L530">530</a> 		<strong class="jxr_keyword">if</strong> (property.isArray &amp;&amp; property.items.allowableValues != <strong class="jxr_keyword">null</strong> &amp;&amp; !property.items.allowableValues.isEmpty()) {
+<a class="jxr_linenumber" name="L531" href="#L531">531</a> 			property.dataType = property.datatypeWithEnum = property.dataType.replace(<span class="jxr_string">"@javax.validation.Valid "</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L532" href="#L532">532</a> 		}
+<a class="jxr_linenumber" name="L533" href="#L533">533</a> 	}
+<a class="jxr_linenumber" name="L534" href="#L534">534</a> 
+<a class="jxr_linenumber" name="L535" href="#L535">535</a> 	@Override
+<a class="jxr_linenumber" name="L536" href="#L536">536</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isDataTypeString(String dataType) {
+<a class="jxr_linenumber" name="L537" href="#L537">537</a> 		<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.lang.String"</span>.equals(dataType) || <span class="jxr_string">"String"</span>.equals(dataType);
+<a class="jxr_linenumber" name="L538" href="#L538">538</a> 	}
+<a class="jxr_linenumber" name="L539" href="#L539">539</a> 
+<a class="jxr_linenumber" name="L540" href="#L540">540</a> 	@Override
+<a class="jxr_linenumber" name="L541" href="#L541">541</a> 	<strong class="jxr_keyword">public</strong> String getTypeDeclaration(@SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema p) {
+<a class="jxr_linenumber" name="L542" href="#L542">542</a> 		<strong class="jxr_keyword">var</strong> schema = unaliasSchema(p);
+<a class="jxr_linenumber" name="L543" href="#L543">543</a> 		<strong class="jxr_keyword">var</strong> target = ModelUtils.isGenerateAliasAsModel() ? p : schema;
+<a class="jxr_linenumber" name="L544" href="#L544">544</a> 		<strong class="jxr_keyword">if</strong> (useBeanValidation &amp;&amp; ModelUtils.isArraySchema(target)) {
+<a class="jxr_linenumber" name="L545" href="#L545">545</a> 			<strong class="jxr_keyword">var</strong> items = unaliasSchema(getSchemaItems((ArraySchema) target));
+<a class="jxr_linenumber" name="L546" href="#L546">546</a> 			<strong class="jxr_keyword">var</strong> itemType = getTypeDeclaration(items);
+<a class="jxr_linenumber" name="L547" href="#L547">547</a> 			<strong class="jxr_keyword">var</strong> annotations = getBeanValidation(items).stream().map(n -&gt; n + <span class="jxr_string">" "</span>).collect(Collectors.joining());
+<a class="jxr_linenumber" name="L548" href="#L548">548</a> 			<strong class="jxr_keyword">var</strong> index = itemType.lastIndexOf(<span class="jxr_string">"."</span>);
+<a class="jxr_linenumber" name="L549" href="#L549">549</a> 			<strong class="jxr_keyword">return</strong> getSchemaType(target) + <span class="jxr_string">"&lt;"</span> + (index == -1 ? annotations + itemType
+<a class="jxr_linenumber" name="L550" href="#L550">550</a> 					: (itemType.substring(0, index + 1) + annotations + itemType.substring(index + 1))) + <span class="jxr_string">"&gt;"</span>;
+<a class="jxr_linenumber" name="L551" href="#L551">551</a> 		}
+<a class="jxr_linenumber" name="L552" href="#L552">552</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.getTypeDeclaration(p);
+<a class="jxr_linenumber" name="L553" href="#L553">553</a> 	}
+<a class="jxr_linenumber" name="L554" href="#L554">554</a> 
+<a class="jxr_linenumber" name="L555" href="#L555">555</a> 	@Override
+<a class="jxr_linenumber" name="L556" href="#L556">556</a> 	<strong class="jxr_keyword">public</strong> String toDefaultValue(CodegenProperty property, @SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema schema) {
+<a class="jxr_linenumber" name="L557" href="#L557">557</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L558" href="#L558">558</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"new "</span> + getSchemaType(schema) + <span class="jxr_string">"()"</span>;
+<a class="jxr_linenumber" name="L559" href="#L559">559</a> 		}
+<a class="jxr_linenumber" name="L560" href="#L560">560</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toDefaultValue(property, schema);
+<a class="jxr_linenumber" name="L561" href="#L561">561</a> 	}
+<a class="jxr_linenumber" name="L562" href="#L562">562</a> 
+<a class="jxr_linenumber" name="L563" href="#L563">563</a> 	@Override
+<a class="jxr_linenumber" name="L564" href="#L564">564</a> 	<strong class="jxr_keyword">public</strong> String toDefaultValue(@SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema schema) {
+<a class="jxr_linenumber" name="L565" href="#L565">565</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isGenerateAliasAsModel() &amp;&amp; schema.get$ref() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L566" href="#L566">566</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"new "</span> + getSchemaType(schema) + <span class="jxr_string">"()"</span>;
+<a class="jxr_linenumber" name="L567" href="#L567">567</a> 		}
+<a class="jxr_linenumber" name="L568" href="#L568">568</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toDefaultValue(schema);
+<a class="jxr_linenumber" name="L569" href="#L569">569</a> 	}
+<a class="jxr_linenumber" name="L570" href="#L570">570</a> 
+<a class="jxr_linenumber" name="L571" href="#L571">571</a> 	@Override
+<a class="jxr_linenumber" name="L572" href="#L572">572</a> 	<strong class="jxr_keyword">public</strong> String toExampleValue(@SuppressWarnings(<span class="jxr_string">"rawtypes"</span>) Schema schema) {
+<a class="jxr_linenumber" name="L573" href="#L573">573</a> 
+<a class="jxr_linenumber" name="L574" href="#L574">574</a> 		<em class="jxr_comment">// first choice: use the example, provided from the spec</em>
+<a class="jxr_linenumber" name="L575" href="#L575">575</a> 		<em class="jxr_comment">// second choice: use the default provided by the spec</em>
+<a class="jxr_linenumber" name="L576" href="#L576">576</a> 		<em class="jxr_comment">// special handling for enum: if no example or default is provided, use the first value</em>
+<a class="jxr_linenumber" name="L577" href="#L577">577</a> 		@SuppressWarnings(<span class="jxr_string">"unchecked"</span>)
+<a class="jxr_linenumber" name="L578" href="#L578">578</a> 		Optional&lt;String&gt; value = Optional
+<a class="jxr_linenumber" name="L579" href="#L579">579</a> 				.ofNullable(schema.getExample())
+<a class="jxr_linenumber" name="L580" href="#L580">580</a> 				.or(() -&gt; Optional.ofNullable(schema.getDefault()))
+<a class="jxr_linenumber" name="L581" href="#L581">581</a> 				.or(() -&gt; Optional.ofNullable(schema.getEnum()).flatMap(e -&gt; e.stream().findFirst()))
+<a class="jxr_linenumber" name="L582" href="#L582">582</a> 				.map(Object::toString);
+<a class="jxr_linenumber" name="L583" href="#L583">583</a> 
+<a class="jxr_linenumber" name="L584" href="#L584">584</a> 		<em class="jxr_comment">// third choice: set type-specific default examples</em>
+<a class="jxr_linenumber" name="L585" href="#L585">585</a> 
+<a class="jxr_linenumber" name="L586" href="#L586">586</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isBooleanSchema(schema)) {
+<a class="jxr_linenumber" name="L587" href="#L587">587</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"false"</span>);
 <a class="jxr_linenumber" name="L588" href="#L588">588</a> 		}
-<a class="jxr_linenumber" name="L589" href="#L589">589</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isIntegerSchema(schema) || ModelUtils.isShortSchema(schema)) {
-<a class="jxr_linenumber" name="L590" href="#L590">590</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"12"</span>);
+<a class="jxr_linenumber" name="L589" href="#L589">589</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isLongSchema(schema)) {
+<a class="jxr_linenumber" name="L590" href="#L590">590</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"100L"</span>) + <span class="jxr_string">"L"</span>;
 <a class="jxr_linenumber" name="L591" href="#L591">591</a> 		}
-<a class="jxr_linenumber" name="L592" href="#L592">592</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isNumberSchema(schema)) {
-<a class="jxr_linenumber" name="L593" href="#L593">593</a> 			<strong class="jxr_keyword">return</strong> value.map(v -&gt; <span class="jxr_string">"java.lang.Number.valueOf(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"12.34"</span>);
+<a class="jxr_linenumber" name="L592" href="#L592">592</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isFloatSchema(schema)) {
+<a class="jxr_linenumber" name="L593" href="#L593">593</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"12.34"</span>) + <span class="jxr_string">"F"</span>;
 <a class="jxr_linenumber" name="L594" href="#L594">594</a> 		}
-<a class="jxr_linenumber" name="L595" href="#L595">595</a> 
-<a class="jxr_linenumber" name="L596" href="#L596">596</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDateSchema(schema)) {
-<a class="jxr_linenumber" name="L597" href="#L597">597</a> 			<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"java.time.LocalDate"</span>.equals(typeMapping.get(schema.getType()))) {
-<a class="jxr_linenumber" name="L598" href="#L598">598</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.time.LocalDate."</span> + value.map(v -&gt; <span class="jxr_string">"parse(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"now()"</span>);
-<a class="jxr_linenumber" name="L599" href="#L599">599</a> 			}
-<a class="jxr_linenumber" name="L600" href="#L600">600</a> 			<em class="jxr_comment">// we cannot provide a valid example for all possible date types</em>
-<a class="jxr_linenumber" name="L601" href="#L601">601</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"null"</span>;
-<a class="jxr_linenumber" name="L602" href="#L602">602</a> 		}
-<a class="jxr_linenumber" name="L603" href="#L603">603</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDateTimeSchema(schema)) {
-<a class="jxr_linenumber" name="L604" href="#L604">604</a> 			<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"java.time.Instant"</span>.equals(typeMapping.get(schema.getType()))) {
-<a class="jxr_linenumber" name="L605" href="#L605">605</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.time.Instant."</span> + value.map(v -&gt; <span class="jxr_string">"parse(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"now()"</span>);
-<a class="jxr_linenumber" name="L606" href="#L606">606</a> 			}
-<a class="jxr_linenumber" name="L607" href="#L607">607</a> 			<em class="jxr_comment">// we cannot provide a valid example for all possible date types</em>
-<a class="jxr_linenumber" name="L608" href="#L608">608</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"null"</span>;
-<a class="jxr_linenumber" name="L609" href="#L609">609</a> 		}
-<a class="jxr_linenumber" name="L610" href="#L610">610</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isByteArraySchema(schema) || ModelUtils.isBinarySchema(schema)) {
-<a class="jxr_linenumber" name="L611" href="#L611">611</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"\&quot;byteArray\&quot;.getBytes()"</span>);
-<a class="jxr_linenumber" name="L612" href="#L612">612</a> 		}
-<a class="jxr_linenumber" name="L613" href="#L613">613</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isFileSchema(schema)) {
-<a class="jxr_linenumber" name="L614" href="#L614">614</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"\&quot;myFile\&quot;.getBytes()"</span>);
-<a class="jxr_linenumber" name="L615" href="#L615">615</a> 		}
-<a class="jxr_linenumber" name="L616" href="#L616">616</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isUUIDSchema(schema)) {
-<a class="jxr_linenumber" name="L617" href="#L617">617</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.UUID."</span> + value.map(v -&gt; <span class="jxr_string">"fromString(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"randomUUID()"</span>);
+<a class="jxr_linenumber" name="L595" href="#L595">595</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDoubleSchema(schema)) {
+<a class="jxr_linenumber" name="L596" href="#L596">596</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"43.21"</span>) + <span class="jxr_string">"D"</span>;
+<a class="jxr_linenumber" name="L597" href="#L597">597</a> 		}
+<a class="jxr_linenumber" name="L598" href="#L598">598</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isIntegerSchema(schema) || ModelUtils.isShortSchema(schema)) {
+<a class="jxr_linenumber" name="L599" href="#L599">599</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"12"</span>);
+<a class="jxr_linenumber" name="L600" href="#L600">600</a> 		}
+<a class="jxr_linenumber" name="L601" href="#L601">601</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isNumberSchema(schema)) {
+<a class="jxr_linenumber" name="L602" href="#L602">602</a> 			<strong class="jxr_keyword">return</strong> value.map(v -&gt; <span class="jxr_string">"java.lang.Number.valueOf(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"12.34"</span>);
+<a class="jxr_linenumber" name="L603" href="#L603">603</a> 		}
+<a class="jxr_linenumber" name="L604" href="#L604">604</a> 
+<a class="jxr_linenumber" name="L605" href="#L605">605</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDateSchema(schema)) {
+<a class="jxr_linenumber" name="L606" href="#L606">606</a> 			<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"java.time.LocalDate"</span>.equals(typeMapping.get(schema.getType()))) {
+<a class="jxr_linenumber" name="L607" href="#L607">607</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.time.LocalDate."</span> + value.map(v -&gt; <span class="jxr_string">"parse(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"now()"</span>);
+<a class="jxr_linenumber" name="L608" href="#L608">608</a> 			}
+<a class="jxr_linenumber" name="L609" href="#L609">609</a> 			<em class="jxr_comment">// we cannot provide a valid example for all possible date types</em>
+<a class="jxr_linenumber" name="L610" href="#L610">610</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"null"</span>;
+<a class="jxr_linenumber" name="L611" href="#L611">611</a> 		}
+<a class="jxr_linenumber" name="L612" href="#L612">612</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isDateTimeSchema(schema)) {
+<a class="jxr_linenumber" name="L613" href="#L613">613</a> 			<strong class="jxr_keyword">if</strong> (<span class="jxr_string">"java.time.Instant"</span>.equals(typeMapping.get(schema.getType()))) {
+<a class="jxr_linenumber" name="L614" href="#L614">614</a> 				<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.time.Instant."</span> + value.map(v -&gt; <span class="jxr_string">"parse(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"now()"</span>);
+<a class="jxr_linenumber" name="L615" href="#L615">615</a> 			}
+<a class="jxr_linenumber" name="L616" href="#L616">616</a> 			<em class="jxr_comment">// we cannot provide a valid example for all possible date types</em>
+<a class="jxr_linenumber" name="L617" href="#L617">617</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"null"</span>;
 <a class="jxr_linenumber" name="L618" href="#L618">618</a> 		}
-<a class="jxr_linenumber" name="L619" href="#L619">619</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isURISchema(schema)) {
-<a class="jxr_linenumber" name="L620" href="#L620">620</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.net.URI.create(\&quot;"</span> + value.orElse(<span class="jxr_string">"my:uri"</span>) + <span class="jxr_string">"\&quot;)"</span>;
+<a class="jxr_linenumber" name="L619" href="#L619">619</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isByteArraySchema(schema) || ModelUtils.isBinarySchema(schema)) {
+<a class="jxr_linenumber" name="L620" href="#L620">620</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"\&quot;byteArray\&quot;.getBytes()"</span>);
 <a class="jxr_linenumber" name="L621" href="#L621">621</a> 		}
-<a class="jxr_linenumber" name="L622" href="#L622">622</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isEmailSchema(schema)) {
-<a class="jxr_linenumber" name="L623" href="#L623">623</a> 			<strong class="jxr_keyword">return</strong> '&quot;' + value.orElse(<span class="jxr_string">"mail@example.org"</span>) + '&quot;';
+<a class="jxr_linenumber" name="L622" href="#L622">622</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isFileSchema(schema)) {
+<a class="jxr_linenumber" name="L623" href="#L623">623</a> 			<strong class="jxr_keyword">return</strong> value.orElse(<span class="jxr_string">"\&quot;myFile\&quot;.getBytes()"</span>);
 <a class="jxr_linenumber" name="L624" href="#L624">624</a> 		}
-<a class="jxr_linenumber" name="L625" href="#L625">625</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isStringSchema(schema)) {
-<a class="jxr_linenumber" name="L626" href="#L626">626</a> 			<strong class="jxr_keyword">return</strong> '&quot;' + value.orElse(<span class="jxr_string">"string"</span>) + '&quot;';
+<a class="jxr_linenumber" name="L625" href="#L625">625</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isUUIDSchema(schema)) {
+<a class="jxr_linenumber" name="L626" href="#L626">626</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.UUID."</span> + value.map(v -&gt; <span class="jxr_string">"fromString(\&quot;"</span> + v + <span class="jxr_string">"\&quot;)"</span>).orElse(<span class="jxr_string">"randomUUID()"</span>);
 <a class="jxr_linenumber" name="L627" href="#L627">627</a> 		}
-<a class="jxr_linenumber" name="L628" href="#L628">628</a> 
-<a class="jxr_linenumber" name="L629" href="#L629">629</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isMapSchema(schema)) {
-<a class="jxr_linenumber" name="L630" href="#L630">630</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.Map."</span> + value
-<a class="jxr_linenumber" name="L631" href="#L631">631</a> 					.map(v -&gt; (Map&lt;?, ?&gt;) <strong class="jxr_keyword">new</strong> org.yaml.snakeyaml.Yaml().loadAs(v, Map.<strong class="jxr_keyword">class</strong>))
-<a class="jxr_linenumber" name="L632" href="#L632">632</a> 					.filter(map -&gt; !map.isEmpty())
-<a class="jxr_linenumber" name="L633" href="#L633">633</a> 					.map(map -&gt; map.entrySet().stream()
-<a class="jxr_linenumber" name="L634" href="#L634">634</a> 							.map(e -&gt; <span class="jxr_string">"new java.util.AbstractMap.SimpleEntry(\&quot;"</span>
-<a class="jxr_linenumber" name="L635" href="#L635">635</a> 									+ e.getKey() + <span class="jxr_string">"\&quot;, \&quot;"</span> + e.getValue() + <span class="jxr_string">"\&quot;)"</span>)
-<a class="jxr_linenumber" name="L636" href="#L636">636</a> 							.collect(Collectors.joining(<span class="jxr_string">", "</span>)))
-<a class="jxr_linenumber" name="L637" href="#L637">637</a> 					.map(map -&gt; <span class="jxr_string">"ofEntries("</span> + map + <span class="jxr_string">")"</span>)
-<a class="jxr_linenumber" name="L638" href="#L638">638</a> 					.orElse(<span class="jxr_string">"of()"</span>);
-<a class="jxr_linenumber" name="L639" href="#L639">639</a> 		}
-<a class="jxr_linenumber" name="L640" href="#L640">640</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isSet(schema)) {
-<a class="jxr_linenumber" name="L641" href="#L641">641</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.Set.of("</span> + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(<span class="jxr_string">""</span>) + <span class="jxr_string">")"</span>;
-<a class="jxr_linenumber" name="L642" href="#L642">642</a> 		}
-<a class="jxr_linenumber" name="L643" href="#L643">643</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isArraySchema(schema)) {
-<a class="jxr_linenumber" name="L644" href="#L644">644</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.List.of("</span> + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(<span class="jxr_string">""</span>) + <span class="jxr_string">")"</span>;
-<a class="jxr_linenumber" name="L645" href="#L645">645</a> 		}
-<a class="jxr_linenumber" name="L646" href="#L646">646</a> 
-<a class="jxr_linenumber" name="L647" href="#L647">647</a> 		<em class="jxr_comment">// if no example can be generated, leave it null.</em>
-<a class="jxr_linenumber" name="L648" href="#L648">648</a> 		<strong class="jxr_keyword">return</strong> <span class="jxr_string">"null"</span>;
-<a class="jxr_linenumber" name="L649" href="#L649">649</a> 	}
-<a class="jxr_linenumber" name="L650" href="#L650">650</a> 
-<a class="jxr_linenumber" name="L651" href="#L651">651</a> 	<em class="jxr_comment">// enum</em>
-<a class="jxr_linenumber" name="L652" href="#L652">652</a> 
-<a class="jxr_linenumber" name="L653" href="#L653">653</a> 	@Override
-<a class="jxr_linenumber" name="L654" href="#L654">654</a> 	<strong class="jxr_keyword">public</strong> String toEnumName(CodegenProperty property) {
-<a class="jxr_linenumber" name="L655" href="#L655">655</a> 		<strong class="jxr_keyword">return</strong> property.nameInCamelCase;
-<a class="jxr_linenumber" name="L656" href="#L656">656</a> 	}
-<a class="jxr_linenumber" name="L657" href="#L657">657</a> 
-<a class="jxr_linenumber" name="L658" href="#L658">658</a> 	@Override
-<a class="jxr_linenumber" name="L659" href="#L659">659</a> 	<strong class="jxr_keyword">public</strong> String toEnumVarName(String value, String datatype) {
-<a class="jxr_linenumber" name="L660" href="#L660">660</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toEnumVarName(value, datatype.replace(<span class="jxr_string">"java.lang."</span>, <span class="jxr_string">""</span>));
-<a class="jxr_linenumber" name="L661" href="#L661">661</a> 	}
-<a class="jxr_linenumber" name="L662" href="#L662">662</a> 
-<a class="jxr_linenumber" name="L663" href="#L663">663</a> 	@Override
-<a class="jxr_linenumber" name="L664" href="#L664">664</a> 	<strong class="jxr_keyword">public</strong> String toEnumValue(String value, String datatype) {
-<a class="jxr_linenumber" name="L665" href="#L665">665</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"int"</span>, <span class="jxr_string">"Integer"</span>, <span class="jxr_string">"java.lang.Integer"</span>).contains(datatype)) {
-<a class="jxr_linenumber" name="L666" href="#L666">666</a> 			<strong class="jxr_keyword">return</strong> value;
-<a class="jxr_linenumber" name="L667" href="#L667">667</a> 		}
-<a class="jxr_linenumber" name="L668" href="#L668">668</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"long"</span>, <span class="jxr_string">"Long"</span>, <span class="jxr_string">"java.lang.Long"</span>).contains(datatype)) {
-<a class="jxr_linenumber" name="L669" href="#L669">669</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"L"</span>;
-<a class="jxr_linenumber" name="L670" href="#L670">670</a> 		}
-<a class="jxr_linenumber" name="L671" href="#L671">671</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"float"</span>, <span class="jxr_string">"Float"</span>, <span class="jxr_string">"java.lang.Float"</span>).contains(datatype)) {
-<a class="jxr_linenumber" name="L672" href="#L672">672</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"F"</span>;
-<a class="jxr_linenumber" name="L673" href="#L673">673</a> 		}
-<a class="jxr_linenumber" name="L674" href="#L674">674</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"double"</span>, <span class="jxr_string">"Double"</span>, <span class="jxr_string">"java.lang.Double"</span>).contains(datatype)) {
-<a class="jxr_linenumber" name="L675" href="#L675">675</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"D"</span>;
+<a class="jxr_linenumber" name="L628" href="#L628">628</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isURISchema(schema)) {
+<a class="jxr_linenumber" name="L629" href="#L629">629</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.net.URI.create(\&quot;"</span> + value.orElse(<span class="jxr_string">"my:uri"</span>) + <span class="jxr_string">"\&quot;)"</span>;
+<a class="jxr_linenumber" name="L630" href="#L630">630</a> 		}
+<a class="jxr_linenumber" name="L631" href="#L631">631</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isEmailSchema(schema)) {
+<a class="jxr_linenumber" name="L632" href="#L632">632</a> 			<strong class="jxr_keyword">return</strong> '&quot;' + value.orElse(<span class="jxr_string">"mail@example.org"</span>) + '&quot;';
+<a class="jxr_linenumber" name="L633" href="#L633">633</a> 		}
+<a class="jxr_linenumber" name="L634" href="#L634">634</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isStringSchema(schema)) {
+<a class="jxr_linenumber" name="L635" href="#L635">635</a> 			<strong class="jxr_keyword">return</strong> '&quot;' + value.orElse(<span class="jxr_string">"string"</span>) + '&quot;';
+<a class="jxr_linenumber" name="L636" href="#L636">636</a> 		}
+<a class="jxr_linenumber" name="L637" href="#L637">637</a> 
+<a class="jxr_linenumber" name="L638" href="#L638">638</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isMapSchema(schema)) {
+<a class="jxr_linenumber" name="L639" href="#L639">639</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.Map."</span> + value
+<a class="jxr_linenumber" name="L640" href="#L640">640</a> 					.map(v -&gt; (Map&lt;?, ?&gt;) <strong class="jxr_keyword">new</strong> org.yaml.snakeyaml.Yaml().loadAs(v, Map.<strong class="jxr_keyword">class</strong>))
+<a class="jxr_linenumber" name="L641" href="#L641">641</a> 					.filter(map -&gt; !map.isEmpty())
+<a class="jxr_linenumber" name="L642" href="#L642">642</a> 					.map(map -&gt; map.entrySet().stream()
+<a class="jxr_linenumber" name="L643" href="#L643">643</a> 							.map(e -&gt; <span class="jxr_string">"new java.util.AbstractMap.SimpleEntry(\&quot;"</span>
+<a class="jxr_linenumber" name="L644" href="#L644">644</a> 									+ e.getKey() + <span class="jxr_string">"\&quot;, \&quot;"</span> + e.getValue() + <span class="jxr_string">"\&quot;)"</span>)
+<a class="jxr_linenumber" name="L645" href="#L645">645</a> 							.collect(Collectors.joining(<span class="jxr_string">", "</span>)))
+<a class="jxr_linenumber" name="L646" href="#L646">646</a> 					.map(map -&gt; <span class="jxr_string">"ofEntries("</span> + map + <span class="jxr_string">")"</span>)
+<a class="jxr_linenumber" name="L647" href="#L647">647</a> 					.orElse(<span class="jxr_string">"of()"</span>);
+<a class="jxr_linenumber" name="L648" href="#L648">648</a> 		}
+<a class="jxr_linenumber" name="L649" href="#L649">649</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isSet(schema)) {
+<a class="jxr_linenumber" name="L650" href="#L650">650</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.Set.of("</span> + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(<span class="jxr_string">""</span>) + <span class="jxr_string">")"</span>;
+<a class="jxr_linenumber" name="L651" href="#L651">651</a> 		}
+<a class="jxr_linenumber" name="L652" href="#L652">652</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isArraySchema(schema)) {
+<a class="jxr_linenumber" name="L653" href="#L653">653</a> 			<strong class="jxr_keyword">return</strong> <span class="jxr_string">"java.util.List.of("</span> + value.map(v -&gt; v.substring(1, v.length() - 1)).orElse(<span class="jxr_string">""</span>) + <span class="jxr_string">")"</span>;
+<a class="jxr_linenumber" name="L654" href="#L654">654</a> 		}
+<a class="jxr_linenumber" name="L655" href="#L655">655</a> 
+<a class="jxr_linenumber" name="L656" href="#L656">656</a> 		<em class="jxr_comment">// if no example can be generated, leave it null.</em>
+<a class="jxr_linenumber" name="L657" href="#L657">657</a> 		<strong class="jxr_keyword">return</strong> <span class="jxr_string">"null"</span>;
+<a class="jxr_linenumber" name="L658" href="#L658">658</a> 	}
+<a class="jxr_linenumber" name="L659" href="#L659">659</a> 
+<a class="jxr_linenumber" name="L660" href="#L660">660</a> 	<em class="jxr_comment">// enum</em>
+<a class="jxr_linenumber" name="L661" href="#L661">661</a> 
+<a class="jxr_linenumber" name="L662" href="#L662">662</a> 	@Override
+<a class="jxr_linenumber" name="L663" href="#L663">663</a> 	<strong class="jxr_keyword">public</strong> String toEnumName(CodegenProperty property) {
+<a class="jxr_linenumber" name="L664" href="#L664">664</a> 		<strong class="jxr_keyword">return</strong> property.nameInCamelCase;
+<a class="jxr_linenumber" name="L665" href="#L665">665</a> 	}
+<a class="jxr_linenumber" name="L666" href="#L666">666</a> 
+<a class="jxr_linenumber" name="L667" href="#L667">667</a> 	@Override
+<a class="jxr_linenumber" name="L668" href="#L668">668</a> 	<strong class="jxr_keyword">public</strong> String toEnumVarName(String value, String datatype) {
+<a class="jxr_linenumber" name="L669" href="#L669">669</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toEnumVarName(value, datatype.replace(<span class="jxr_string">"java.lang."</span>, <span class="jxr_string">""</span>));
+<a class="jxr_linenumber" name="L670" href="#L670">670</a> 	}
+<a class="jxr_linenumber" name="L671" href="#L671">671</a> 
+<a class="jxr_linenumber" name="L672" href="#L672">672</a> 	@Override
+<a class="jxr_linenumber" name="L673" href="#L673">673</a> 	<strong class="jxr_keyword">public</strong> String toEnumValue(String value, String datatype) {
+<a class="jxr_linenumber" name="L674" href="#L674">674</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"int"</span>, <span class="jxr_string">"Integer"</span>, <span class="jxr_string">"java.lang.Integer"</span>).contains(datatype)) {
+<a class="jxr_linenumber" name="L675" href="#L675">675</a> 			<strong class="jxr_keyword">return</strong> value;
 <a class="jxr_linenumber" name="L676" href="#L676">676</a> 		}
-<a class="jxr_linenumber" name="L677" href="#L677">677</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toEnumValue(value, datatype);
-<a class="jxr_linenumber" name="L678" href="#L678">678</a> 	}
-<a class="jxr_linenumber" name="L679" href="#L679">679</a> 
-<a class="jxr_linenumber" name="L680" href="#L680">680</a> 	<em class="jxr_comment">// setter</em>
-<a class="jxr_linenumber" name="L681" href="#L681">681</a> 
-<a class="jxr_linenumber" name="L682" href="#L682">682</a> 	@Override
-<a class="jxr_linenumber" name="L683" href="#L683">683</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUseBeanValidation(<strong class="jxr_keyword">boolean</strong> useBeanValidation) {
-<a class="jxr_linenumber" name="L684" href="#L684">684</a> 		<strong class="jxr_keyword">this</strong>.useBeanValidation = useBeanValidation;
-<a class="jxr_linenumber" name="L685" href="#L685">685</a> 	}
-<a class="jxr_linenumber" name="L686" href="#L686">686</a> 
-<a class="jxr_linenumber" name="L687" href="#L687">687</a> 	@Override
-<a class="jxr_linenumber" name="L688" href="#L688">688</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUseGenericResponse(<strong class="jxr_keyword">boolean</strong> useGenericResponse) {
-<a class="jxr_linenumber" name="L689" href="#L689">689</a> 		<strong class="jxr_keyword">this</strong>.useGenericResponse = useGenericResponse;
-<a class="jxr_linenumber" name="L690" href="#L690">690</a> 	}
-<a class="jxr_linenumber" name="L691" href="#L691">691</a> 
-<a class="jxr_linenumber" name="L692" href="#L692">692</a> 	@Override
-<a class="jxr_linenumber" name="L693" href="#L693">693</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUseOptional(<strong class="jxr_keyword">boolean</strong> useOptional) {
-<a class="jxr_linenumber" name="L694" href="#L694">694</a> 		<strong class="jxr_keyword">this</strong>.useOptional = useOptional;
-<a class="jxr_linenumber" name="L695" href="#L695">695</a> 	}
-<a class="jxr_linenumber" name="L696" href="#L696">696</a> 
-<a class="jxr_linenumber" name="L697" href="#L697">697</a> 	<em class="jxr_comment">// internal</em>
-<a class="jxr_linenumber" name="L698" href="#L698">698</a> 
-<a class="jxr_linenumber" name="L699" href="#L699">699</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> addSupportingFile(String folder, String packageString, String file) {
-<a class="jxr_linenumber" name="L700" href="#L700">700</a> 		<strong class="jxr_keyword">var</strong> templateFile = <span class="jxr_string">"support/"</span> + file + <span class="jxr_string">".mustache"</span>;
-<a class="jxr_linenumber" name="L701" href="#L701">701</a> 		<strong class="jxr_keyword">var</strong> destinationFilename = folder + <span class="jxr_string">"/"</span> + packageString.replace(<span class="jxr_string">"."</span>, <span class="jxr_string">"/"</span>) + <span class="jxr_string">"/"</span> + file + <span class="jxr_string">".java"</span>;
-<a class="jxr_linenumber" name="L702" href="#L702">702</a> 		<strong class="jxr_keyword">var</strong> supportingFile = <strong class="jxr_keyword">new</strong> SupportingFile(templateFile, destinationFilename);
-<a class="jxr_linenumber" name="L703" href="#L703">703</a> 		<strong class="jxr_keyword">if</strong> (!supportingFiles.contains(supportingFile)) {
-<a class="jxr_linenumber" name="L704" href="#L704">704</a> 			supportingFiles.add(supportingFile);
-<a class="jxr_linenumber" name="L705" href="#L705">705</a> 		}
-<a class="jxr_linenumber" name="L706" href="#L706">706</a> 	}
+<a class="jxr_linenumber" name="L677" href="#L677">677</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"long"</span>, <span class="jxr_string">"Long"</span>, <span class="jxr_string">"java.lang.Long"</span>).contains(datatype)) {
+<a class="jxr_linenumber" name="L678" href="#L678">678</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"L"</span>;
+<a class="jxr_linenumber" name="L679" href="#L679">679</a> 		}
+<a class="jxr_linenumber" name="L680" href="#L680">680</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"float"</span>, <span class="jxr_string">"Float"</span>, <span class="jxr_string">"java.lang.Float"</span>).contains(datatype)) {
+<a class="jxr_linenumber" name="L681" href="#L681">681</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"F"</span>;
+<a class="jxr_linenumber" name="L682" href="#L682">682</a> 		}
+<a class="jxr_linenumber" name="L683" href="#L683">683</a> 		<strong class="jxr_keyword">if</strong> (List.of(<span class="jxr_string">"double"</span>, <span class="jxr_string">"Double"</span>, <span class="jxr_string">"java.lang.Double"</span>).contains(datatype)) {
+<a class="jxr_linenumber" name="L684" href="#L684">684</a> 			<strong class="jxr_keyword">return</strong> value + <span class="jxr_string">"D"</span>;
+<a class="jxr_linenumber" name="L685" href="#L685">685</a> 		}
+<a class="jxr_linenumber" name="L686" href="#L686">686</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.toEnumValue(value, datatype);
+<a class="jxr_linenumber" name="L687" href="#L687">687</a> 	}
+<a class="jxr_linenumber" name="L688" href="#L688">688</a> 
+<a class="jxr_linenumber" name="L689" href="#L689">689</a> 	<em class="jxr_comment">// setter</em>
+<a class="jxr_linenumber" name="L690" href="#L690">690</a> 
+<a class="jxr_linenumber" name="L691" href="#L691">691</a> 	@Override
+<a class="jxr_linenumber" name="L692" href="#L692">692</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUseBeanValidation(<strong class="jxr_keyword">boolean</strong> useBeanValidation) {
+<a class="jxr_linenumber" name="L693" href="#L693">693</a> 		<strong class="jxr_keyword">this</strong>.useBeanValidation = useBeanValidation;
+<a class="jxr_linenumber" name="L694" href="#L694">694</a> 	}
+<a class="jxr_linenumber" name="L695" href="#L695">695</a> 
+<a class="jxr_linenumber" name="L696" href="#L696">696</a> 	@Override
+<a class="jxr_linenumber" name="L697" href="#L697">697</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUseGenericResponse(<strong class="jxr_keyword">boolean</strong> useGenericResponse) {
+<a class="jxr_linenumber" name="L698" href="#L698">698</a> 		<strong class="jxr_keyword">this</strong>.useGenericResponse = useGenericResponse;
+<a class="jxr_linenumber" name="L699" href="#L699">699</a> 	}
+<a class="jxr_linenumber" name="L700" href="#L700">700</a> 
+<a class="jxr_linenumber" name="L701" href="#L701">701</a> 	@Override
+<a class="jxr_linenumber" name="L702" href="#L702">702</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUseOptional(<strong class="jxr_keyword">boolean</strong> useOptional) {
+<a class="jxr_linenumber" name="L703" href="#L703">703</a> 		<strong class="jxr_keyword">this</strong>.useOptional = useOptional;
+<a class="jxr_linenumber" name="L704" href="#L704">704</a> 	}
+<a class="jxr_linenumber" name="L705" href="#L705">705</a> 
+<a class="jxr_linenumber" name="L706" href="#L706">706</a> 	<em class="jxr_comment">// internal</em>
 <a class="jxr_linenumber" name="L707" href="#L707">707</a> 
-<a class="jxr_linenumber" name="L708" href="#L708">708</a> 	<strong class="jxr_keyword">private</strong> List&lt;String&gt; getBeanValidation(Schema&lt;?&gt; schema) {
-<a class="jxr_linenumber" name="L709" href="#L709">709</a> 		<strong class="jxr_keyword">var</strong> annotations = <strong class="jxr_keyword">new</strong> ArrayList&lt;String&gt;();
-<a class="jxr_linenumber" name="L710" href="#L710">710</a> 		<strong class="jxr_keyword">if</strong> (!ModelUtils.isNullable(schema)) {
-<a class="jxr_linenumber" name="L711" href="#L711">711</a> 			annotations.add(<span class="jxr_string">"@javax.validation.constraints.NotNull"</span>);
-<a class="jxr_linenumber" name="L712" href="#L712">712</a> 		}
-<a class="jxr_linenumber" name="L713" href="#L713">713</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isStringSchema(schema)
-<a class="jxr_linenumber" name="L714" href="#L714">714</a> 				&amp;&amp; !ModelUtils.isByteArraySchema(schema)
-<a class="jxr_linenumber" name="L715" href="#L715">715</a> 				&amp;&amp; !ModelUtils.isBinarySchema(schema)) {
-<a class="jxr_linenumber" name="L716" href="#L716">716</a> 			<strong class="jxr_keyword">if</strong> (schema.getPattern() != <strong class="jxr_keyword">null</strong> &amp;&amp; !schema.getPattern().isBlank()) {
-<a class="jxr_linenumber" name="L717" href="#L717">717</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Pattern("</span>
-<a class="jxr_linenumber" name="L718" href="#L718">718</a> 						+ <span class="jxr_string">"regexp = \&quot;"</span> + schema.getPattern().replace(<span class="jxr_string">"&#92;&#92;"</span>, <span class="jxr_string">"&#92;&#92;&#92;&#92;"</span>) + <span class="jxr_string">"\&quot;)"</span>);
-<a class="jxr_linenumber" name="L719" href="#L719">719</a> 			}
-<a class="jxr_linenumber" name="L720" href="#L720">720</a> 			<strong class="jxr_keyword">if</strong> (ModelUtils.isEmailSchema(schema)) {
-<a class="jxr_linenumber" name="L721" href="#L721">721</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Email"</span>);
-<a class="jxr_linenumber" name="L722" href="#L722">722</a> 			}
-<a class="jxr_linenumber" name="L723" href="#L723">723</a> 			<strong class="jxr_keyword">if</strong> (schema.getMinLength() != <strong class="jxr_keyword">null</strong> &amp;&amp; schema.getMaxLength() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L724" href="#L724">724</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Size("</span>
-<a class="jxr_linenumber" name="L725" href="#L725">725</a> 						+ <span class="jxr_string">"min = "</span> + schema.getMinLength() + <span class="jxr_string">", "</span>
-<a class="jxr_linenumber" name="L726" href="#L726">726</a> 						+ <span class="jxr_string">"max = "</span> + schema.getMaxLength() + <span class="jxr_string">")"</span>);
-<a class="jxr_linenumber" name="L727" href="#L727">727</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (schema.getMinLength() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L728" href="#L728">728</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Size(min = "</span> + schema.getMinLength() + <span class="jxr_string">")"</span>);
-<a class="jxr_linenumber" name="L729" href="#L729">729</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (schema.getMaxLength() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L730" href="#L730">730</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Size(max = "</span> + schema.getMaxLength() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L708" href="#L708">708</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> addSupportingFile(String folder, String packageString, String file) {
+<a class="jxr_linenumber" name="L709" href="#L709">709</a> 		<strong class="jxr_keyword">var</strong> templateFile = <span class="jxr_string">"support/"</span> + file + <span class="jxr_string">".mustache"</span>;
+<a class="jxr_linenumber" name="L710" href="#L710">710</a> 		<strong class="jxr_keyword">var</strong> destinationFilename = folder + <span class="jxr_string">"/"</span> + packageString.replace(<span class="jxr_string">"."</span>, <span class="jxr_string">"/"</span>) + <span class="jxr_string">"/"</span> + file + <span class="jxr_string">".java"</span>;
+<a class="jxr_linenumber" name="L711" href="#L711">711</a> 		<strong class="jxr_keyword">var</strong> supportingFile = <strong class="jxr_keyword">new</strong> SupportingFile(templateFile, destinationFilename);
+<a class="jxr_linenumber" name="L712" href="#L712">712</a> 		<strong class="jxr_keyword">if</strong> (!supportingFiles.contains(supportingFile)) {
+<a class="jxr_linenumber" name="L713" href="#L713">713</a> 			supportingFiles.add(supportingFile);
+<a class="jxr_linenumber" name="L714" href="#L714">714</a> 		}
+<a class="jxr_linenumber" name="L715" href="#L715">715</a> 	}
+<a class="jxr_linenumber" name="L716" href="#L716">716</a> 
+<a class="jxr_linenumber" name="L717" href="#L717">717</a> 	<strong class="jxr_keyword">private</strong> List&lt;String&gt; getBeanValidation(Schema&lt;?&gt; schema) {
+<a class="jxr_linenumber" name="L718" href="#L718">718</a> 		<strong class="jxr_keyword">var</strong> annotations = <strong class="jxr_keyword">new</strong> ArrayList&lt;String&gt;();
+<a class="jxr_linenumber" name="L719" href="#L719">719</a> 		<strong class="jxr_keyword">if</strong> (!ModelUtils.isNullable(schema)) {
+<a class="jxr_linenumber" name="L720" href="#L720">720</a> 			annotations.add(<span class="jxr_string">"@javax.validation.constraints.NotNull"</span>);
+<a class="jxr_linenumber" name="L721" href="#L721">721</a> 		}
+<a class="jxr_linenumber" name="L722" href="#L722">722</a> 		<strong class="jxr_keyword">if</strong> (ModelUtils.isStringSchema(schema)
+<a class="jxr_linenumber" name="L723" href="#L723">723</a> 				&amp;&amp; !ModelUtils.isByteArraySchema(schema)
+<a class="jxr_linenumber" name="L724" href="#L724">724</a> 				&amp;&amp; !ModelUtils.isBinarySchema(schema)) {
+<a class="jxr_linenumber" name="L725" href="#L725">725</a> 			<strong class="jxr_keyword">if</strong> (schema.getPattern() != <strong class="jxr_keyword">null</strong> &amp;&amp; !schema.getPattern().isBlank()) {
+<a class="jxr_linenumber" name="L726" href="#L726">726</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Pattern("</span>
+<a class="jxr_linenumber" name="L727" href="#L727">727</a> 						+ <span class="jxr_string">"regexp = \&quot;"</span> + schema.getPattern().replace(<span class="jxr_string">"&#92;&#92;"</span>, <span class="jxr_string">"&#92;&#92;&#92;&#92;"</span>) + <span class="jxr_string">"\&quot;)"</span>);
+<a class="jxr_linenumber" name="L728" href="#L728">728</a> 			}
+<a class="jxr_linenumber" name="L729" href="#L729">729</a> 			<strong class="jxr_keyword">if</strong> (ModelUtils.isEmailSchema(schema)) {
+<a class="jxr_linenumber" name="L730" href="#L730">730</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Email"</span>);
 <a class="jxr_linenumber" name="L731" href="#L731">731</a> 			}
-<a class="jxr_linenumber" name="L732" href="#L732">732</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (ModelUtils.isNumberSchema(schema)) {
-<a class="jxr_linenumber" name="L733" href="#L733">733</a> 			<strong class="jxr_keyword">if</strong> (schema.getMinimum() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L734" href="#L734">734</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.DecimalMin("</span>
-<a class="jxr_linenumber" name="L735" href="#L735">735</a> 						+ <span class="jxr_string">"value = \&quot;"</span> + schema.getMinimum() + <span class="jxr_string">"\&quot;, "</span>
-<a class="jxr_linenumber" name="L736" href="#L736">736</a> 						+ <span class="jxr_string">"inclusive = "</span> + !Optional.ofNullable(schema.getExclusiveMinimum()).orElse(false) + <span class="jxr_string">")"</span>);
-<a class="jxr_linenumber" name="L737" href="#L737">737</a> 			}
-<a class="jxr_linenumber" name="L738" href="#L738">738</a> 			<strong class="jxr_keyword">if</strong> (schema.getMaximum() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L739" href="#L739">739</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.DecimalMax("</span>
-<a class="jxr_linenumber" name="L740" href="#L740">740</a> 						+ <span class="jxr_string">"value = \&quot;"</span> + schema.getMaximum() + <span class="jxr_string">"\&quot;, "</span>
-<a class="jxr_linenumber" name="L741" href="#L741">741</a> 						+ <span class="jxr_string">"inclusive = "</span> + !Optional.ofNullable(schema.getExclusiveMaximum()).orElse(false) + <span class="jxr_string">")"</span>);
-<a class="jxr_linenumber" name="L742" href="#L742">742</a> 			}
-<a class="jxr_linenumber" name="L743" href="#L743">743</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (ModelUtils.isIntegerSchema(schema)) {
-<a class="jxr_linenumber" name="L744" href="#L744">744</a> 			<strong class="jxr_keyword">if</strong> (schema.getMinimum() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L745" href="#L745">745</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Min("</span> + schema.getMinimum().longValue() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L732" href="#L732">732</a> 			<strong class="jxr_keyword">if</strong> (schema.getMinLength() != <strong class="jxr_keyword">null</strong> &amp;&amp; schema.getMaxLength() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L733" href="#L733">733</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Size("</span>
+<a class="jxr_linenumber" name="L734" href="#L734">734</a> 						+ <span class="jxr_string">"min = "</span> + schema.getMinLength() + <span class="jxr_string">", "</span>
+<a class="jxr_linenumber" name="L735" href="#L735">735</a> 						+ <span class="jxr_string">"max = "</span> + schema.getMaxLength() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L736" href="#L736">736</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (schema.getMinLength() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L737" href="#L737">737</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Size(min = "</span> + schema.getMinLength() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L738" href="#L738">738</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (schema.getMaxLength() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L739" href="#L739">739</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Size(max = "</span> + schema.getMaxLength() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L740" href="#L740">740</a> 			}
+<a class="jxr_linenumber" name="L741" href="#L741">741</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (ModelUtils.isNumberSchema(schema)) {
+<a class="jxr_linenumber" name="L742" href="#L742">742</a> 			<strong class="jxr_keyword">if</strong> (schema.getMinimum() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L743" href="#L743">743</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.DecimalMin("</span>
+<a class="jxr_linenumber" name="L744" href="#L744">744</a> 						+ <span class="jxr_string">"value = \&quot;"</span> + schema.getMinimum() + <span class="jxr_string">"\&quot;, "</span>
+<a class="jxr_linenumber" name="L745" href="#L745">745</a> 						+ <span class="jxr_string">"inclusive = "</span> + !Optional.ofNullable(schema.getExclusiveMinimum()).orElse(false) + <span class="jxr_string">")"</span>);
 <a class="jxr_linenumber" name="L746" href="#L746">746</a> 			}
 <a class="jxr_linenumber" name="L747" href="#L747">747</a> 			<strong class="jxr_keyword">if</strong> (schema.getMaximum() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L748" href="#L748">748</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Max("</span> + schema.getMaximum().longValue() + <span class="jxr_string">")"</span>);
-<a class="jxr_linenumber" name="L749" href="#L749">749</a> 			}
-<a class="jxr_linenumber" name="L750" href="#L750">750</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (ModelUtils.isTypeObjectSchema(schema) || schema.getType() == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L751" href="#L751">751</a> 			annotations.add(<span class="jxr_string">"@javax.validation.Valid"</span>);
-<a class="jxr_linenumber" name="L752" href="#L752">752</a> 		}
-<a class="jxr_linenumber" name="L753" href="#L753">753</a> 		<strong class="jxr_keyword">return</strong> annotations;
-<a class="jxr_linenumber" name="L754" href="#L754">754</a> 	}
-<a class="jxr_linenumber" name="L755" href="#L755">755</a> 
-<a class="jxr_linenumber" name="L756" href="#L756">756</a> 	<strong class="jxr_keyword">private</strong> String removeValidation(String dataType) {
-<a class="jxr_linenumber" name="L757" href="#L757">757</a> 		<strong class="jxr_keyword">var</strong> tmp = dataType;
-<a class="jxr_linenumber" name="L758" href="#L758">758</a> 		tmp = tmp.replace(<span class="jxr_string">"@javax.validation.Valid "</span>, <span class="jxr_string">""</span>);
-<a class="jxr_linenumber" name="L759" href="#L759">759</a> 		tmp = tmp.replace(<span class="jxr_string">"@javax.validation.constraints.NotNull "</span>, <span class="jxr_string">""</span>);
-<a class="jxr_linenumber" name="L760" href="#L760">760</a> 		tmp = tmp.replace(<span class="jxr_string">"@javax.validation.constraints.Email "</span>, <span class="jxr_string">""</span>);
-<a class="jxr_linenumber" name="L761" href="#L761">761</a> 		<strong class="jxr_keyword">return</strong> tmp.replaceAll(
-<a class="jxr_linenumber" name="L762" href="#L762">762</a> 				<span class="jxr_string">"@javax&#92;&#92;.validation&#92;&#92;.constraints&#92;&#92;.(Pattern|Size|DecimalMin|DecimalMax|Min|Max)&#92;&#92;(.*&#92;&#92;) "</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L748" href="#L748">748</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.DecimalMax("</span>
+<a class="jxr_linenumber" name="L749" href="#L749">749</a> 						+ <span class="jxr_string">"value = \&quot;"</span> + schema.getMaximum() + <span class="jxr_string">"\&quot;, "</span>
+<a class="jxr_linenumber" name="L750" href="#L750">750</a> 						+ <span class="jxr_string">"inclusive = "</span> + !Optional.ofNullable(schema.getExclusiveMaximum()).orElse(false) + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L751" href="#L751">751</a> 			}
+<a class="jxr_linenumber" name="L752" href="#L752">752</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (ModelUtils.isIntegerSchema(schema)) {
+<a class="jxr_linenumber" name="L753" href="#L753">753</a> 			<strong class="jxr_keyword">if</strong> (schema.getMinimum() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L754" href="#L754">754</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Min("</span> + schema.getMinimum().longValue() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L755" href="#L755">755</a> 			}
+<a class="jxr_linenumber" name="L756" href="#L756">756</a> 			<strong class="jxr_keyword">if</strong> (schema.getMaximum() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L757" href="#L757">757</a> 				annotations.add(<span class="jxr_string">"@javax.validation.constraints.Max("</span> + schema.getMaximum().longValue() + <span class="jxr_string">")"</span>);
+<a class="jxr_linenumber" name="L758" href="#L758">758</a> 			}
+<a class="jxr_linenumber" name="L759" href="#L759">759</a> 		} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (ModelUtils.isTypeObjectSchema(schema) || schema.getType() == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L760" href="#L760">760</a> 			annotations.add(<span class="jxr_string">"@javax.validation.Valid"</span>);
+<a class="jxr_linenumber" name="L761" href="#L761">761</a> 		}
+<a class="jxr_linenumber" name="L762" href="#L762">762</a> 		<strong class="jxr_keyword">return</strong> annotations;
 <a class="jxr_linenumber" name="L763" href="#L763">763</a> 	}
-<a class="jxr_linenumber" name="L764" href="#L764">764</a> }
+<a class="jxr_linenumber" name="L764" href="#L764">764</a> 
+<a class="jxr_linenumber" name="L765" href="#L765">765</a> 	<strong class="jxr_keyword">private</strong> String removeValidation(String dataType) {
+<a class="jxr_linenumber" name="L766" href="#L766">766</a> 		<strong class="jxr_keyword">var</strong> tmp = dataType;
+<a class="jxr_linenumber" name="L767" href="#L767">767</a> 		tmp = tmp.replace(<span class="jxr_string">"@javax.validation.Valid "</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L768" href="#L768">768</a> 		tmp = tmp.replace(<span class="jxr_string">"@javax.validation.constraints.NotNull "</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L769" href="#L769">769</a> 		tmp = tmp.replace(<span class="jxr_string">"@javax.validation.constraints.Email "</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L770" href="#L770">770</a> 		<strong class="jxr_keyword">return</strong> tmp.replaceAll(
+<a class="jxr_linenumber" name="L771" href="#L771">771</a> 				<span class="jxr_string">"@javax&#92;&#92;.validation&#92;&#92;.constraints&#92;&#92;.(Pattern|Size|DecimalMin|DecimalMax|Min|Max)&#92;&#92;(.*&#92;&#92;) "</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L772" href="#L772">772</a> 	}
+<a class="jxr_linenumber" name="L773" href="#L773">773</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2019&#x2013;2024 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
