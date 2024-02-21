@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpgradeMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">UpgradeMojo.java</span></div><h1>UpgradeMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
 
-import java.nio.file.Path;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -16,8 +14,8 @@ import lombok.Setter;
  * @since 6.4.0
  */
 @Mojo(name = &quot;upgrade&quot;, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
-<span class="fc" id="L19">@Setter</span>
-<span class="fc" id="L20">public class UpgradeMojo extends AbstractHelmWithValueOverrideMojo {</span>
+<span class="fc" id="L17">@Setter</span>
+<span class="fc" id="L18">public class UpgradeMojo extends AbstractHandleMojo {</span>
 
 	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking upgrade goal.
@@ -74,39 +72,32 @@ import lombok.Setter;
 	 */
 	@Parameter(property = &quot;helm.upgrade.plain-http&quot;)
 	private Boolean upgradePlainHttp;
-	/**
-	 * Name of the release for upgrade goal.
-	 *
-	 * @since 6.4.0
-	 */
-	@Parameter(property = &quot;helm.releaseName&quot;)
-	private String releaseName;
 
 	@Override
 	public void execute() throws MojoExecutionException {
 
-<span class="fc bfc" id="L88" title="All 4 branches covered.">		if (skip || skipUpgrade) {</span>
-<span class="fc" id="L89">			getLog().info(&quot;Skip upgrade&quot;);</span>
-<span class="fc" id="L90">			return;</span>
+<span class="fc bfc" id="L79" title="All 4 branches covered.">		if (skip || skipUpgrade) {</span>
+<span class="fc" id="L80">			getLog().info(&quot;Skip upgrade&quot;);</span>
+<span class="fc" id="L81">			return;</span>
 		}
 
-<span class="fc bfc" id="L93" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
-<span class="fc bfc" id="L94" title="All 8 branches covered.">			getLog().info(&quot;Upgrading the chart &quot; +</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">		for (Chart chart : getCharts()) {</span>
+<span class="fc bfc" id="L85" title="All 8 branches covered.">			getLog().info(&quot;Upgrading the chart &quot; + chart.getReleaseName() + &quot; &quot; +</span>
 					(upgradeWithInstall ? &quot;with install &quot; : &quot;&quot;) +
 					(upgradeAtomic ? &quot;with atomic &quot; : &quot;&quot;) +
 					(upgradeTimeout != null ? upgradeTimeout + &quot;s&quot; : &quot;&quot;) +
 					(upgradeDryRun ? &quot;as dry run &quot; : &quot;&quot;) +
-					chartDirectory);
-<span class="fc" id="L100">			helm()</span>
-<span class="fc" id="L101">					.arguments(&quot;upgrade&quot;, releaseName, chartDirectory)</span>
-<span class="fc" id="L102">					.flag(&quot;install&quot;, upgradeWithInstall)</span>
-<span class="fc" id="L103">					.flag(&quot;dry-run&quot;, upgradeDryRun)</span>
-<span class="fc" id="L104">					.flag(&quot;atomic&quot;, upgradeAtomic)</span>
-<span class="fc" id="L105">					.flag(&quot;force&quot;, upgradeForce)</span>
-<span class="fc bfc" id="L106" title="All 2 branches covered.">					.flag(&quot;plain-http&quot;, isPlainHttp(upgradePlainHttp))</span>
-<span class="fc" id="L107">					.flag(&quot;timeout&quot;, upgradeTimeout != null ? upgradeTimeout + &quot;s&quot; : null)</span>
-<span class="fc" id="L108">					.execute(&quot;Error occurred while upgrading the chart&quot;);</span>
-<span class="fc" id="L109">		}</span>
-<span class="fc" id="L110">	}</span>
+<span class="fc" id="L90">					chart.getDirectory());</span>
+<span class="fc" id="L91">			helm()</span>
+<span class="fc" id="L92">					.arguments(&quot;upgrade&quot;, chart.getReleaseName(), chart.getDirectory())</span>
+<span class="fc" id="L93">					.flag(&quot;install&quot;, upgradeWithInstall)</span>
+<span class="fc" id="L94">					.flag(&quot;dry-run&quot;, upgradeDryRun)</span>
+<span class="fc" id="L95">					.flag(&quot;atomic&quot;, upgradeAtomic)</span>
+<span class="fc" id="L96">					.flag(&quot;force&quot;, upgradeForce)</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">					.flag(&quot;plain-http&quot;, isPlainHttp(upgradePlainHttp))</span>
+<span class="fc" id="L98">					.flag(&quot;timeout&quot;, upgradeTimeout != null ? upgradeTimeout + &quot;s&quot; : null)</span>
+<span class="fc" id="L99">					.execute(&quot;Error occurred while upgrading the chart&quot;);</span>
+<span class="fc" id="L100">		}</span>
+<span class="fc" id="L101">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
