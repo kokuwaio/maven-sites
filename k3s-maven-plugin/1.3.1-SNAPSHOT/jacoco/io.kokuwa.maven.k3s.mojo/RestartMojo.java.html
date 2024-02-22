@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestartMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">k3s Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.k3s.mojo</a> &gt; <span class="el_source">RestartMojo.java</span></div><h1>RestartMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.k3s.mojo;
+
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+/**
+ * Mojo for kubectl rollout restart.
+ *
+ * @author stephan.schnabel@posteo.de
+ * @since 1.1.0
+ */
+@Mojo(name = &quot;restart&quot;, defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST, requiresProject = false)
+<span class="fc" id="L26">public class RestartMojo extends K3sMojo {</span>
+
+<span class="fc" id="L28">	private final Pattern resourcePattern = Pattern.compile(&quot;^&quot;</span>
+			+ &quot;(?&lt;kind&gt;deployment|statefulset|daemonset)&quot;
+			+ &quot;(/(?&lt;namespace&gt;[0-9a-z\\-]{1,63}))?&quot;
+			+ &quot;/(?&lt;name&gt;[0-9a-z\\-]{1,63})$&quot;);
+
+	/**
+	 * Deployments to restart. Valid patterns:
+	 * &lt;ul&gt;
+	 * &lt;li&gt;deployment/my-namespace/my-deployment&lt;/li&gt;
+	 * &lt;li&gt;statefulset/my-namespace/my-deployment&lt;/li&gt;
+	 * &lt;li&gt;deamonset/my-namespace/my-deployment&lt;/li&gt;
+	 * &lt;li&gt;deployment/my-deployment&lt;/li&gt; (in default namespace)
+	 * &lt;/ul&gt;
+	 *
+	 * @since 1.1.0
+	 */
+<span class="fc" id="L44">	@Parameter(property = &quot;k3s.resources&quot;)</span>
+	private Set&lt;String&gt; resources = new HashSet&lt;&gt;();
+
+	/**
+	 * Timeout in seconds to wait for resources getting ready.
+	 *
+	 * @since 1.1.0
+	 */
+	@Parameter(property = &quot;k3s.timeout&quot;, defaultValue = &quot;300&quot;)
+	private Duration timeout;
+
+	/**
+	 * Skip restarting kubectl resources.
+	 *
+	 * @since 1.1.0
+	 */
+	@Parameter(property = &quot;k3s.skipRestart&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipRestart;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		if (isSkip(skipRestart)) {</span>
+<span class="fc" id="L67">			return;</span>
+		}
+
+		// check marker, if marker is found skip restart
+
+<span class="fc bfc" id="L72" title="All 2 branches covered.">		if (getMarker().consumeStarted()) {</span>
+<span class="fc" id="L73">			return;</span>
+		}
+
+		// skip if no resources configured
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (resources.isEmpty()) {</span>
+<span class="fc" id="L79">			return;</span>
+		}
+
+		// verify container
+
+<span class="fc bfc" id="L84" title="All 2 branches covered.">		if (getDocker().getContainer().isEmpty()) {</span>
+<span class="fc" id="L85">			throw new MojoExecutionException(&quot;No k3s container found&quot;);</span>
+		}
+
+		// get callables that restarts stuff
+
+<span class="fc" id="L90">		var tasks = resources.stream().map(this::restart).collect(Collectors.toSet());</span>
+
+		// execute callables
+
+		try {
+<span class="fc" id="L95">			var success = true;</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">			for (var future : Executors.newWorkStealingPool().invokeAll(tasks)) {</span>
+<span class="fc" id="L97">				success &amp;= future.get();</span>
+<span class="fc" id="L98">			}</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">			if (!success) {</span>
+<span class="fc" id="L100">				throw new MojoExecutionException(&quot;Failed to restart resources, see previous log&quot;);</span>
+			}
+<span class="fc" id="L102">		} catch (InterruptedException | ExecutionException e) {</span>
+<span class="fc" id="L103">			throw new MojoExecutionException(&quot;Failed to restart resources&quot;, e);</span>
+<span class="fc" id="L104">		}</span>
+<span class="fc" id="L105">	}</span>
+
+	private Callable&lt;Boolean&gt; restart(String resoure) {
+
+<span class="fc" id="L109">		var matcher = resourcePattern.matcher(resoure);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		if (!matcher.matches()) {</span>
+<span class="fc" id="L111">			getLog().error(&quot;Failed to parse resoure: &quot; + resoure);</span>
+<span class="fc" id="L112">			return () -&gt; false;</span>
+		}
+
+<span class="fc" id="L115">		var kind = matcher.group(&quot;kind&quot;);</span>
+<span class="fc" id="L116">		var namespace = Optional.ofNullable(matcher.group(&quot;namespace&quot;)).orElse(&quot;default&quot;);</span>
+<span class="fc" id="L117">		var name = matcher.group(&quot;name&quot;);</span>
+
+<span class="fc" id="L119">		return () -&gt; {</span>
+			try {
+<span class="fc" id="L121">				getDocker().exec(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;restart&quot;, kind, name, &quot;--namespace=&quot; + namespace);</span>
+<span class="fc" id="L122">				getLog().info(kind + &quot; &quot; + namespace + &quot;/&quot; + name + &quot; restarted&quot;);</span>
+<span class="fc" id="L123">				getDocker().exec(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;status&quot;, kind, name, &quot;--namespace=&quot; + namespace,</span>
+<span class="fc" id="L124">						&quot;--timeout=&quot; + timeout.getSeconds() + &quot;s&quot;);</span>
+<span class="fc" id="L125">				getLog().info(kind + &quot; &quot; + namespace + &quot;/&quot; + name + &quot; restart finished&quot;);</span>
+<span class="fc" id="L126">				return true;</span>
+<span class="fc" id="L127">			} catch (MojoExecutionException e) {</span>
+<span class="nc" id="L128">				getDocker().exec(&quot;kubectl&quot;, &quot;get&quot;, &quot;--output=yaml&quot;, &quot;--namespace=&quot; + namespace, kind, name);</span>
+<span class="nc" id="L129">				return false;</span>
+			}
+		};
+	}
+
+	// setter
+
+	public void setResources(List&lt;String&gt; resources) {
+<span class="fc" id="L137">		this.resources = Set.copyOf(resources);</span>
+<span class="fc" id="L138">	}</span>
+
+	public void setTimeout(int timeout) {
+<span class="fc" id="L141">		this.timeout = Duration.ofSeconds(timeout);</span>
+<span class="fc" id="L142">	}</span>
+
+	public void setSkipRestart(boolean skipRestart) {
+<span class="fc" id="L145">		this.skipRestart = skipRestart;</span>
+<span class="fc" id="L146">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
