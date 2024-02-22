@@ -7,6 +7,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import io.kokuwa.maven.helm.pojo.HelmExecutable;
 import lombok.Setter;
 
 /**
@@ -16,8 +17,8 @@ import lombok.Setter;
  * @since 6.10.2
  */
 @Mojo(name = &quot;dependency-update&quot;, defaultPhase = LifecyclePhase.PROCESS_RESOURCES, threadSafe = true)
-<span class="fc" id="L19">@Setter</span>
-<span class="fc" id="L20">public class DependencyUpdateMojo extends AbstractDependencyMojo {</span>
+<span class="fc" id="L20">@Setter</span>
+<span class="fc" id="L21">public class DependencyUpdateMojo extends AbstractDependencyMojo {</span>
 
 	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking dependency-update goal.
@@ -27,23 +28,34 @@ import lombok.Setter;
 	@Parameter(property = &quot;helm.dependency-update.skip&quot;, defaultValue = &quot;false&quot;)
 	private boolean skipDependencyUpdate;
 
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip refreshing the local repository cache when invoking dependency-update goal.
+	 *
+	 * @since 6.14.0
+	 */
+	@Parameter(property = &quot;helm.dependency-update.skip-repo-refresh&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipDependencyUpdateRepoRefresh;
+
 	@Override
 	public void execute() throws MojoExecutionException {
 
-<span class="fc bfc" id="L33" title="All 4 branches covered.">		if (skip || skipDependencyUpdate) {</span>
-<span class="fc" id="L34">			getLog().info(&quot;Skip dependency update&quot;);</span>
-<span class="fc" id="L35">			return;</span>
+<span class="fc bfc" id="L42" title="All 4 branches covered.">		if (skip || skipDependencyUpdate) {</span>
+<span class="fc" id="L43">			getLog().info(&quot;Skip dependency update&quot;);</span>
+<span class="fc" id="L44">			return;</span>
 		}
 
-<span class="fc bfc" id="L38" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
 
-<span class="fc" id="L40">			doOverwriteLocalDependencies(chartDirectory);</span>
+<span class="fc" id="L49">			doOverwriteLocalDependencies(chartDirectory);</span>
 
-<span class="fc" id="L42">			getLog().info(&quot;Updating chart dependencies for &quot; + chartDirectory + &quot; ...&quot;);</span>
-<span class="fc" id="L43">			helm()</span>
-<span class="fc" id="L44">					.arguments(&quot;dependency&quot;, &quot;update&quot;, chartDirectory)</span>
-<span class="fc" id="L45">					.execute(&quot;Failed to resolve dependencies&quot;);</span>
-<span class="fc" id="L46">		}</span>
-<span class="fc" id="L47">	}</span>
+<span class="fc" id="L51">			getLog().info(&quot;Updating chart dependencies for &quot; + chartDirectory + &quot; ...&quot;);</span>
+<span class="fc" id="L52">			HelmExecutable helm = helm()</span>
+<span class="fc" id="L53">					.arguments(&quot;dependency&quot;, &quot;update&quot;, chartDirectory);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">			if (skipDependencyUpdateRepoRefresh) {</span>
+<span class="fc" id="L55">				helm.flag(&quot;skip-refresh&quot;);</span>
+			}
+<span class="fc" id="L57">			helm.execute(&quot;Failed to resolve dependencies&quot;);</span>
+<span class="fc" id="L58">		}</span>
+<span class="fc" id="L59">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

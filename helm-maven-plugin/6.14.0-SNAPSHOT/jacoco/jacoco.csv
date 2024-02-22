@@ -28,9 +28,9 @@ Helm Maven Plugin,io.kokuwa.maven.helm,AbstractDependencyMojo,5,48,0,4,0,9,1,6,1
 Helm Maven Plugin,io.kokuwa.maven.helm,DryRunMojo,5,65,0,6,0,14,1,6,1,3
 Helm Maven Plugin,io.kokuwa.maven.helm,AbstractHandleMojo.Chart,100,18,20,0,0,3,13,3,3,3
 Helm Maven Plugin,io.kokuwa.maven.helm,InitMojo,243,624,46,64,43,120,36,43,3,20
-Helm Maven Plugin,io.kokuwa.maven.helm,DependencyUpdateMojo,0,67,0,6,0,13,0,6,0,3
+Helm Maven Plugin,io.kokuwa.maven.helm,DependencyUpdateMojo,0,81,0,8,0,15,0,8,0,4
 Helm Maven Plugin,io.kokuwa.maven.helm,LintMojo,0,78,0,6,0,14,0,8,0,5
-Helm Maven Plugin,io.kokuwa.maven.helm,DependencyBuildMojo,0,67,0,6,0,13,0,6,0,3
+Helm Maven Plugin,io.kokuwa.maven.helm,DependencyBuildMojo,0,81,0,8,0,15,0,8,0,4
 Helm Maven Plugin,io.kokuwa.maven.helm,PushMojo,22,203,2,14,3,33,2,13,0,7
 Helm Maven Plugin,io.kokuwa.maven.helm,TemplateMojo,5,112,0,8,0,20,1,12,1,8
 Helm Maven Plugin,io.kokuwa.maven.helm,AbstractHandleMojo,0,47,0,6,0,8,0,7,0,4

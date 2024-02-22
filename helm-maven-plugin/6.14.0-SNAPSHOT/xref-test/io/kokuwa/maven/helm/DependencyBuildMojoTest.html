@@ -66,7 +66,14 @@
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>  				<span class="jxr_string">"dependency build src/test/resources/dependencies/a1"</span>,
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>  				<span class="jxr_string">"dependency build src/test/resources/dependencies"</span>);
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>  	}
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  }
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  	@DisplayName(<span class="jxr_string">"with flag skip repo refresh"</span>)
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  	@Test
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  	<strong class="jxr_keyword">void</strong> skipRepoRefresh(DependencyBuildMojo mojo) {
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  		assertHelm(mojo.setSkipDependencyBuildRepoRefresh(<strong class="jxr_keyword">true</strong>),
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  				<span class="jxr_string">"dependency build src/test/resources/simple --skip-refresh"</span>);
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  	}
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2017&#x2013;2024 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
