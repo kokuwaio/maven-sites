@@ -88,32 +88,34 @@
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>  							<span class="jxr_string">"emailVerified"</span>, <strong class="jxr_keyword">true</strong>,
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>  							<span class="jxr_string">"email"</span>, username + <span class="jxr_string">"@example.org"</span>,
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>  							<span class="jxr_string">"username"</span>, username,
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>  							<span class="jxr_string">"credentials"</span>, List.of(Map.of(
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>  									<span class="jxr_string">"type"</span>, CredentialRepresentation.PASSWORD,
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  									<span class="jxr_string">"value"</span>, password,
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>  									<span class="jxr_string">"temporary"</span>, false))))))
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  					.build(), BodyHandlers.ofString());
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  			assertEquals(201, response.statusCode(), <span class="jxr_string">"Body: "</span> + response.body());
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>  		} <strong class="jxr_keyword">catch</strong> (IOException | InterruptedException e) {
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>  			fail(<span class="jxr_string">"Failed to create user"</span>, e);
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>  		}
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>  	}
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>  
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> deleteUser(String realmName, String username) {
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		keycloak.realms().realm(realmName).users()
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  				.searchByUsername(username, <strong class="jxr_keyword">true</strong>).stream()
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>  				.map(UserRepresentation::getId)
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>  				.forEach(keycloak.realms().realm(realmName).users()::delete);
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>  	}
-<a class="jxr_linenumber" name="L100" href="#L100">100</a> 
-<a class="jxr_linenumber" name="L101" href="#L101">101</a> 	<strong class="jxr_keyword">public</strong> AccessTokenResponse login(String clientId, String realmName, String username, String password) {
-<a class="jxr_linenumber" name="L102" href="#L102">102</a> 		<strong class="jxr_keyword">return</strong> tokenService.grantToken(realmName, <strong class="jxr_keyword">new</strong> MultivaluedHashMap&lt;&gt;(Map.of(
-<a class="jxr_linenumber" name="L103" href="#L103">103</a> 				OAuth2Constants.CLIENT_ID, clientId,
-<a class="jxr_linenumber" name="L104" href="#L104">104</a> 				OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD,
-<a class="jxr_linenumber" name="L105" href="#L105">105</a> 				OAuth2Constants.USERNAME, username,
-<a class="jxr_linenumber" name="L106" href="#L106">106</a> 				OAuth2Constants.PASSWORD, password)));
-<a class="jxr_linenumber" name="L107" href="#L107">107</a> 	}
-<a class="jxr_linenumber" name="L108" href="#L108">108</a> }
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  							<span class="jxr_string">"firstName"</span>, username,
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  							<span class="jxr_string">"lastName"</span>, username,
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  							<span class="jxr_string">"credentials"</span>, List.of(Map.of(
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  									<span class="jxr_string">"type"</span>, CredentialRepresentation.PASSWORD,
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  									<span class="jxr_string">"value"</span>, password,
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  									<span class="jxr_string">"temporary"</span>, false))))))
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  					.build(), BodyHandlers.ofString());
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  			assertEquals(201, response.statusCode(), <span class="jxr_string">"Body: "</span> + response.body());
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  		} <strong class="jxr_keyword">catch</strong> (IOException | InterruptedException e) {
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  			fail(<span class="jxr_string">"Failed to create user"</span>, e);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  		}
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  	}
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> deleteUser(String realmName, String username) {
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  		keycloak.realms().realm(realmName).users()
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  				.searchByUsername(username, <strong class="jxr_keyword">true</strong>).stream()
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  				.map(UserRepresentation::getId)
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> 				.forEach(keycloak.realms().realm(realmName).users()::delete);
+<a class="jxr_linenumber" name="L101" href="#L101">101</a> 	}
+<a class="jxr_linenumber" name="L102" href="#L102">102</a> 
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 	<strong class="jxr_keyword">public</strong> AccessTokenResponse login(String clientId, String realmName, String username, String password) {
+<a class="jxr_linenumber" name="L104" href="#L104">104</a> 		<strong class="jxr_keyword">return</strong> tokenService.grantToken(realmName, <strong class="jxr_keyword">new</strong> MultivaluedHashMap&lt;&gt;(Map.of(
+<a class="jxr_linenumber" name="L105" href="#L105">105</a> 				OAuth2Constants.CLIENT_ID, clientId,
+<a class="jxr_linenumber" name="L106" href="#L106">106</a> 				OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD,
+<a class="jxr_linenumber" name="L107" href="#L107">107</a> 				OAuth2Constants.USERNAME, username,
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> 				OAuth2Constants.PASSWORD, password)));
+<a class="jxr_linenumber" name="L109" href="#L109">109</a> 	}
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2023&#x2013;2024 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
