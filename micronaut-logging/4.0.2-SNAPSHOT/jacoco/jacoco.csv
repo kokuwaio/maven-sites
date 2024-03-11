@@ -1,6 +1,6 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-Logging Support for Micronaut,io.kokuwa.micronaut.logging.http.mdc,AuthenticationMdcFilter,0,102,1,9,0,20,1,7,0,3
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.http.mdc,PathMdcFilter,0,140,0,12,0,29,0,9,0,3
+Logging Support for Micronaut,io.kokuwa.micronaut.logging.http.mdc,AuthenticationMdcFilter,0,102,1,9,0,20,1,7,0,3
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.http.mdc,HeaderMdcFilter,0,65,0,2,0,10,0,5,0,4
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.http.level,LogLevelServerFilter,0,67,0,0,0,12,0,7,0,7
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.http.level,LogLevelTurboFilter,0,24,0,6,0,7,0,5,0,2
