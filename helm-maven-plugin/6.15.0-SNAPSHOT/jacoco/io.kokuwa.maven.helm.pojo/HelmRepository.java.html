@@ -9,7 +9,7 @@ import lombok.ToString;
  * @author Fabian Schlegel
  * @since 1.8
  */
-<span class="pc bnc" id="L12" title="All 58 branches missed.">@Data</span>
+<span class="pc bnc" id="L12" title="All 62 branches missed.">@Data</span>
 public class HelmRepository {
 
 	/**
@@ -54,5 +54,13 @@ public class HelmRepository {
 	 * @since 6.6.0
 	 */
 <span class="fc" id="L56">	private boolean forceUpdate = false;</span>
+
+	/**
+	 * If &lt;code&gt;true&lt;/code&gt;, pass credentials to all domains (useful when the chart archive is on a different domain
+	 * from the index.yaml, for example on a CDN)
+	 *
+	 * @since 6.15.0
+	 */
+<span class="fc" id="L64">	private boolean passCredentials = false;</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

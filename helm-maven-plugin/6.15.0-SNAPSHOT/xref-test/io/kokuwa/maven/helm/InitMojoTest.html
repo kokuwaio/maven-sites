@@ -352,16 +352,54 @@
 <a class="jxr_linenumber" name="L344" href="#L344">344</a> 				<span class="jxr_string">"repo add extra3 https://example.org/extra3"</span>);
 <a class="jxr_linenumber" name="L345" href="#L345">345</a> 	}
 <a class="jxr_linenumber" name="L346" href="#L346">346</a> 
-<a class="jxr_linenumber" name="L347" href="#L347">347</a> 	<strong class="jxr_keyword">private</strong> File createTempDirectory() {
-<a class="jxr_linenumber" name="L348" href="#L348">348</a> 		<strong class="jxr_keyword">return</strong> assertDoesNotThrow(() -&gt; Files.createTempDirectory(<span class="jxr_string">"helm-maven-plugin-test"</span>)).toFile();
-<a class="jxr_linenumber" name="L349" href="#L349">349</a> 	}
-<a class="jxr_linenumber" name="L350" href="#L350">350</a> 
-<a class="jxr_linenumber" name="L351" href="#L351">351</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> assertHelmExecuteable(InitMojo mojo) {
-<a class="jxr_linenumber" name="L352" href="#L352">352</a> 		Path helmExecutable = mojo.getHelmExecutableDirectory().resolve(HELM);
-<a class="jxr_linenumber" name="L353" href="#L353">353</a> 		assertTrue(Files.isRegularFile(helmExecutable), <span class="jxr_string">"executable not found"</span>);
-<a class="jxr_linenumber" name="L354" href="#L354">354</a> 		assertTrue(Files.isExecutable(helmExecutable), <span class="jxr_string">"executable not executable"</span>);
-<a class="jxr_linenumber" name="L355" href="#L355">355</a> 	}
-<a class="jxr_linenumber" name="L356" href="#L356">356</a> }
+<a class="jxr_linenumber" name="L347" href="#L347">347</a> 	@DisplayName(<span class="jxr_string">"with flag --pass-credentials"</span>)
+<a class="jxr_linenumber" name="L348" href="#L348">348</a> 	@Test
+<a class="jxr_linenumber" name="L349" href="#L349">349</a> 	<strong class="jxr_keyword">void</strong> withPassCredentialsForAll(InitMojo mojo) {
+<a class="jxr_linenumber" name="L350" href="#L350">350</a> 		mojo.setAddDefaultRepo(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L351" href="#L351">351</a> 		mojo.setAddUploadRepos(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L352" href="#L352">352</a> 		mojo.setRepositoryAddPassCredentials(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L353" href="#L353">353</a> 		mojo.setHelmExtraRepos(<strong class="jxr_keyword">new</strong> HelmRepository[] { <strong class="jxr_keyword">new</strong> HelmRepository()
+<a class="jxr_linenumber" name="L354" href="#L354">354</a> 				.setName(<span class="jxr_string">"example"</span>)
+<a class="jxr_linenumber" name="L355" href="#L355">355</a> 				.setUrl(<span class="jxr_string">"https://example.org/repo/example"</span>)
+<a class="jxr_linenumber" name="L356" href="#L356">356</a> 				.setPassCredentials(<strong class="jxr_keyword">true</strong>) });
+<a class="jxr_linenumber" name="L357" href="#L357">357</a> 		mojo.setUploadRepoStable(<strong class="jxr_keyword">new</strong> HelmRepository()
+<a class="jxr_linenumber" name="L358" href="#L358">358</a> 				.setType(RepoType.ARTIFACTORY)
+<a class="jxr_linenumber" name="L359" href="#L359">359</a> 				.setName(<span class="jxr_string">"example-stable"</span>)
+<a class="jxr_linenumber" name="L360" href="#L360">360</a> 				.setUrl(<span class="jxr_string">"https://example.org/repo/stable"</span>));
+<a class="jxr_linenumber" name="L361" href="#L361">361</a> 		mojo.setUploadRepoSnapshot(<strong class="jxr_keyword">new</strong> HelmRepository()
+<a class="jxr_linenumber" name="L362" href="#L362">362</a> 				.setType(RepoType.ARTIFACTORY)
+<a class="jxr_linenumber" name="L363" href="#L363">363</a> 				.setName(<span class="jxr_string">"example-snapshot"</span>)
+<a class="jxr_linenumber" name="L364" href="#L364">364</a> 				.setUrl(<span class="jxr_string">"https://example.org/repo/snapshot"</span>));
+<a class="jxr_linenumber" name="L365" href="#L365">365</a> 		assertHelm(mojo,
+<a class="jxr_linenumber" name="L366" href="#L366">366</a> 				<span class="jxr_string">"repo add stable "</span> + InitMojo.STABLE_HELM_REPO + <span class="jxr_string">" --pass-credentials"</span>,
+<a class="jxr_linenumber" name="L367" href="#L367">367</a> 				<span class="jxr_string">"repo add example-stable https://example.org/repo/stable --pass-credentials"</span>,
+<a class="jxr_linenumber" name="L368" href="#L368">368</a> 				<span class="jxr_string">"repo add example-snapshot https://example.org/repo/snapshot --pass-credentials"</span>,
+<a class="jxr_linenumber" name="L369" href="#L369">369</a> 				<span class="jxr_string">"repo add example https://example.org/repo/example --pass-credentials"</span>);
+<a class="jxr_linenumber" name="L370" href="#L370">370</a> 	}
+<a class="jxr_linenumber" name="L371" href="#L371">371</a> 
+<a class="jxr_linenumber" name="L372" href="#L372">372</a> 	@DisplayName(<span class="jxr_string">"with flag --pass-credentials for single repository"</span>)
+<a class="jxr_linenumber" name="L373" href="#L373">373</a> 	@Test
+<a class="jxr_linenumber" name="L374" href="#L374">374</a> 	<strong class="jxr_keyword">void</strong> withPassCredentialsForSingleRepository(InitMojo mojo) {
+<a class="jxr_linenumber" name="L375" href="#L375">375</a> 		mojo.setAddDefaultRepo(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L376" href="#L376">376</a> 		mojo.setHelmExtraRepos(<strong class="jxr_keyword">new</strong> HelmRepository[] { <strong class="jxr_keyword">new</strong> HelmRepository()
+<a class="jxr_linenumber" name="L377" href="#L377">377</a> 				.setName(<span class="jxr_string">"example"</span>)
+<a class="jxr_linenumber" name="L378" href="#L378">378</a> 				.setUrl(<span class="jxr_string">"https://example.org/repo/example"</span>)
+<a class="jxr_linenumber" name="L379" href="#L379">379</a> 				.setPassCredentials(<strong class="jxr_keyword">true</strong>) });
+<a class="jxr_linenumber" name="L380" href="#L380">380</a> 		assertHelm(mojo,
+<a class="jxr_linenumber" name="L381" href="#L381">381</a> 				<span class="jxr_string">"repo add stable "</span> + InitMojo.STABLE_HELM_REPO,
+<a class="jxr_linenumber" name="L382" href="#L382">382</a> 				<span class="jxr_string">"repo add example https://example.org/repo/example --pass-credentials"</span>);
+<a class="jxr_linenumber" name="L383" href="#L383">383</a> 	}
+<a class="jxr_linenumber" name="L384" href="#L384">384</a> 
+<a class="jxr_linenumber" name="L385" href="#L385">385</a> 	<strong class="jxr_keyword">private</strong> File createTempDirectory() {
+<a class="jxr_linenumber" name="L386" href="#L386">386</a> 		<strong class="jxr_keyword">return</strong> assertDoesNotThrow(() -&gt; Files.createTempDirectory(<span class="jxr_string">"helm-maven-plugin-test"</span>)).toFile();
+<a class="jxr_linenumber" name="L387" href="#L387">387</a> 	}
+<a class="jxr_linenumber" name="L388" href="#L388">388</a> 
+<a class="jxr_linenumber" name="L389" href="#L389">389</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> assertHelmExecuteable(InitMojo mojo) {
+<a class="jxr_linenumber" name="L390" href="#L390">390</a> 		Path helmExecutable = mojo.getHelmExecutableDirectory().resolve(HELM);
+<a class="jxr_linenumber" name="L391" href="#L391">391</a> 		assertTrue(Files.isRegularFile(helmExecutable), <span class="jxr_string">"executable not found"</span>);
+<a class="jxr_linenumber" name="L392" href="#L392">392</a> 		assertTrue(Files.isExecutable(helmExecutable), <span class="jxr_string">"executable not executable"</span>);
+<a class="jxr_linenumber" name="L393" href="#L393">393</a> 	}
+<a class="jxr_linenumber" name="L394" href="#L394">394</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2017&#x2013;2024 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
