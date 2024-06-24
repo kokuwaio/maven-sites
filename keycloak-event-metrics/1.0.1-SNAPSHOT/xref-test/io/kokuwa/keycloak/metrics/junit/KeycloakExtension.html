@@ -62,45 +62,46 @@
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>  		<strong class="jxr_keyword">var</strong> container = <strong class="jxr_keyword">new</strong> GenericContainer&lt;&gt;(<span class="jxr_string">"quay.io/keycloak/keycloak:"</span> + version)
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>  				.withEnv(<span class="jxr_string">"KEYCLOAK_ADMIN"</span>, <span class="jxr_string">"admin"</span>)
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>  				.withEnv(<span class="jxr_string">"KEYCLOAK_ADMIN_PASSWORD"</span>, <span class="jxr_string">"password"</span>)
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>  				.withEnv(<span class="jxr_string">"KC_LOG_CONSOLE_COLOR"</span>, <span class="jxr_string">"true"</span>)
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>  				.withEnv(<span class="jxr_string">"KC_LOG_LEVEL"</span>, <span class="jxr_string">"io.kokuwa:trace"</span>)
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>  				.withEnv(<span class="jxr_string">"KC_HEALTH_ENABLED"</span>, <span class="jxr_string">"true"</span>)
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>  				.withEnv(<span class="jxr_string">"KC_METRICS_ENABLED"</span>, <span class="jxr_string">"true"</span>)
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  				.withEnv(<span class="jxr_string">"KC_METRICS_STATS_ENABLED"</span>, <span class="jxr_string">"true"</span>)
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>  				.withEnv(<span class="jxr_string">"KC_METRICS_STATS_INTERVAL"</span>, <span class="jxr_string">"PT1s"</span>)
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>  				.withCopyFileToContainer(MountableFile.forHostPath(jar), <span class="jxr_string">"/opt/keycloak/providers/metrics.jar"</span>)
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>  				.withLogConsumer(out -&gt; System.out.print(out.getUtf8String()))
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>  				.withExposedPorts(8080)
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>  				.withStartupTimeout(Duration.parse(timeout))
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>  				.waitingFor(Wait.forHttp(<span class="jxr_string">"/health"</span>).forPort(8080))
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>  				.withCommand(<span class="jxr_string">"start-dev"</span>);
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>  		<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>  			container.start();
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>  		} <strong class="jxr_keyword">catch</strong> (RuntimeException e) {
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>  			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Exception(<span class="jxr_string">"Failed to start keycloak"</span>, e);
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>  		}
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>  
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  		<em class="jxr_comment">// create client for keycloak container</em>
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>  
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		<strong class="jxr_keyword">var</strong> url = <span class="jxr_string">"http://"</span> + container.getHost() + <span class="jxr_string">":"</span> + container.getMappedPort(8080);
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>  		<strong class="jxr_keyword">var</strong> keycloak = Keycloak.getInstance(url, <span class="jxr_string">"master"</span>, <span class="jxr_string">"admin"</span>, <span class="jxr_string">"password"</span>, <span class="jxr_string">"admin-cli"</span>);
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  		assertEquals(version, keycloak.serverInfo().getInfo().getSystemInfo().getVersion(), <span class="jxr_string">"version invalid"</span>);
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		<strong class="jxr_keyword">var</strong> target = ClientBuilder.newClient().target(url);
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		<strong class="jxr_keyword">var</strong> token = Keycloak.getClientProvider().targetProxy(target, TokenService.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>  		prometheus = <strong class="jxr_keyword">new</strong> <a name="Prometheus" href="../../../../../io/kokuwa/keycloak/metrics/junit/Prometheus.html#Prometheus">Prometheus</a>(Keycloak.getClientProvider().targetProxy(target, PrometheusClient.<strong class="jxr_keyword">class</strong>));
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>  		client = <strong class="jxr_keyword">new</strong> <a name="KeycloakClient" href="../../../../../io/kokuwa/keycloak/metrics/junit/KeycloakClient.html#KeycloakClient">KeycloakClient</a>(url, keycloak, token);
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>  	}
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>  	@Override
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		<strong class="jxr_keyword">return</strong> Set.of(KeycloakClient.<strong class="jxr_keyword">class</strong>, Prometheus.<strong class="jxr_keyword">class</strong>).contains(parameterContext.getParameter().getType());
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>  	}
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>  
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>  	@Override
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>  	<strong class="jxr_keyword">public</strong> Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>  		<strong class="jxr_keyword">return</strong> parameterContext.getParameter().getType().equals(KeycloakClient.<strong class="jxr_keyword">class</strong>) ? client : prometheus;
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>  	}
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  }
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  				.withEnv(<span class="jxr_string">"KC_LOG_LEVEL"</span>, <span class="jxr_string">"io.kokuwa:trace"</span>)
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  				<em class="jxr_comment">// otherwise port 9000 will be used, with this config we can test different keycloak versions</em>
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  				.withEnv(<span class="jxr_string">"KC_LEGACY_OBSERVABILITY_INTERFACE"</span>, <span class="jxr_string">"true"</span>)
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  				.withEnv(<span class="jxr_string">"KC_HEALTH_ENABLED"</span>, <span class="jxr_string">"true"</span>)
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  				.withEnv(<span class="jxr_string">"KC_METRICS_ENABLED"</span>, <span class="jxr_string">"true"</span>)
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  				.withEnv(<span class="jxr_string">"KC_METRICS_STATS_ENABLED"</span>, <span class="jxr_string">"true"</span>)
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  				.withEnv(<span class="jxr_string">"KC_METRICS_STATS_INTERVAL"</span>, <span class="jxr_string">"PT1s"</span>)
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  				.withCopyFileToContainer(MountableFile.forHostPath(jar), <span class="jxr_string">"/opt/keycloak/providers/metrics.jar"</span>)
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  				.withLogConsumer(out -&gt; System.out.print(out.getUtf8String()))
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  				.withExposedPorts(8080)
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  				.withStartupTimeout(Duration.parse(timeout))
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  				.waitingFor(Wait.forHttp(<span class="jxr_string">"/health"</span>).forPort(8080))
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  				.withCommand(<span class="jxr_string">"start-dev"</span>);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  		<strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  			container.start();
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  		} <strong class="jxr_keyword">catch</strong> (RuntimeException e) {
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Exception(<span class="jxr_string">"Failed to start keycloak"</span>, e);
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  		}
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  		<em class="jxr_comment">// create client for keycloak container</em>
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  		<strong class="jxr_keyword">var</strong> url = <span class="jxr_string">"http://"</span> + container.getHost() + <span class="jxr_string">":"</span> + container.getMappedPort(8080);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  		<strong class="jxr_keyword">var</strong> keycloak = Keycloak.getInstance(url, <span class="jxr_string">"master"</span>, <span class="jxr_string">"admin"</span>, <span class="jxr_string">"password"</span>, <span class="jxr_string">"admin-cli"</span>);
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		assertEquals(version, keycloak.serverInfo().getInfo().getSystemInfo().getVersion(), <span class="jxr_string">"version invalid"</span>);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		<strong class="jxr_keyword">var</strong> target = ClientBuilder.newClient().target(url);
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  		<strong class="jxr_keyword">var</strong> token = Keycloak.getClientProvider().targetProxy(target, TokenService.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  		prometheus = <strong class="jxr_keyword">new</strong> <a name="Prometheus" href="../../../../../io/kokuwa/keycloak/metrics/junit/Prometheus.html#Prometheus">Prometheus</a>(Keycloak.getClientProvider().targetProxy(target, PrometheusClient.<strong class="jxr_keyword">class</strong>));
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  		client = <strong class="jxr_keyword">new</strong> <a name="KeycloakClient" href="../../../../../io/kokuwa/keycloak/metrics/junit/KeycloakClient.html#KeycloakClient">KeycloakClient</a>(url, keycloak, token);
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  	}
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  	@Override
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  		<strong class="jxr_keyword">return</strong> Set.of(KeycloakClient.<strong class="jxr_keyword">class</strong>, Prometheus.<strong class="jxr_keyword">class</strong>).contains(parameterContext.getParameter().getType());
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  	}
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  	@Override
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  	<strong class="jxr_keyword">public</strong> Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  		<strong class="jxr_keyword">return</strong> parameterContext.getParameter().getType().equals(KeycloakClient.<strong class="jxr_keyword">class</strong>) ? client : prometheus;
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  	}
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2023&#x2013;2024 <a href="http://kokuwa.io">Kokuwa.io</a>. All rights reserved.</div>
