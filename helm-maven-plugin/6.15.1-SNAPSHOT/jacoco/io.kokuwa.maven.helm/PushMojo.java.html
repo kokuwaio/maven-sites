@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PushMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">PushMojo.java</span></div><h1>PushMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.net.PasswordAuthentication;
+import java.nio.file.Path;
+
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import io.kokuwa.maven.helm.pojo.HelmRepository;
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm registry login&quot; and &quot;helm push&quot;.
+ *
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_registry_login&quot;&gt;helm registry login&lt;/a&gt;
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_push&quot;&gt;helm push&lt;/a&gt;
+ * @since 6.1.0
+ */
+@Mojo(name = &quot;push&quot;, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
+<span class="fc" id="L24">@Setter</span>
+<span class="fc" id="L25">public class PushMojo extends AbstractHelmMojo {</span>
+
+	/**
+	 * Verify certificates of HTTPS-enabled servers using this CA bundle.
+	 *
+	 * @since 6.8.0
+	 */
+	@Parameter(property = &quot;helm.push.caFile&quot;)
+	private File caFile;
+
+	/**
+	 * Skip tls certificate checks for the chart upload. Also known as `helm push --insecure-skip-tls-verify`.
+	 *
+	 * @since 6.8.0
+	 */
+	@Parameter(property = &quot;helm.push.insecure&quot;, defaultValue = &quot;false&quot;)
+	private boolean insecure;
+
+	/**
+	 * Use insecure HTTP connections for the chart download.
+	 *
+	 * @since 6.12.0
+	 */
+	@Parameter(property = &quot;helm.push.plain-http&quot;)
+	private Boolean pushPlainHttp;
+
+	/**
+	 * Skip login, usefull if already logged via `helm:registry-login`.
+	 *
+	 * @since 6.8.0
+	 */
+	@Parameter(property = &quot;helm.push.skipLogin&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipPushLogin;
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking push goal.
+	 *
+	 * @since 6.1.0
+	 */
+	@Parameter(property = &quot;helm.push.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipPush;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L70" title="All 4 branches covered.">		if (skip || skipPush) {</span>
+<span class="fc" id="L71">			getLog().info(&quot;Skip push&quot;);</span>
+<span class="fc" id="L72">			return;</span>
+		}
+
+<span class="fc" id="L75">		HelmRepository repository = getHelmUploadRepo();</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">		if (repository == null) {</span>
+<span class="fc" id="L77">			getLog().info(&quot;there is no helm repo. skipping the upload.&quot;);</span>
+<span class="fc" id="L78">			return;</span>
+		}
+
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">		if (isUseLocalHelmBinary()) {</span>
+<span class="nc" id="L82">			getLog().debug(&quot;helm version unknown&quot;);</span>
+		} else {
+<span class="fc" id="L84">			ComparableVersion helmVersion = new ComparableVersion(getHelmVersion());</span>
+<span class="fc" id="L85">			ComparableVersion minimumHelmVersion = new ComparableVersion(&quot;3.8.0&quot;);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">			if (helmVersion.compareTo(minimumHelmVersion) &lt; 0) {</span>
+<span class="nc" id="L87">				getLog().error(&quot;your helm version is &quot; + helmVersion + &quot;, it's required to be &gt;=3.8.0&quot;);</span>
+<span class="nc" id="L88">				throw new IllegalStateException();</span>
+			} else {
+<span class="fc" id="L90">				getLog().debug(&quot;helm version minimum satisfied. the version is: &quot; + helmVersion);</span>
+			}
+		}
+
+<span class="fc" id="L94">		PasswordAuthentication authentication = getAuthentication(repository);</span>
+<span class="fc bfc" id="L95" title="All 4 branches covered.">		if (!skipPushLogin &amp;&amp; authentication != null) {</span>
+<span class="fc" id="L96">			getLog().warn(&quot;Registry login with `helm:push` is deprecated and will beremoved in next major version.&quot;</span>
+					+ &quot; Please use `helm-registry-login` for registry login and set `helm.push.skipLogin` to `true`.&quot;
+					+ &quot; For more information see https://github.com/kokuwaio/helm-maven-plugin/issues/302&quot;);
+<span class="fc" id="L99">			helm()</span>
+<span class="fc" id="L100">					.arguments(&quot;registry&quot;, &quot;login&quot;, repository.getUrl())</span>
+<span class="fc" id="L101">					.flag(&quot;username&quot;, authentication.getUserName())</span>
+<span class="fc" id="L102">					.flag(&quot;password-stdin&quot;)</span>
+<span class="fc" id="L103">					.setStdin(new String(authentication.getPassword()))</span>
+<span class="fc" id="L104">					.execute(&quot;Failed to login into repository &quot; + repository.getName() + &quot; at &quot; + repository.getUrl());</span>
+		}
+
+		// upload chart files
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		for (Path chartArchive : getChartArchives()) {</span>
+<span class="fc" id="L110">			getLog().info(&quot;Uploading &quot; + chartArchive + &quot;...&quot;);</span>
+<span class="fc" id="L111">			helm()</span>
+<span class="fc" id="L112">					.arguments(&quot;push&quot;, chartArchive, &quot;oci://&quot; + repository.getUrl())</span>
+<span class="fc" id="L113">					.flag(&quot;ca-file&quot;, caFile)</span>
+<span class="fc" id="L114">					.flag(&quot;insecure-skip-tls-verify&quot;, insecure)</span>
+<span class="fc" id="L115">					.flag(&quot;plain-http&quot;, isPlainHttp(pushPlainHttp))</span>
+<span class="fc" id="L116">					.execute(&quot;Upload failed&quot;);</span>
+<span class="fc" id="L117">		}</span>
+<span class="fc" id="L118">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

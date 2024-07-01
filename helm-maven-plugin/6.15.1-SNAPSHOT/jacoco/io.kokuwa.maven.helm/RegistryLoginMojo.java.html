@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegistryLoginMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">RegistryLoginMojo.java</span></div><h1>RegistryLoginMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.net.PasswordAuthentication;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import io.kokuwa.maven.helm.pojo.HelmRepository;
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm registry login&quot;.
+ *
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_registry_login&quot;&gt;helm registry login&lt;/a&gt;
+ * @since 6.7.0
+ */
+@Mojo(name = &quot;registry-login&quot;, defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
+<span class="fc" id="L21">@Setter</span>
+<span class="fc" id="L22">public class RegistryLoginMojo extends AbstractHelmMojo {</span>
+
+	/**
+	 * Verify certificates of HTTPS-enabled servers using this CA bundle.
+	 *
+	 * @since 6.8.0
+	 */
+	@Parameter(property = &quot;helm.registry-login.caFile&quot;)
+	private File caFile;
+
+	/**
+	 * Allow connections to TLS registry without certs.
+	 *
+	 * @since 6.7.0
+	 */
+	@Parameter(property = &quot;helm.registry-login.insecure&quot;, defaultValue = &quot;false&quot;)
+	private boolean insecure;
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking registry-login goal.
+	 *
+	 * @since 6.7.0
+	 */
+	@Parameter(property = &quot;helm.registry-login.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipRegistryLogin;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L51" title="All 4 branches covered.">		if (skip || skipRegistryLogin) {</span>
+<span class="fc" id="L52">			getLog().info(&quot;Skip registry login&quot;);</span>
+<span class="fc" id="L53">			return;</span>
+		}
+
+<span class="fc" id="L56">		HelmRepository repository = getHelmUploadRepo();</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">		if (repository == null) {</span>
+<span class="fc" id="L58">			getLog().warn(&quot;No upload repo found for login, skipped.&quot;);</span>
+<span class="fc" id="L59">			return;</span>
+		}
+
+<span class="fc" id="L62">		PasswordAuthentication authentication = getAuthentication(repository);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		if (authentication == null) {</span>
+<span class="fc" id="L64">			getLog().warn(&quot;No credentials found for upload repo.&quot;);</span>
+<span class="fc" id="L65">			return;</span>
+		}
+
+<span class="fc" id="L68">		helm()</span>
+<span class="fc" id="L69">				.arguments(&quot;registry&quot;, &quot;login&quot;, repository.getUrl())</span>
+<span class="fc" id="L70">				.flag(&quot;ca-file&quot;, caFile)</span>
+<span class="fc" id="L71">				.flag(&quot;insecure&quot;, insecure)</span>
+<span class="fc" id="L72">				.flag(&quot;username&quot;, authentication.getUserName())</span>
+<span class="fc" id="L73">				.flag(&quot;password-stdin&quot;)</span>
+<span class="fc" id="L74">				.setStdin(new String(authentication.getPassword()))</span>
+<span class="fc" id="L75">				.execute(&quot;Failed to login into repository &quot; + repository.getName() + &quot; at &quot; + repository.getUrl());</span>
+<span class="fc" id="L76">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
