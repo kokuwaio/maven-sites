@@ -47,7 +47,7 @@ import lombok.Setter;
  * @since 1.4
  */
 @Mojo(name = &quot;upload&quot;, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
-<span class="fc" id="L50">@Setter</span>
+@Setter
 <span class="fc" id="L51">public class UploadMojo extends AbstractHelmMojo {</span>
 
 <span class="fc" id="L53">	private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);</span>

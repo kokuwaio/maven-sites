@@ -29,16 +29,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /** Wrapper for helm executeable to execute commands. */
-<span class="fc" id="L32">@RequiredArgsConstructor</span>
+@RequiredArgsConstructor
 public class HelmExecutable {
 
 	private final Log log;
-<span class="nc" id="L36">	@Getter</span>
+	@Getter
 	private final Path executable;
-<span class="fc" id="L38">	private final List&lt;String&gt; arguments = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L39">	private final Set&lt;String&gt; sensitiveFlags = new HashSet&lt;&gt;(Arrays.asList(&quot;password&quot;, &quot;kube-token&quot;));</span>
-<span class="fc" id="L40">	private final Map&lt;String, List&lt;String&gt;&gt; flags = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L41">	@Setter</span>
+	private final List&lt;String&gt; arguments = new ArrayList&lt;&gt;();
+	private final Set&lt;String&gt; sensitiveFlags = new HashSet&lt;&gt;(Arrays.asList(&quot;password&quot;, &quot;kube-token&quot;));
+	private final Map&lt;String, List&lt;String&gt;&gt; flags = new LinkedHashMap&lt;&gt;();
+	@Setter
 	private String stdin;
 
 	public HelmExecutable arguments(Object... args) {

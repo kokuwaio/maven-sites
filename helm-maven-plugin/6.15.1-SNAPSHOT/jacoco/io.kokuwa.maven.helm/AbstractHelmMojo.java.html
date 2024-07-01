@@ -45,17 +45,17 @@ import lombok.Setter;
  * @since 1.0
  */
 @Getter
-<span class="pc" id="L48">@Setter</span>
+@Setter
 <span class="fc" id="L49">public abstract class AbstractHelmMojo extends AbstractMojo {</span>
 
 	/** Path of helm executable. */
 <span class="pc bpc" id="L52" title="1 of 2 branches missed.">	private final Path helmExecutableName = Paths.get(Os.isFamily(Os.FAMILY_WINDOWS) ? &quot;helm.exe&quot; : &quot;helm&quot;);</span>
 
 	@Component(role = SecDispatcher.class, hint = &quot;default&quot;)
-<span class="nc" id="L55">	private SecDispatcher securityDispatcher;</span>
+	private SecDispatcher securityDispatcher;
 
 	@Component
-<span class="nc" id="L58">	protected MavenProjectHelper mavenProjectHelper;</span>
+	protected MavenProjectHelper mavenProjectHelper;
 
 	/**
 	 * The maven project
@@ -63,7 +63,7 @@ import lombok.Setter;
 	 * @since 6.12.0
 	 */
 	@Parameter(defaultValue = &quot;${project}&quot;, readonly = true, required = true)
-<span class="fc" id="L66">	protected MavenProject mavenProject;</span>
+	protected MavenProject mavenProject;
 
 	/**
 	 * Controls whether a local binary should be used instead of downloading it. If set to &lt;code&gt;true&lt;/code&gt; path has to
@@ -72,7 +72,7 @@ import lombok.Setter;
 	 * @since 4.0
 	 */
 	@Parameter(property = &quot;helm.useLocalHelmBinary&quot;, defaultValue = &quot;false&quot;)
-<span class="fc" id="L75">	private boolean useLocalHelmBinary;</span>
+	private boolean useLocalHelmBinary;
 
 	/**
 	 * Controls whether the local binary should be auto-detected from PATH environment variable. If set to
@@ -82,7 +82,7 @@ import lombok.Setter;
 	 * @since 4.1
 	 */
 	@Parameter(property = &quot;helm.autoDetectLocalHelmBinary&quot;, defaultValue = &quot;true&quot;)
-<span class="nc" id="L85">	private boolean autoDetectLocalHelmBinary;</span>
+	private boolean autoDetectLocalHelmBinary;
 
 	/**
 	 * Directory of your helm installation.
@@ -106,7 +106,7 @@ import lombok.Setter;
 	 * @since 1.0
 	 */
 	@Parameter(property = &quot;helm.excludes&quot;)
-<span class="nc" id="L109">	private String[] excludes;</span>
+	private String[] excludes;
 
 	/**
 	 * Root directory of your charts.
@@ -114,7 +114,7 @@ import lombok.Setter;
 	 * @since 1.0
 	 */
 	@Parameter(property = &quot;helm.chartDirectory&quot;, required = true)
-<span class="nc" id="L117">	private File chartDirectory;</span>
+	private File chartDirectory;
 
 	/**
 	 * Version of the charts. The version have to be in the SEMVER-Format (https://semver.org/), required by helm.
@@ -122,7 +122,7 @@ import lombok.Setter;
 	 * @since 1.5
 	 */
 	@Parameter(property = &quot;helm.chartVersion&quot;)
-<span class="fc" id="L125">	private String chartVersion;</span>
+	private String chartVersion;
 
 	/**
 	 * Upload repository for stable charts.
@@ -130,7 +130,7 @@ import lombok.Setter;
 	 * @since 1.10
 	 */
 	@Parameter
-<span class="fc" id="L133">	private HelmRepository uploadRepoStable;</span>
+	private HelmRepository uploadRepoStable;
 
 	/**
 	 * Upload repository for snapshot charts (determined by version postfix 'SNAPSHOT').
@@ -138,7 +138,7 @@ import lombok.Setter;
 	 * @since 1.10
 	 */
 	@Parameter
-<span class="fc" id="L141">	private HelmRepository uploadRepoSnapshot;</span>
+	private HelmRepository uploadRepoSnapshot;
 
 	/**
 	 * Version of helm to download.
@@ -154,7 +154,7 @@ import lombok.Setter;
 	 * @since 6.1.0
 	 */
 	@Parameter(property = &quot;helm.githubUserAgent&quot;, defaultValue = &quot;kokuwaio/helm-maven-plugin&quot;)
-<span class="nc" id="L157">	private String githubUserAgent;</span>
+	private String githubUserAgent;
 
 	/**
 	 * Directory where to store Github cache.
@@ -162,7 +162,7 @@ import lombok.Setter;
 	 * @since 6.1.0
 	 */
 	@Parameter(property = &quot;helm.tmpDir&quot;, defaultValue = &quot;${java.io.tmpdir}/helm-maven-plugin&quot;)
-<span class="nc" id="L165">	private File tmpDir;</span>
+	private File tmpDir;
 
 	/**
 	 * Enable verbose output.
@@ -170,7 +170,7 @@ import lombok.Setter;
 	 * @since 6.2.0
 	 */
 	@Parameter(property = &quot;helm.debug&quot;, defaultValue = &quot;false&quot;)
-<span class="nc" id="L173">	private boolean debug;</span>
+	private boolean debug;
 
 	/**
 	 * Path to the registry config file (default ~/.config/helm/registry/config.json).
@@ -178,7 +178,7 @@ import lombok.Setter;
 	 * @since 5.0
 	 */
 	@Parameter(property = &quot;helm.registryConfig&quot;)
-<span class="nc" id="L181">	private File registryConfig;</span>
+	private File registryConfig;
 
 	/**
 	 * Path to the file containing cached repository indexes (default ~/.cache/helm/repository).
@@ -186,7 +186,7 @@ import lombok.Setter;
 	 * @since 5.0
 	 */
 	@Parameter(property = &quot;helm.repositoryCache&quot;)
-<span class="nc" id="L189">	private File repositoryCache;</span>
+	private File repositoryCache;
 
 	/**
 	 * Path to the file containing repository names and URLs (default ~/.config/helm/repositories.yaml).
@@ -194,7 +194,7 @@ import lombok.Setter;
 	 * @since 5.0
 	 */
 	@Parameter(property = &quot;helm.repositoryConfig&quot;)
-<span class="nc" id="L197">	private File repositoryConfig;</span>
+	private File repositoryConfig;
 
 	/**
 	 * Path to security settings.
@@ -202,7 +202,7 @@ import lombok.Setter;
 	 * @since 3.0
 	 */
 	@Parameter(property = &quot;helm.security&quot;, defaultValue = &quot;~/.m2/settings-security.xml&quot;)
-<span class="nc" id="L205">	private String helmSecurity;</span>
+	private String helmSecurity;
 
 	/**
 	 * Global Flag: Use insecure HTTP connections for the chart download.
@@ -210,7 +210,7 @@ import lombok.Setter;
 	 * @since 6.12.0
 	 */
 	@Parameter(property = &quot;helm.plain-http&quot;, defaultValue = &quot;false&quot;)
-<span class="nc" id="L213">	private boolean plainHttp;</span>
+	private boolean plainHttp;
 
 	/**
 	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip all goals.
@@ -218,7 +218,7 @@ import lombok.Setter;
 	 * @since 3.2
 	 */
 	@Parameter(property = &quot;helm.skip&quot;, defaultValue = &quot;false&quot;)
-<span class="nc" id="L221">	protected boolean skip;</span>
+	protected boolean skip;
 
 	/**
 	 * Deprecated, use: &quot;helm.kube*&quot;
@@ -228,11 +228,11 @@ import lombok.Setter;
 	 */
 	@Deprecated // java8 (since = &quot;6.3.0&quot;, forRemoval = true)
 	@Parameter
-<span class="nc" id="L231">	private K8SCluster k8sCluster;</span>
+	private K8SCluster k8sCluster;
 
 	/** The current user system settings for use in Maven. */
 	@Parameter(defaultValue = &quot;${settings}&quot;, readonly = true)
-<span class="fc" id="L235">	protected Settings settings;</span>
+	protected Settings settings;
 
 	/**
 	 * Namespace scope for this request.
@@ -240,7 +240,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.namespace&quot;)
-<span class="nc" id="L243">	private String namespace;</span>
+	private String namespace;
 
 	/**
 	 * The address and the port for the Kubernetes API server.
@@ -248,7 +248,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeApiServer&quot;)
-<span class="nc" id="L251">	private String kubeApiServer;</span>
+	private String kubeApiServer;
 
 	/**
 	 * Skip tls certificate checks for the operation. Also known as `helm --kube-insecure-skip-tls-verify`.
@@ -256,7 +256,7 @@ import lombok.Setter;
 	 * @since 6.10.0
 	 */
 	@Parameter(property = &quot;helm.kubeInsecure&quot;)
-<span class="nc" id="L259">	private boolean kubeInsecure;</span>
+	private boolean kubeInsecure;
 
 	/**
 	 * Username to impersonate for the operation.
@@ -264,7 +264,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeAsUser&quot;)
-<span class="nc" id="L267">	private String kubeAsUser;</span>
+	private String kubeAsUser;
 
 	/**
 	 * Group to impersonate for the operation, this flag can be repeated to specify multiple groups.
@@ -272,7 +272,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeAsGroup&quot;)
-<span class="nc" id="L275">	private String kubeAsGroup;</span>
+	private String kubeAsGroup;
 
 	/**
 	 * Bearer token used for authentication.
@@ -280,7 +280,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeToken&quot;)
-<span class="nc" id="L283">	private String kubeToken;</span>
+	private String kubeToken;
 
 	/**
 	 * The certificate authority file for the Kubernetes API server connection.
@@ -288,7 +288,7 @@ import lombok.Setter;
 	 * @since 6.4.0
 	 */
 	@Parameter(property = &quot;helm.kubeCaFile&quot;)
-<span class="nc" id="L291">	private File kubeCaFile;</span>
+	private File kubeCaFile;
 
 	Path getHelmExecutablePath() throws MojoExecutionException {
 		Stream&lt;Path&gt; optional;

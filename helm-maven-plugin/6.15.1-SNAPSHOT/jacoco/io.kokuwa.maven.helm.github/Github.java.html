@@ -20,13 +20,13 @@ import lombok.RequiredArgsConstructor;
  * @author Stephan Schnabel
  * @since 6.1.0
  */
-<span class="nc" id="L23">@RequiredArgsConstructor</span>
+@RequiredArgsConstructor
 public class Github {
 
 	private static final String LATEST_RELEASE_URL = &quot;https://api.github.com/repos/helm/helm/releases/latest&quot;;
 	private static final String RELEASE_FILE = &quot;github-release.json&quot;;
 
-<span class="nc" id="L29">	private final ObjectMapper mapper = new ObjectMapper();</span>
+	private final ObjectMapper mapper = new ObjectMapper();
 	private final Log log;
 	private final Path tmpDir;
 	private final String userAgent;
