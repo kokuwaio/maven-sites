@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PackageMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">PackageMojo.java</span></div><h1>PackageMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.nio.file.Path;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.StringUtils;
+
+import io.kokuwa.maven.helm.pojo.HelmExecutable;
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm package&quot;.
+ *
+ * @author Fabian Schlegel
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_package&quot;&gt;helm package&lt;/a&gt;
+ * @since 1.0
+ */
+@Mojo(name = &quot;package&quot;, defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
+@Setter
+<span class="fc" id="L26">public class PackageMojo extends AbstractHelmMojo {</span>
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking package goal.
+	 *
+	 * @since 3.3
+	 */
+	@Parameter(property = &quot;helm.package.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipPackage;
+
+	/**
+	 * Path to gpg secret keyring for signing.
+	 *
+	 * @since 5.10
+	 */
+	@Parameter(property = &quot;helm.package.keyring&quot;)
+	private String keyring;
+
+	/**
+	 * Name of gpg key in keyring.
+	 *
+	 * @since 5.10
+	 */
+	@Parameter(property = &quot;helm.package.key&quot;)
+	private String key;
+
+	/**
+	 * Passphrase for gpg key (requires helm 3.4 or newer).
+	 *
+	 * @since 5.10
+	 */
+	@Parameter(property = &quot;helm.package.passphrase&quot;)
+	private String passphrase;
+
+	/**
+	 * The version of the app. This needn't be SemVer.
+	 *
+	 * @since 2.8
+	 */
+	@Parameter(property = &quot;helm.appVersion&quot;)
+	private String appVersion;
+
+	/**
+	 * If &lt;code&gt;true&lt;/code&gt; add timestamps to snapshots.
+	 *
+	 * @since 5.11
+	 */
+	@Parameter(property = &quot;helm.chartVersion.timestampOnSnapshot&quot;, defaultValue = &quot;false&quot;)
+	private boolean timestampOnSnapshot;
+
+	/**
+	 * If &quot;helm.chartVersion.timestampOnSnapshot&quot; is &lt;code&gt;true&lt;/code&gt; then use this format for timestamps.
+	 *
+	 * @since 5.11
+	 */
+	@Parameter(property = &quot;helm.chartVersion.timestampFormat&quot;, defaultValue = &quot;yyyyMMddHHmmss&quot;)
+	private String timestampFormat;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L87" title="All 4 branches covered.">		if (skip || skipPackage) {</span>
+<span class="fc" id="L88">			getLog().info(&quot;Skip package&quot;);</span>
+<span class="fc" id="L89">			return;</span>
+		}
+
+<span class="fc" id="L92">		String chartVersion = getChartVersion();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">		if (chartVersion != null) {</span>
+<span class="pc bpc" id="L94" title="1 of 4 branches missed.">			if (timestampOnSnapshot &amp;&amp; chartVersion.endsWith(&quot;-SNAPSHOT&quot;)) {</span>
+<span class="fc" id="L95">				String suffix = DateTimeFormatter.ofPattern(timestampFormat).format(getTimestamp());</span>
+<span class="fc" id="L96">				chartVersion = chartVersion.replace(&quot;SNAPSHOT&quot;, suffix);</span>
+			}
+<span class="fc" id="L98">			getLog().info(&quot;Setting chart version to &quot; + chartVersion);</span>
+		}
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc" id="L102">			getLog().info(&quot;Packaging chart &quot; + chartDirectory + &quot;...&quot;);</span>
+
+<span class="fc" id="L104">			HelmExecutable helm = helm()</span>
+<span class="fc" id="L105">					.arguments(&quot;package&quot;, chartDirectory)</span>
+<span class="fc" id="L106">					.flag(&quot;destination&quot;, getOutputDirectory())</span>
+<span class="fc" id="L107">					.flag(&quot;version&quot;, chartVersion)</span>
+<span class="fc" id="L108">					.flag(&quot;app-version&quot;, appVersion);</span>
+
+<span class="pc bpc" id="L110" title="1 of 4 branches missed.">			if (StringUtils.isNotEmpty(keyring) &amp;&amp; StringUtils.isNotEmpty(key)) {</span>
+<span class="fc" id="L111">				getLog().info(&quot;Enable signing&quot;);</span>
+<span class="fc" id="L112">				helm.flag(&quot;sign&quot;).flag(&quot;keyring&quot;, keyring).flag(&quot;key&quot;, key);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">				if (StringUtils.isNotEmpty(passphrase)) {</span>
+<span class="fc" id="L114">					helm.flag(&quot;passphrase-file&quot;, &quot;-&quot;).setStdin(passphrase);</span>
+				}
+			}
+
+<span class="fc" id="L118">			helm.execute(&quot;Unable to package chart at &quot; + chartDirectory);</span>
+<span class="fc" id="L119">		}</span>
+<span class="fc" id="L120">	}</span>
+
+	LocalDateTime getTimestamp() {
+<span class="fc" id="L123">		return LocalDateTime.now(Clock.systemDefaultZone());</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
