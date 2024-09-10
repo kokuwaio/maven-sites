@@ -34,6 +34,14 @@ import lombok.Setter;
 	private String action;
 
 	/**
+	 * Specify template used to name the release.
+	 *
+	 * @since 6.15
+	 */
+	@Parameter(property = &quot;helm.template.name-template&quot;)
+	private String templateNameTemplate;
+
+	/**
 	 * Writes the executed templates to files in output-dir instead of stdout.
 	 *
 	 * @since 6.6.1
@@ -78,29 +86,30 @@ import lombok.Setter;
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-<span class="fc bfc" id="L81" title="All 4 branches covered.">		if (skip || skipTemplate) {</span>
-<span class="fc" id="L82">			getLog().info(&quot;Skip template&quot;);</span>
-<span class="fc" id="L83">			return;</span>
+<span class="fc bfc" id="L89" title="All 4 branches covered.">		if (skip || skipTemplate) {</span>
+<span class="fc" id="L90">			getLog().info(&quot;Skip template&quot;);</span>
+<span class="fc" id="L91">			return;</span>
 		}
 
-<span class="fc bfc" id="L86" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
-<span class="fc" id="L87">			getLog().info(String.format(&quot;\n\nPerform template for chart %s...&quot;, chartDirectory));</span>
-<span class="fc" id="L88">			helm()</span>
-<span class="fc" id="L89">					.arguments(action, chartDirectory)</span>
-<span class="fc" id="L90">					.arguments(getArguments())</span>
-<span class="fc" id="L91">					.flag(&quot;output-dir&quot;, templateOutputDir)</span>
-<span class="fc" id="L92">					.flag(&quot;generate-name&quot;, templateGenerateName)</span>
-<span class="fc" id="L93">					.flag(&quot;plain-http&quot;, isPlainHttp(templatePlainHttp))</span>
-<span class="fc" id="L94">					.execute(&quot;There are test failures&quot;);</span>
-<span class="fc" id="L95">		}</span>
-<span class="fc" id="L96">	}</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc" id="L95">			getLog().info(String.format(&quot;\n\nPerform template for chart %s...&quot;, chartDirectory));</span>
+<span class="fc" id="L96">			helm()</span>
+<span class="fc" id="L97">					.arguments(action, chartDirectory)</span>
+<span class="fc" id="L98">					.arguments(getArguments())</span>
+<span class="fc" id="L99">					.flag(&quot;output-dir&quot;, templateOutputDir)</span>
+<span class="fc" id="L100">					.flag(&quot;name-template&quot;, templateNameTemplate)</span>
+<span class="fc" id="L101">					.flag(&quot;generate-name&quot;, templateGenerateName)</span>
+<span class="fc" id="L102">					.flag(&quot;plain-http&quot;, isPlainHttp(templatePlainHttp))</span>
+<span class="fc" id="L103">					.execute(&quot;There are test failures&quot;);</span>
+<span class="fc" id="L104">		}</span>
+<span class="fc" id="L105">	}</span>
 
 	private Object[] getArguments() {
-<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (StringUtils.isEmpty(additionalArguments)) {</span>
-<span class="fc" id="L100">			return new Object[0];</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">		if (StringUtils.isEmpty(additionalArguments)) {</span>
+<span class="fc" id="L109">			return new Object[0];</span>
 		}
-<span class="fc" id="L102">		getLog().warn(&quot;NOTE: &lt;additionalArguments&gt; option will be removed in future major release.&quot;);</span>
-<span class="fc" id="L103">		return additionalArguments.split(&quot; &quot;);</span>
+<span class="fc" id="L111">		getLog().warn(&quot;NOTE: &lt;additionalArguments&gt; option will be removed in future major release.&quot;);</span>
+<span class="fc" id="L112">		return additionalArguments.split(&quot; &quot;);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
