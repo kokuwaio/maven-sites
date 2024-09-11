@@ -250,51 +250,50 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 	/**
 	 * Read image from &lt;code&gt;ctr image list&lt;/code&gt;.
 	 *
-	 * @param row Row from ctr output.
 	 * @return Image name with labels.
 	 */
 	private Map&lt;String, Map&lt;String, ?&gt;&gt; getCtrImages() throws MojoExecutionException {
-<span class="fc" id="L257">		return getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;list&quot;).stream().map(String::strip)</span>
-<span class="fc bfc" id="L258" title="All 4 branches covered.">				.filter(row -&gt; !row.startsWith(&quot;REF&quot;) &amp;&amp; !row.startsWith(&quot;sha256:&quot;))</span>
-<span class="fc" id="L259">				.map(row -&gt; row.split(&quot;(\\s)+&quot;))</span>
-<span class="fc" id="L260">				.filter(parts -&gt; {</span>
-<span class="pc bpc" id="L261" title="1 of 2 branches missed.">					var matches = parts.length == 7;</span>
-<span class="pc bpc" id="L262" title="1 of 2 branches missed.">					if (!matches) {</span>
-<span class="nc" id="L263">						getLog().warn(&quot;Unexpected output of `ctr image list`: &quot; + List.of(parts));</span>
+<span class="fc" id="L256">		return getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;list&quot;).stream().map(String::strip)</span>
+<span class="fc bfc" id="L257" title="All 4 branches covered.">				.filter(row -&gt; !row.startsWith(&quot;REF&quot;) &amp;&amp; !row.startsWith(&quot;sha256:&quot;))</span>
+<span class="fc" id="L258">				.map(row -&gt; row.split(&quot;(\\s)+&quot;))</span>
+<span class="fc" id="L259">				.filter(parts -&gt; {</span>
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">					var matches = parts.length == 7;</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">					if (!matches) {</span>
+<span class="nc" id="L262">						getLog().warn(&quot;Unexpected output of `ctr image list`: &quot; + List.of(parts));</span>
 					}
-<span class="fc" id="L265">					return matches;</span>
+<span class="fc" id="L264">					return matches;</span>
 				})
-<span class="fc" id="L267">				.map(parts -&gt; Map.entry(parts[0], Stream.of(parts[6].split(&quot;,&quot;)).map(s -&gt; s.split(&quot;=&quot;))</span>
-<span class="fc bfc" id="L268" title="All 2 branches covered.">						.filter(s -&gt; !&quot;io.cri-containerd.image&quot;.equals(s[0]))</span>
-<span class="fc" id="L269">						.collect(Collectors.toMap(s -&gt; s[0], s -&gt; s[1]))))</span>
-<span class="fc" id="L270">				.peek(entry -&gt; getLog().debug(&quot;Found ctr image: &quot; + entry))</span>
-<span class="fc" id="L271">				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));</span>
+<span class="fc" id="L266">				.map(parts -&gt; Map.entry(parts[0], Stream.of(parts[6].split(&quot;,&quot;)).map(s -&gt; s.split(&quot;=&quot;))</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">						.filter(s -&gt; !&quot;io.cri-containerd.image&quot;.equals(s[0]))</span>
+<span class="fc" id="L268">						.collect(Collectors.toMap(s -&gt; s[0], s -&gt; s[1]))))</span>
+<span class="fc" id="L269">				.peek(entry -&gt; getLog().debug(&quot;Found ctr image: &quot; + entry))</span>
+<span class="fc" id="L270">				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));</span>
 	}
 
 	// setter
 
 	public void setCtrImages(List&lt;String&gt; ctrImages) {
-<span class="fc" id="L277">		this.ctrImages = ctrImages.stream().map(getDocker()::normalizeImage).collect(Collectors.toSet());</span>
-<span class="fc" id="L278">	}</span>
+<span class="fc" id="L276">		this.ctrImages = ctrImages.stream().map(getDocker()::normalizeImage).collect(Collectors.toSet());</span>
+<span class="fc" id="L277">	}</span>
 
 	public void setDockerImages(List&lt;String&gt; dockerImages) {
-<span class="fc" id="L281">		this.dockerImages = dockerImages.stream().collect(Collectors.toSet());</span>
-<span class="fc" id="L282">	}</span>
+<span class="fc" id="L280">		this.dockerImages = dockerImages.stream().collect(Collectors.toSet());</span>
+<span class="fc" id="L281">	}</span>
 
 	public void setTarFiles(List&lt;String&gt; tarFiles) {
-<span class="fc" id="L285">		this.tarFiles = tarFiles.stream().map(Paths::get).map(Path::toAbsolutePath).collect(Collectors.toSet());</span>
-<span class="fc" id="L286">	}</span>
+<span class="fc" id="L284">		this.tarFiles = tarFiles.stream().map(Paths::get).map(Path::toAbsolutePath).collect(Collectors.toSet());</span>
+<span class="fc" id="L285">	}</span>
 
 	public void setDockerPullAlways(boolean dockerPullAlways) {
-<span class="fc" id="L289">		this.dockerPullAlways = dockerPullAlways;</span>
-<span class="fc" id="L290">	}</span>
+<span class="fc" id="L288">		this.dockerPullAlways = dockerPullAlways;</span>
+<span class="fc" id="L289">	}</span>
 
 	public void setPullTimeout(int pullTimeout) {
-<span class="fc" id="L293">		this.pullTimeout = Duration.ofSeconds(pullTimeout);</span>
-<span class="fc" id="L294">	}</span>
+<span class="fc" id="L292">		this.pullTimeout = Duration.ofSeconds(pullTimeout);</span>
+<span class="fc" id="L293">	}</span>
 
 	public void setSkipImage(boolean skipImage) {
-<span class="fc" id="L297">		this.skipImage = skipImage;</span>
-<span class="fc" id="L298">	}</span>
+<span class="fc" id="L296">		this.skipImage = skipImage;</span>
+<span class="fc" id="L297">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

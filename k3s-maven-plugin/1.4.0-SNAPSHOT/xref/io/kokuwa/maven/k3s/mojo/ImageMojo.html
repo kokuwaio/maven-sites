@@ -258,53 +258,52 @@
 <a class="jxr_linenumber" name="L250" href="#L250">250</a> 	<em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L251" href="#L251">251</a> <em class="jxr_javadoccomment">	 * Read image from &lt;code&gt;ctr image list&lt;/code&gt;.</em>
 <a class="jxr_linenumber" name="L252" href="#L252">252</a> <em class="jxr_javadoccomment">	 *</em>
-<a class="jxr_linenumber" name="L253" href="#L253">253</a> <em class="jxr_javadoccomment">	 * @param row Row from ctr output.</em>
-<a class="jxr_linenumber" name="L254" href="#L254">254</a> <em class="jxr_javadoccomment">	 * @return Image name with labels.</em>
-<a class="jxr_linenumber" name="L255" href="#L255">255</a> <em class="jxr_javadoccomment">	 */</em>
-<a class="jxr_linenumber" name="L256" href="#L256">256</a> 	<strong class="jxr_keyword">private</strong> Map&lt;String, Map&lt;String, ?&gt;&gt; getCtrImages() <strong class="jxr_keyword">throws</strong> MojoExecutionException {
-<a class="jxr_linenumber" name="L257" href="#L257">257</a> 		<strong class="jxr_keyword">return</strong> getDocker().exec(<span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"list"</span>).stream().map(String::strip)
-<a class="jxr_linenumber" name="L258" href="#L258">258</a> 				.filter(row -&gt; !row.startsWith(<span class="jxr_string">"REF"</span>) &amp;&amp; !row.startsWith(<span class="jxr_string">"sha256:"</span>))
-<a class="jxr_linenumber" name="L259" href="#L259">259</a> 				.map(row -&gt; row.split(<span class="jxr_string">"(&#92;&#92;s)+"</span>))
-<a class="jxr_linenumber" name="L260" href="#L260">260</a> 				.filter(parts -&gt; {
-<a class="jxr_linenumber" name="L261" href="#L261">261</a> 					<strong class="jxr_keyword">var</strong> matches = parts.length == 7;
-<a class="jxr_linenumber" name="L262" href="#L262">262</a> 					<strong class="jxr_keyword">if</strong> (!matches) {
-<a class="jxr_linenumber" name="L263" href="#L263">263</a> 						getLog().warn(<span class="jxr_string">"Unexpected output of `ctr image list`: "</span> + List.of(parts));
-<a class="jxr_linenumber" name="L264" href="#L264">264</a> 					}
-<a class="jxr_linenumber" name="L265" href="#L265">265</a> 					<strong class="jxr_keyword">return</strong> matches;
-<a class="jxr_linenumber" name="L266" href="#L266">266</a> 				})
-<a class="jxr_linenumber" name="L267" href="#L267">267</a> 				.map(parts -&gt; Map.entry(parts[0], Stream.of(parts[6].split(<span class="jxr_string">","</span>)).map(s -&gt; s.split(<span class="jxr_string">"="</span>))
-<a class="jxr_linenumber" name="L268" href="#L268">268</a> 						.filter(s -&gt; !<span class="jxr_string">"io.cri-containerd.image"</span>.equals(s[0]))
-<a class="jxr_linenumber" name="L269" href="#L269">269</a> 						.collect(Collectors.toMap(s -&gt; s[0], s -&gt; s[1]))))
-<a class="jxr_linenumber" name="L270" href="#L270">270</a> 				.peek(entry -&gt; getLog().debug(<span class="jxr_string">"Found ctr image: "</span> + entry))
-<a class="jxr_linenumber" name="L271" href="#L271">271</a> 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-<a class="jxr_linenumber" name="L272" href="#L272">272</a> 	}
-<a class="jxr_linenumber" name="L273" href="#L273">273</a> 
-<a class="jxr_linenumber" name="L274" href="#L274">274</a> 	<em class="jxr_comment">// setter</em>
-<a class="jxr_linenumber" name="L275" href="#L275">275</a> 
-<a class="jxr_linenumber" name="L276" href="#L276">276</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setCtrImages(List&lt;String&gt; ctrImages) {
-<a class="jxr_linenumber" name="L277" href="#L277">277</a> 		<strong class="jxr_keyword">this</strong>.ctrImages = ctrImages.stream().map(getDocker()::normalizeImage).collect(Collectors.toSet());
-<a class="jxr_linenumber" name="L278" href="#L278">278</a> 	}
-<a class="jxr_linenumber" name="L279" href="#L279">279</a> 
-<a class="jxr_linenumber" name="L280" href="#L280">280</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDockerImages(List&lt;String&gt; dockerImages) {
-<a class="jxr_linenumber" name="L281" href="#L281">281</a> 		<strong class="jxr_keyword">this</strong>.dockerImages = dockerImages.stream().collect(Collectors.toSet());
-<a class="jxr_linenumber" name="L282" href="#L282">282</a> 	}
-<a class="jxr_linenumber" name="L283" href="#L283">283</a> 
-<a class="jxr_linenumber" name="L284" href="#L284">284</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setTarFiles(List&lt;String&gt; tarFiles) {
-<a class="jxr_linenumber" name="L285" href="#L285">285</a> 		<strong class="jxr_keyword">this</strong>.tarFiles = tarFiles.stream().map(Paths::get).map(Path::toAbsolutePath).collect(Collectors.toSet());
-<a class="jxr_linenumber" name="L286" href="#L286">286</a> 	}
-<a class="jxr_linenumber" name="L287" href="#L287">287</a> 
-<a class="jxr_linenumber" name="L288" href="#L288">288</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDockerPullAlways(<strong class="jxr_keyword">boolean</strong> dockerPullAlways) {
-<a class="jxr_linenumber" name="L289" href="#L289">289</a> 		<strong class="jxr_keyword">this</strong>.dockerPullAlways = dockerPullAlways;
-<a class="jxr_linenumber" name="L290" href="#L290">290</a> 	}
-<a class="jxr_linenumber" name="L291" href="#L291">291</a> 
-<a class="jxr_linenumber" name="L292" href="#L292">292</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setPullTimeout(<strong class="jxr_keyword">int</strong> pullTimeout) {
-<a class="jxr_linenumber" name="L293" href="#L293">293</a> 		<strong class="jxr_keyword">this</strong>.pullTimeout = Duration.ofSeconds(pullTimeout);
-<a class="jxr_linenumber" name="L294" href="#L294">294</a> 	}
-<a class="jxr_linenumber" name="L295" href="#L295">295</a> 
-<a class="jxr_linenumber" name="L296" href="#L296">296</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setSkipImage(<strong class="jxr_keyword">boolean</strong> skipImage) {
-<a class="jxr_linenumber" name="L297" href="#L297">297</a> 		<strong class="jxr_keyword">this</strong>.skipImage = skipImage;
-<a class="jxr_linenumber" name="L298" href="#L298">298</a> 	}
-<a class="jxr_linenumber" name="L299" href="#L299">299</a> }
+<a class="jxr_linenumber" name="L253" href="#L253">253</a> <em class="jxr_javadoccomment">	 * @return Image name with labels.</em>
+<a class="jxr_linenumber" name="L254" href="#L254">254</a> <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L255" href="#L255">255</a> 	<strong class="jxr_keyword">private</strong> Map&lt;String, Map&lt;String, ?&gt;&gt; getCtrImages() <strong class="jxr_keyword">throws</strong> MojoExecutionException {
+<a class="jxr_linenumber" name="L256" href="#L256">256</a> 		<strong class="jxr_keyword">return</strong> getDocker().exec(<span class="jxr_string">"ctr"</span>, <span class="jxr_string">"image"</span>, <span class="jxr_string">"list"</span>).stream().map(String::strip)
+<a class="jxr_linenumber" name="L257" href="#L257">257</a> 				.filter(row -&gt; !row.startsWith(<span class="jxr_string">"REF"</span>) &amp;&amp; !row.startsWith(<span class="jxr_string">"sha256:"</span>))
+<a class="jxr_linenumber" name="L258" href="#L258">258</a> 				.map(row -&gt; row.split(<span class="jxr_string">"(&#92;&#92;s)+"</span>))
+<a class="jxr_linenumber" name="L259" href="#L259">259</a> 				.filter(parts -&gt; {
+<a class="jxr_linenumber" name="L260" href="#L260">260</a> 					<strong class="jxr_keyword">var</strong> matches = parts.length == 7;
+<a class="jxr_linenumber" name="L261" href="#L261">261</a> 					<strong class="jxr_keyword">if</strong> (!matches) {
+<a class="jxr_linenumber" name="L262" href="#L262">262</a> 						getLog().warn(<span class="jxr_string">"Unexpected output of `ctr image list`: "</span> + List.of(parts));
+<a class="jxr_linenumber" name="L263" href="#L263">263</a> 					}
+<a class="jxr_linenumber" name="L264" href="#L264">264</a> 					<strong class="jxr_keyword">return</strong> matches;
+<a class="jxr_linenumber" name="L265" href="#L265">265</a> 				})
+<a class="jxr_linenumber" name="L266" href="#L266">266</a> 				.map(parts -&gt; Map.entry(parts[0], Stream.of(parts[6].split(<span class="jxr_string">","</span>)).map(s -&gt; s.split(<span class="jxr_string">"="</span>))
+<a class="jxr_linenumber" name="L267" href="#L267">267</a> 						.filter(s -&gt; !<span class="jxr_string">"io.cri-containerd.image"</span>.equals(s[0]))
+<a class="jxr_linenumber" name="L268" href="#L268">268</a> 						.collect(Collectors.toMap(s -&gt; s[0], s -&gt; s[1]))))
+<a class="jxr_linenumber" name="L269" href="#L269">269</a> 				.peek(entry -&gt; getLog().debug(<span class="jxr_string">"Found ctr image: "</span> + entry))
+<a class="jxr_linenumber" name="L270" href="#L270">270</a> 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+<a class="jxr_linenumber" name="L271" href="#L271">271</a> 	}
+<a class="jxr_linenumber" name="L272" href="#L272">272</a> 
+<a class="jxr_linenumber" name="L273" href="#L273">273</a> 	<em class="jxr_comment">// setter</em>
+<a class="jxr_linenumber" name="L274" href="#L274">274</a> 
+<a class="jxr_linenumber" name="L275" href="#L275">275</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setCtrImages(List&lt;String&gt; ctrImages) {
+<a class="jxr_linenumber" name="L276" href="#L276">276</a> 		<strong class="jxr_keyword">this</strong>.ctrImages = ctrImages.stream().map(getDocker()::normalizeImage).collect(Collectors.toSet());
+<a class="jxr_linenumber" name="L277" href="#L277">277</a> 	}
+<a class="jxr_linenumber" name="L278" href="#L278">278</a> 
+<a class="jxr_linenumber" name="L279" href="#L279">279</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDockerImages(List&lt;String&gt; dockerImages) {
+<a class="jxr_linenumber" name="L280" href="#L280">280</a> 		<strong class="jxr_keyword">this</strong>.dockerImages = dockerImages.stream().collect(Collectors.toSet());
+<a class="jxr_linenumber" name="L281" href="#L281">281</a> 	}
+<a class="jxr_linenumber" name="L282" href="#L282">282</a> 
+<a class="jxr_linenumber" name="L283" href="#L283">283</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setTarFiles(List&lt;String&gt; tarFiles) {
+<a class="jxr_linenumber" name="L284" href="#L284">284</a> 		<strong class="jxr_keyword">this</strong>.tarFiles = tarFiles.stream().map(Paths::get).map(Path::toAbsolutePath).collect(Collectors.toSet());
+<a class="jxr_linenumber" name="L285" href="#L285">285</a> 	}
+<a class="jxr_linenumber" name="L286" href="#L286">286</a> 
+<a class="jxr_linenumber" name="L287" href="#L287">287</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDockerPullAlways(<strong class="jxr_keyword">boolean</strong> dockerPullAlways) {
+<a class="jxr_linenumber" name="L288" href="#L288">288</a> 		<strong class="jxr_keyword">this</strong>.dockerPullAlways = dockerPullAlways;
+<a class="jxr_linenumber" name="L289" href="#L289">289</a> 	}
+<a class="jxr_linenumber" name="L290" href="#L290">290</a> 
+<a class="jxr_linenumber" name="L291" href="#L291">291</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setPullTimeout(<strong class="jxr_keyword">int</strong> pullTimeout) {
+<a class="jxr_linenumber" name="L292" href="#L292">292</a> 		<strong class="jxr_keyword">this</strong>.pullTimeout = Duration.ofSeconds(pullTimeout);
+<a class="jxr_linenumber" name="L293" href="#L293">293</a> 	}
+<a class="jxr_linenumber" name="L294" href="#L294">294</a> 
+<a class="jxr_linenumber" name="L295" href="#L295">295</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setSkipImage(<strong class="jxr_keyword">boolean</strong> skipImage) {
+<a class="jxr_linenumber" name="L296" href="#L296">296</a> 		<strong class="jxr_keyword">this</strong>.skipImage = skipImage;
+<a class="jxr_linenumber" name="L297" href="#L297">297</a> 	}
+<a class="jxr_linenumber" name="L298" href="#L298">298</a> }
 </pre>
 <hr/>
 <div id="footer">© 2022–2024 <a href="http://kokuwa.io">Kokuwa.io</a></div>
