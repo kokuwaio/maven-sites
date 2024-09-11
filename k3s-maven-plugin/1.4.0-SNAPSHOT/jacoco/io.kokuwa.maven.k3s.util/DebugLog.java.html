@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DebugLog.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">k3s Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.k3s.util</a> &gt; <span class="el_source">DebugLog.java</span></div><h1>DebugLog.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.k3s.util;
+
+import org.apache.maven.plugin.logging.Log;
+
+/**
+ * Wrapper for maven logger to enable debugging for k3s-maven-pugin without enable exhausting maven debug.
+ *
+ * @since 0.11.0
+ */
+public class DebugLog implements Log {
+
+	private final Log log;
+	private final boolean debug;
+
+<span class="fc" id="L15">	public DebugLog(Log log, boolean debug) {</span>
+<span class="fc" id="L16">		this.log = log;</span>
+<span class="fc" id="L17">		this.debug = debug;</span>
+<span class="fc" id="L18">	}</span>
+
+	@Override
+	public boolean isDebugEnabled() {
+<span class="nc bnc" id="L22" title="All 4 branches missed.">		return log.isDebugEnabled() || debug;</span>
+	}
+
+	@Override
+	public void debug(CharSequence content) {
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">		if (debug) {</span>
+<span class="nc" id="L28">			log.info(content);</span>
+		} else {
+<span class="fc" id="L30">			log.debug(content);</span>
+		}
+<span class="fc" id="L32">	}</span>
+
+	@Override
+	public void debug(CharSequence content, Throwable error) {
+<span class="nc bnc" id="L36" title="All 2 branches missed.">		if (debug) {</span>
+<span class="nc" id="L37">			log.info(content, error);</span>
+		} else {
+<span class="nc" id="L39">			log.debug(content, error);</span>
+		}
+<span class="nc" id="L41">	}</span>
+
+	@Override
+	public void debug(Throwable error) {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">		if (debug) {</span>
+<span class="nc" id="L46">			log.info(error);</span>
+		} else {
+<span class="nc" id="L48">			log.debug(error);</span>
+		}
+<span class="nc" id="L50">	}</span>
+
+	@Override
+	public boolean isInfoEnabled() {
+<span class="nc" id="L54">		return log.isInfoEnabled();</span>
+	}
+
+	@Override
+	public void info(CharSequence content) {
+<span class="fc" id="L59">		log.info(content);</span>
+<span class="fc" id="L60">	}</span>
+
+	@Override
+	public void info(CharSequence content, Throwable error) {
+<span class="nc" id="L64">		log.info(content, error);</span>
+<span class="nc" id="L65">	}</span>
+
+	@Override
+	public void info(Throwable error) {
+<span class="nc" id="L69">		log.info(error);</span>
+<span class="nc" id="L70">	}</span>
+
+	@Override
+	public boolean isWarnEnabled() {
+<span class="nc" id="L74">		return log.isWarnEnabled();</span>
+	}
+
+	@Override
+	public void warn(CharSequence content) {
+<span class="fc" id="L79">		log.warn(content);</span>
+<span class="fc" id="L80">	}</span>
+
+	@Override
+	public void warn(CharSequence content, Throwable error) {
+<span class="nc" id="L84">		log.warn(content, error);</span>
+<span class="nc" id="L85">	}</span>
+
+	@Override
+	public void warn(Throwable error) {
+<span class="nc" id="L89">		log.warn(error);</span>
+<span class="nc" id="L90">	}</span>
+
+	@Override
+	public boolean isErrorEnabled() {
+<span class="nc" id="L94">		return log.isErrorEnabled();</span>
+	}
+
+	@Override
+	public void error(CharSequence content) {
+<span class="fc" id="L99">		log.error(content);</span>
+<span class="fc" id="L100">	}</span>
+
+	@Override
+	public void error(CharSequence content, Throwable error) {
+<span class="nc" id="L104">		log.error(content, error);</span>
+<span class="nc" id="L105">	}</span>
+
+	@Override
+	public void error(Throwable error) {
+<span class="nc" id="L109">		log.error(error);</span>
+<span class="nc" id="L110">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

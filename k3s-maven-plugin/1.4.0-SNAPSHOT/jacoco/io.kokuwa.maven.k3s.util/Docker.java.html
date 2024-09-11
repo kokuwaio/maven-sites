@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Docker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">k3s Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.k3s.util</a> &gt; <span class="el_source">Docker.java</span></div><h1>Docker.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.k3s.util;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+/**
+ * Wrapper for docker commands.
+ *
+ * @author stephan.schnabel@posteo.de
+ * @since 1.0.0
+ */
+public class Docker {
+
+<span class="fc" id="L30">	private final ObjectMapper mapper = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);</span>
+	private final String containerName;
+	private final String volumeName;
+	private final Log log;
+
+<span class="fc" id="L35">	public Docker(String containerName, String volumeName, Log log) {</span>
+<span class="fc" id="L36">		this.containerName = containerName;</span>
+<span class="fc" id="L37">		this.volumeName = volumeName;</span>
+<span class="fc" id="L38">		this.log = log;</span>
+<span class="fc" id="L39">	}</span>
+
+	public Optional&lt;Container&gt; getContainer() throws MojoExecutionException {
+<span class="fc" id="L42">		return Task</span>
+<span class="fc" id="L43">				.of(log, &quot;docker&quot;, &quot;container&quot;, &quot;ls&quot;, &quot;--all&quot;, &quot;--filter=name=&quot; + containerName, &quot;--format={{json .}}&quot;)</span>
+<span class="fc" id="L44">				.run().stream()</span>
+<span class="fc" id="L45">				.map(output -&gt; readValue(Container.class, output))</span>
+<span class="fc" id="L46">				.filter(container -&gt; containerName.equals(container.name))</span>
+<span class="fc" id="L47">				.findAny();</span>
+	}
+
+	public void createContainer(String image, List&lt;String&gt; ports, List&lt;String&gt; k3s, Path registries)
+			throws MojoExecutionException {
+<span class="fc" id="L52">		var command = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L53">		command.add(&quot;docker&quot;);</span>
+<span class="fc" id="L54">		command.add(&quot;run&quot;);</span>
+<span class="fc" id="L55">		command.add(&quot;--name=&quot; + containerName);</span>
+<span class="fc" id="L56">		command.add(&quot;--privileged&quot;);</span>
+<span class="fc" id="L57">		command.add(&quot;--detach&quot;);</span>
+<span class="fc" id="L58">		command.add(&quot;--volume=&quot; + volumeName + &quot;:/var/lib/rancher/k3s/agent&quot;);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		if (registries != null) {</span>
+<span class="fc" id="L60">			command.add(&quot;--volume=&quot; + registries + &quot;:/etc/rancher/k3s/registries.yaml&quot;);</span>
+		}
+<span class="fc" id="L62">		ports.stream().map(port -&gt; &quot;--publish=&quot; + port).forEach(command::add);</span>
+<span class="fc" id="L63">		command.add(image);</span>
+<span class="fc" id="L64">		command.addAll(k3s);</span>
+<span class="fc" id="L65">		Task.of(log, command).run();</span>
+<span class="fc" id="L66">	}</span>
+
+	public void startContainer() throws MojoExecutionException {
+<span class="fc" id="L69">		Task.of(log, &quot;docker&quot;, &quot;start&quot;, containerName).run();</span>
+<span class="fc" id="L70">	}</span>
+
+	public void removeContainer() throws MojoExecutionException {
+<span class="fc" id="L73">		Task.of(log, &quot;docker&quot;, &quot;rm&quot;, containerName, &quot;--force&quot;, &quot;--volumes&quot;).run();</span>
+<span class="fc" id="L74">	}</span>
+
+	public void copyFromContainer(String source, Path destination) throws MojoExecutionException {
+<span class="fc" id="L77">		Task.of(log, &quot;docker&quot;, &quot;cp&quot;, containerName + &quot;:&quot; + source, destination.toString()).run();</span>
+<span class="fc" id="L78">	}</span>
+
+	public void copyToContainer(Path source, String destination) throws MojoExecutionException {
+		// suffix directories with '/.', see https://docs.docker.com/engine/reference/commandline/cp/#description
+<span class="fc bfc" id="L82" title="All 2 branches covered.">		var sourceString = Files.isDirectory(source) ? source + File.separator + &quot;.&quot; : source.toString();</span>
+<span class="fc" id="L83">		Task.of(log, &quot;docker&quot;, &quot;cp&quot;, sourceString, containerName + &quot;:&quot; + destination).run();</span>
+<span class="fc" id="L84">	}</span>
+
+	public void waitForLog(Await await, Function&lt;List&lt;String&gt;, Boolean&gt; checker) throws MojoExecutionException {
+<span class="fc" id="L87">		var process = Task.of(log, &quot;docker&quot;, &quot;logs&quot;, containerName, &quot;--follow&quot;).timeout(Duration.ofHours(1)).start();</span>
+<span class="pc" id="L88">		await.onTimeout(() -&gt; process.output().forEach(log::warn)).until(() -&gt; process.output(), checker);</span>
+<span class="fc" id="L89">		process.close();</span>
+<span class="fc" id="L90">	}</span>
+
+	public List&lt;String&gt; exec(String... commands) throws MojoExecutionException {
+<span class="fc" id="L93">		return exec(null, commands);</span>
+	}
+
+	public List&lt;String&gt; exec(Duration timeout, String... commands) throws MojoExecutionException {
+<span class="fc" id="L97">		return exec(timeout, List.of(commands));</span>
+	}
+
+	public List&lt;String&gt; exec(Duration timeout, List&lt;String&gt; commands) throws MojoExecutionException {
+<span class="fc" id="L101">		return execWithoutVerify(timeout, commands).verify().output();</span>
+	}
+
+	public Task execWithoutVerify(List&lt;String&gt; commands) throws MojoExecutionException {
+<span class="nc" id="L105">		return execWithoutVerify(null, commands);</span>
+	}
+
+	public Task execWithoutVerify(Duration timeout, List&lt;String&gt; commands) throws MojoExecutionException {
+<span class="fc" id="L109">		var command = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L110">		command.add(&quot;docker&quot;);</span>
+<span class="fc" id="L111">		command.add(&quot;exec&quot;);</span>
+<span class="fc" id="L112">		command.add(containerName);</span>
+<span class="fc" id="L113">		command.addAll(commands);</span>
+<span class="fc" id="L114">		var task = Task.of(log, command);</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">		if (timeout != null) {</span>
+<span class="fc" id="L116">			task.timeout(timeout);</span>
+		}
+<span class="fc" id="L118">		return task.start().waitFor();</span>
+	}
+
+	// volume
+
+	public Optional&lt;ContainerVolume&gt; getVolume() throws MojoExecutionException {
+<span class="fc" id="L124">		return Task.of(log, &quot;docker&quot;, &quot;volume&quot;, &quot;ls&quot;, &quot;--filter=name=&quot; + volumeName, &quot;--format={{json .}}&quot;)</span>
+<span class="fc" id="L125">				.run().stream()</span>
+<span class="fc" id="L126">				.map(output -&gt; readValue(ContainerVolume.class, output))</span>
+<span class="fc" id="L127">				.filter(volume -&gt; volumeName.equals(volume.name))</span>
+<span class="fc" id="L128">				.findAny();</span>
+	}
+
+	public void createVolume() throws MojoExecutionException {
+<span class="fc" id="L132">		Task.of(log, &quot;docker&quot;, &quot;volume&quot;, &quot;create&quot;, volumeName).run();</span>
+<span class="fc" id="L133">	}</span>
+
+	public void removeVolume() throws MojoExecutionException {
+<span class="fc" id="L136">		Task.of(log, &quot;docker&quot;, &quot;volume&quot;, &quot;rm&quot;, volumeName, &quot;--force&quot;).run();</span>
+<span class="fc" id="L137">	}</span>
+
+	// images
+
+	public String normalizeImage(String image) {
+
+<span class="fc" id="L143">		var newImageName = image;</span>
+
+<span class="fc bfc" id="L145" title="All 4 branches covered.">		if (!image.contains(&quot;@sha256:&quot;) &amp;&amp; !image.contains(&quot;:&quot;)) {</span>
+<span class="fc" id="L146">			newImageName += &quot;:latest&quot;;</span>
+		}
+
+<span class="fc" id="L149">		var slashIndex = image.indexOf('/');</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">		if (slashIndex == -1) {</span>
+<span class="fc" id="L151">			newImageName = &quot;docker.io/library/&quot; + newImageName;</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">		} else if (!image.substring(0, slashIndex).contains(&quot;.&quot;)) {</span>
+<span class="fc" id="L153">			newImageName = &quot;docker.io/&quot; + newImageName;</span>
+		}
+
+<span class="fc" id="L156">		return newImageName;</span>
+	}
+
+	public Optional&lt;ContainerImage&gt; getImage(String image) throws MojoExecutionException {
+<span class="fc" id="L160">		var task = Task.of(log, &quot;docker&quot;, &quot;image&quot;, &quot;inspect&quot;, image, &quot;--format={{json .}}&quot;).start().waitFor();</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">		return task.exitCode() == 0</span>
+<span class="fc" id="L162">				? task.output().stream().map(output -&gt; readValue(ContainerImage.class, output)).findAny()</span>
+<span class="fc" id="L163">				: Optional.empty();</span>
+	}
+
+	public void pullImage(String image, Duration timeout) throws MojoExecutionException {
+<span class="fc" id="L167">		Task.of(log, &quot;docker&quot;, &quot;image&quot;, &quot;pull&quot;, &quot;--quiet&quot;, image).timeout(timeout).run();</span>
+<span class="fc" id="L168">	}</span>
+
+	public void saveImage(String image, Path path) throws MojoExecutionException {
+<span class="fc" id="L171">		Task.of(log, &quot;docker&quot;, &quot;image&quot;, &quot;save&quot;, &quot;--output=&quot; + path, image).run();</span>
+<span class="fc" id="L172">	}</span>
+
+	public void removeImage(String image) throws MojoExecutionException {
+<span class="fc" id="L175">		Task.of(log, &quot;docker&quot;, &quot;image&quot;, &quot;rm&quot;, &quot;--force&quot;, image).run();</span>
+<span class="fc" id="L176">	}</span>
+
+	// internal
+
+	private &lt;T&gt; T readValue(Class&lt;T&gt; type, String output) {
+		try {
+<span class="fc" id="L182">			return mapper.readValue(output, type);</span>
+<span class="nc" id="L183">		} catch (JsonProcessingException e) {</span>
+<span class="nc" id="L184">			throw new IllegalStateException(&quot;Failed to parse line to &quot; + type.getName() + &quot;: &quot; + output, e);</span>
+		}
+	}
+
+	// models
+
+	/**
+	 * Response of &lt;code&gt;docker ps --format=json&lt;/code&gt;.
+	 *
+	 * @see &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/volume_inspect/#format&quot;&gt;docker v inspect&lt;/a&gt;
+	 */
+	public static class Container {
+
+		public final String id;
+		public final String name;
+		public final ContainerStatus state;
+		public final String status;
+
+		@JsonCreator
+		public Container(
+				@JsonProperty(&quot;ID&quot;) String id,
+				@JsonProperty(&quot;Names&quot;) String name,
+				@JsonProperty(&quot;State&quot;) ContainerStatus state,
+<span class="fc" id="L207">				@JsonProperty(&quot;Status&quot;) String status) {</span>
+<span class="fc" id="L208">			this.id = id;</span>
+<span class="fc" id="L209">			this.name = name;</span>
+<span class="fc" id="L210">			this.state = state;</span>
+<span class="fc" id="L211">			this.status = status;</span>
+<span class="fc" id="L212">		}</span>
+
+		public boolean isRunning() {
+<span class="pc bpc" id="L215" title="1 of 4 branches missed.">			return state == ContainerStatus.running || state == ContainerStatus.restarting;</span>
+		}
+	}
+
+	/**
+	 * Available status of a container.
+	 *
+	 * @see &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/ps/#status&quot;&gt;docker ps&lt;/a&gt;
+	 */
+<span class="fc" id="L224">	public enum ContainerStatus {</span>
+
+<span class="fc" id="L226">		created,</span>
+<span class="fc" id="L227">		restarting,</span>
+<span class="fc" id="L228">		running,</span>
+<span class="fc" id="L229">		removing,</span>
+<span class="fc" id="L230">		paused,</span>
+<span class="fc" id="L231">		exited,</span>
+<span class="fc" id="L232">		dead</span>
+	}
+
+	/**
+	 * Response of &lt;code&gt;docker volume ls --format=json&lt;/code&gt;.
+	 *
+	 * @see &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/volume_inspect/#format&quot;&gt;docker v inspect&lt;/a&gt;
+	 */
+	public static class ContainerVolume {
+
+		public final String name;
+		public final String mountpoint;
+
+		@JsonCreator
+<span class="fc" id="L246">		public ContainerVolume(@JsonProperty(&quot;Name&quot;) String name, @JsonProperty(&quot;Mountpoint&quot;) String mountpoint) {</span>
+<span class="fc" id="L247">			this.name = name;</span>
+<span class="fc" id="L248">			this.mountpoint = mountpoint;</span>
+<span class="fc" id="L249">		}</span>
+	}
+
+	/**
+	 * Response of &lt;code&gt;docker image inspect --format=json&lt;/code&gt;.
+	 *
+	 * @see &lt;a href=&quot;https://docs.docker.com/engine/reference/commandline/image_inspect/&quot;&gt;docker image inspect&lt;/a&gt;
+	 */
+	public static class ContainerImage {
+
+		public final String id;
+		public final String created;
+		public final Long size;
+		public final List&lt;String&gt; repoDigests;
+		public final Map&lt;String, Object&gt; rootFs;
+		public final Map&lt;String, Object&gt; metadata;
+
+		@JsonCreator
+		public ContainerImage(
+				@JsonProperty(&quot;Id&quot;) String id,
+				@JsonProperty(&quot;Created&quot;) String created,
+				@JsonProperty(&quot;Size&quot;) Long size,
+				@JsonProperty(&quot;RepoDigests&quot;) List&lt;String&gt; repoDigests,
+				@JsonProperty(&quot;RootFS&quot;) Map&lt;String, Object&gt; rootFs,
+<span class="fc" id="L273">				@JsonProperty(&quot;Metadata&quot;) Map&lt;String, Object&gt; metadata) {</span>
+<span class="fc" id="L274">			this.id = id;</span>
+<span class="fc" id="L275">			this.created = created;</span>
+<span class="fc" id="L276">			this.size = size;</span>
+<span class="fc" id="L277">			this.repoDigests = repoDigests;</span>
+<span class="fc" id="L278">			this.rootFs = rootFs;</span>
+<span class="fc" id="L279">			this.metadata = metadata;</span>
+<span class="fc" id="L280">		}</span>
+
+		public String getDigest() {
+<span class="fc" id="L283">			return repoDigests.stream()</span>
+<span class="fc" id="L284">					.filter(i -&gt; i.contains(&quot;@sha256&quot;))</span>
+<span class="fc" id="L285">					.map(i -&gt; i.substring(i.indexOf(&quot;@sha256:&quot;) + 8))</span>
+<span class="fc" id="L286">					.findFirst()</span>
+<span class="fc" id="L287">					.orElse(id + &quot;_&quot; + size + &quot;_&quot; + created + &quot;_&quot; + rootFs.hashCode() + &quot;_&quot; + metadata.hashCode());</span>
+		}
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
