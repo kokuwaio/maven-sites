@@ -70,13 +70,13 @@ public class Await {
 <span class="fc" id="L70">				lastException = null;</span>
 <span class="nc" id="L71">			} catch (Exception e) {</span>
 <span class="nc" id="L72">				lastException = e;</span>
-<span class="nc" id="L73">				log.debug(&quot;Await &quot; + text + &quot; failed with exception &quot; + e.getMessage());</span>
+<span class="nc" id="L73">				log.debug(&quot;Await {} failed with exception {}&quot;, text, e.getMessage());</span>
 <span class="fc" id="L74">			}</span>
 <span class="fc" id="L75">			wait(interval);</span>
 		}
 
 <span class="nc bnc" id="L78" title="All 2 branches missed.">		if (lastException != null) {</span>
-<span class="nc" id="L79">			log.error(&quot;Await &quot; + text + &quot; had exception while waiting&quot;, lastException);</span>
+<span class="nc" id="L79">			log.error(&quot;Await {} had exception while waiting&quot;, text, lastException);</span>
 		}
 
 <span class="nc" id="L82">		onTimeout.run();</span>

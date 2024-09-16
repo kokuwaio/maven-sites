@@ -230,9 +230,9 @@ import io.kokuwa.maven.k3s.util.Await;
 <span class="fc bfc" id="L230" title="All 2 branches covered.">		if (dnsResolverCheck) {</span>
 			try {
 <span class="fc" id="L232">				var address = InetAddress.getByName(dnsResolverDomain).getHostAddress();</span>
-<span class="fc" id="L233">				log.debug(&quot;DNS resolved &quot; + dnsResolverDomain + &quot; to &quot; + address + &quot;.&quot;);</span>
+<span class="fc" id="L233">				log.debug(&quot;DNS resolved {} to {}.&quot;, dnsResolverDomain, address);</span>
 <span class="fc" id="L234">			} catch (UnknownHostException e) {</span>
-<span class="fc" id="L235">				log.warn(&quot;DNS was unable to resolve &quot; + dnsResolverDomain + &quot;. Custom domains may not work!&quot;);</span>
+<span class="fc" id="L235">				log.warn(&quot;DNS was unable to resolve {}. Custom domains may not work!&quot;, dnsResolverDomain);</span>
 <span class="fc" id="L236">			}</span>
 		}
 
@@ -250,14 +250,14 @@ import io.kokuwa.maven.k3s.util.Await;
 <span class="fc" id="L250">				throw new MojoExecutionException(&quot;Container with id '&quot; + container.id</span>
 						+ &quot;' found. Please remove that container or set 'k3s.failIfExists' to false.&quot;);
 <span class="fc bfc" id="L252" title="All 2 branches covered.">			} else if (replaceIfExists) {</span>
-<span class="fc" id="L253">				log.info(&quot;Container with id '&quot; + container.id + &quot;' found, replacing&quot;);</span>
+<span class="fc" id="L253">				log.info(&quot;Container with id '{}' found, replacing&quot;, container.id);</span>
 <span class="fc" id="L254">				getDocker().removeContainer();</span>
 <span class="fc bfc" id="L255" title="All 2 branches covered.">			} else if (!container.isRunning()) {</span>
-<span class="fc" id="L256">				log.warn(&quot;Container with id '&quot; + container.id + &quot;' found in stopped state, restart container&quot;);</span>
+<span class="fc" id="L256">				log.warn(&quot;Container with id '{}' found in stopped state, restart container&quot;, container.id);</span>
 <span class="fc" id="L257">				create = false;</span>
 <span class="fc" id="L258">				restart = true;</span>
 			} else {
-<span class="fc" id="L260">				log.warn(&quot;Container with id '&quot; + container.id + &quot;' found, skip creating&quot;);</span>
+<span class="fc" id="L260">				log.warn(&quot;Container with id '{}' found, skip creating&quot;, container.id);</span>
 <span class="fc" id="L261">				create = false;</span>
 			}
 		}
@@ -283,7 +283,7 @@ import io.kokuwa.maven.k3s.util.Await;
 		}
 
 <span class="fc" id="L285">		getDocker().copyFromContainer(&quot;/etc/rancher/k3s/k3s.yaml&quot;, kubeconfig);</span>
-<span class="fc" id="L286">		log.info(&quot;k3s ready: KUBECONFIG=&quot; + kubeconfig + &quot; kubectl get all --all-namespaces&quot;);</span>
+<span class="fc" id="L286">		log.info(&quot;k3s ready: KUBECONFIG={} kubectl get all --all-namespaces&quot;, kubeconfig);</span>
 <span class="fc" id="L287">	}</span>
 
 	private void createAndStartK3sContainer() throws MojoExecutionException {
@@ -331,7 +331,7 @@ import io.kokuwa.maven.k3s.util.Await;
 <span class="pc bpc" id="L331" title="1 of 2 branches missed.">		if (disableTraefik) {</span>
 <span class="fc" id="L332">			command.add(&quot;--disable=traefik&quot;);</span>
 		}
-<span class="fc" id="L334">		log.info(&quot;k3s &quot; + command.stream().collect(Collectors.joining(&quot; &quot;)));</span>
+<span class="fc" id="L334">		log.info(&quot;k3s {}&quot;, command.stream().collect(Collectors.joining(&quot; &quot;)));</span>
 
 		// create container
 

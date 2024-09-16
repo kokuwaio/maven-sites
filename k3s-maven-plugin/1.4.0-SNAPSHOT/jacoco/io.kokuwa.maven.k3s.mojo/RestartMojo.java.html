@@ -108,7 +108,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 <span class="fc" id="L109">		var matcher = resourcePattern.matcher(resoure);</span>
 <span class="fc bfc" id="L110" title="All 2 branches covered.">		if (!matcher.matches()) {</span>
-<span class="fc" id="L111">			log.error(&quot;Failed to parse resoure: &quot; + resoure);</span>
+<span class="fc" id="L111">			log.error(&quot;Failed to parse resoure: {}&quot;, resoure);</span>
 <span class="fc" id="L112">			return () -&gt; false;</span>
 		}
 
@@ -119,10 +119,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 <span class="fc" id="L119">		return () -&gt; {</span>
 			try {
 <span class="fc" id="L121">				getDocker().exec(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;restart&quot;, kind, name, &quot;--namespace=&quot; + namespace);</span>
-<span class="fc" id="L122">				log.info(kind + &quot; &quot; + namespace + &quot;/&quot; + name + &quot; restarted&quot;);</span>
+<span class="fc" id="L122">				log.info(&quot;{} {}/{} restarted&quot;, kind, namespace, name);</span>
 <span class="fc" id="L123">				getDocker().exec(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;status&quot;, kind, name, &quot;--namespace=&quot; + namespace,</span>
 <span class="fc" id="L124">						&quot;--timeout=&quot; + timeout.getSeconds() + &quot;s&quot;);</span>
-<span class="fc" id="L125">				log.info(kind + &quot; &quot; + namespace + &quot;/&quot; + name + &quot; restart finished&quot;);</span>
+<span class="fc" id="L125">				log.info(&quot;{} {}/{} restart finished&quot;, kind, namespace, name);</span>
 <span class="fc" id="L126">				return true;</span>
 <span class="fc" id="L127">			} catch (MojoExecutionException e) {</span>
 <span class="nc" id="L128">				getDocker().exec(&quot;kubectl&quot;, &quot;get&quot;, &quot;--output=yaml&quot;, &quot;--namespace=&quot; + namespace, kind, name);</span>

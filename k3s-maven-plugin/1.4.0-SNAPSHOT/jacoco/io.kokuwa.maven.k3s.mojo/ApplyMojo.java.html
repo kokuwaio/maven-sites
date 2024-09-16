@@ -136,9 +136,9 @@ import io.kokuwa.maven.k3s.util.Task;
 <span class="fc" id="L136">					var oldMissing = missing.getAndSet(newMissing);</span>
 <span class="pc bpc" id="L137" title="1 of 2 branches missed.">					if (!newMissing.isEmpty()) {</span>
 <span class="nc bnc" id="L138" title="All 2 branches missed.">						if (oldMissing.equals(newMissing)) {</span>
-<span class="nc" id="L139">							log.debug(&quot;Still waiting for: &quot; + missing);</span>
+<span class="nc" id="L139">							log.debug(&quot;Still waiting for: {}&quot;, missing);</span>
 						} else {
-<span class="nc" id="L141">							log.info(&quot;Still waiting for: &quot; + missing);</span>
+<span class="nc" id="L141">							log.info(&quot;Still waiting for: {}&quot;, missing);</span>
 						}
 					}
 <span class="fc" id="L144">				}</span>
@@ -207,9 +207,9 @@ import io.kokuwa.maven.k3s.util.Task;
 <span class="fc bfc" id="L207" title="All 2 branches covered.">				var representation = &quot;default&quot;.equals(namespace) ? name : namespace + &quot;/&quot; + name;</span>
 <span class="fc" id="L208">				return Map.entry(representation, (Callable&lt;Boolean&gt;) () -&gt; {</span>
 					try {
-<span class="fc" id="L210">						log.debug(kind + &quot; &quot; + representation + &quot; ... waiting&quot;);</span>
+<span class="fc" id="L210">						log.debug(&quot;{} {} ... waiting&quot;, kind, representation);</span>
 <span class="fc" id="L211">						getDocker().exec(timeout.plusSeconds(10), tmp);</span>
-<span class="fc" id="L212">						log.info(kind + &quot; &quot; + representation + &quot; ... ready&quot;);</span>
+<span class="fc" id="L212">						log.info(&quot;{} {} ... ready&quot;, kind, representation);</span>
 <span class="fc" id="L213">						return true;</span>
 <span class="nc" id="L214">					} catch (MojoExecutionException e) {</span>
 <span class="nc" id="L215">						getDocker().exec(&quot;kubectl&quot;, &quot;get&quot;, &quot;--output=yaml&quot;, &quot;--namespace=&quot; + namespace, kind, name);</span>

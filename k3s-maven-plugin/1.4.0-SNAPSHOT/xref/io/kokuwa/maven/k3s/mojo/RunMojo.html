@@ -238,9 +238,9 @@
 <a class="jxr_linenumber" name="L230" href="#L230">230</a> 		<strong class="jxr_keyword">if</strong> (dnsResolverCheck) {
 <a class="jxr_linenumber" name="L231" href="#L231">231</a> 			<strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L232" href="#L232">232</a> 				<strong class="jxr_keyword">var</strong> address = InetAddress.getByName(dnsResolverDomain).getHostAddress();
-<a class="jxr_linenumber" name="L233" href="#L233">233</a> 				log.debug(<span class="jxr_string">"DNS resolved "</span> + dnsResolverDomain + <span class="jxr_string">" to "</span> + address + <span class="jxr_string">"."</span>);
+<a class="jxr_linenumber" name="L233" href="#L233">233</a> 				log.debug(<span class="jxr_string">"DNS resolved {} to {}."</span>, dnsResolverDomain, address);
 <a class="jxr_linenumber" name="L234" href="#L234">234</a> 			} <strong class="jxr_keyword">catch</strong> (UnknownHostException e) {
-<a class="jxr_linenumber" name="L235" href="#L235">235</a> 				log.warn(<span class="jxr_string">"DNS was unable to resolve "</span> + dnsResolverDomain + <span class="jxr_string">". Custom domains may not work!"</span>);
+<a class="jxr_linenumber" name="L235" href="#L235">235</a> 				log.warn(<span class="jxr_string">"DNS was unable to resolve {}. Custom domains may not work!"</span>, dnsResolverDomain);
 <a class="jxr_linenumber" name="L236" href="#L236">236</a> 			}
 <a class="jxr_linenumber" name="L237" href="#L237">237</a> 		}
 <a class="jxr_linenumber" name="L238" href="#L238">238</a> 
@@ -258,14 +258,14 @@
 <a class="jxr_linenumber" name="L250" href="#L250">250</a> 				<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> MojoExecutionException(<span class="jxr_string">"Container with id '"</span> + container.id
 <a class="jxr_linenumber" name="L251" href="#L251">251</a> 						+ <span class="jxr_string">"' found. Please remove that container or set 'k3s.failIfExists' to false."</span>);
 <a class="jxr_linenumber" name="L252" href="#L252">252</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (replaceIfExists) {
-<a class="jxr_linenumber" name="L253" href="#L253">253</a> 				log.info(<span class="jxr_string">"Container with id '"</span> + container.id + <span class="jxr_string">"' found, replacing"</span>);
+<a class="jxr_linenumber" name="L253" href="#L253">253</a> 				log.info(<span class="jxr_string">"Container with id '{}' found, replacing"</span>, container.id);
 <a class="jxr_linenumber" name="L254" href="#L254">254</a> 				getDocker().removeContainer();
 <a class="jxr_linenumber" name="L255" href="#L255">255</a> 			} <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (!container.isRunning()) {
-<a class="jxr_linenumber" name="L256" href="#L256">256</a> 				log.warn(<span class="jxr_string">"Container with id '"</span> + container.id + <span class="jxr_string">"' found in stopped state, restart container"</span>);
+<a class="jxr_linenumber" name="L256" href="#L256">256</a> 				log.warn(<span class="jxr_string">"Container with id '{}' found in stopped state, restart container"</span>, container.id);
 <a class="jxr_linenumber" name="L257" href="#L257">257</a> 				create = false;
 <a class="jxr_linenumber" name="L258" href="#L258">258</a> 				restart = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L259" href="#L259">259</a> 			} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L260" href="#L260">260</a> 				log.warn(<span class="jxr_string">"Container with id '"</span> + container.id + <span class="jxr_string">"' found, skip creating"</span>);
+<a class="jxr_linenumber" name="L260" href="#L260">260</a> 				log.warn(<span class="jxr_string">"Container with id '{}' found, skip creating"</span>, container.id);
 <a class="jxr_linenumber" name="L261" href="#L261">261</a> 				create = false;
 <a class="jxr_linenumber" name="L262" href="#L262">262</a> 			}
 <a class="jxr_linenumber" name="L263" href="#L263">263</a> 		}
@@ -291,7 +291,7 @@
 <a class="jxr_linenumber" name="L283" href="#L283">283</a> 		}
 <a class="jxr_linenumber" name="L284" href="#L284">284</a> 
 <a class="jxr_linenumber" name="L285" href="#L285">285</a> 		getDocker().copyFromContainer(<span class="jxr_string">"/etc/rancher/k3s/k3s.yaml"</span>, kubeconfig);
-<a class="jxr_linenumber" name="L286" href="#L286">286</a> 		log.info(<span class="jxr_string">"k3s ready: KUBECONFIG="</span> + kubeconfig + <span class="jxr_string">" kubectl get all --all-namespaces"</span>);
+<a class="jxr_linenumber" name="L286" href="#L286">286</a> 		log.info(<span class="jxr_string">"k3s ready: KUBECONFIG={} kubectl get all --all-namespaces"</span>, kubeconfig);
 <a class="jxr_linenumber" name="L287" href="#L287">287</a> 	}
 <a class="jxr_linenumber" name="L288" href="#L288">288</a> 
 <a class="jxr_linenumber" name="L289" href="#L289">289</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> createAndStartK3sContainer() <strong class="jxr_keyword">throws</strong> MojoExecutionException {
@@ -339,7 +339,7 @@
 <a class="jxr_linenumber" name="L331" href="#L331">331</a> 		<strong class="jxr_keyword">if</strong> (disableTraefik) {
 <a class="jxr_linenumber" name="L332" href="#L332">332</a> 			command.add(<span class="jxr_string">"--disable=traefik"</span>);
 <a class="jxr_linenumber" name="L333" href="#L333">333</a> 		}
-<a class="jxr_linenumber" name="L334" href="#L334">334</a> 		log.info(<span class="jxr_string">"k3s "</span> + command.stream().collect(Collectors.joining(<span class="jxr_string">" "</span>)));
+<a class="jxr_linenumber" name="L334" href="#L334">334</a> 		log.info(<span class="jxr_string">"k3s {}"</span>, command.stream().collect(Collectors.joining(<span class="jxr_string">" "</span>)));
 <a class="jxr_linenumber" name="L335" href="#L335">335</a> 
 <a class="jxr_linenumber" name="L336" href="#L336">336</a> 		<em class="jxr_comment">// create container</em>
 <a class="jxr_linenumber" name="L337" href="#L337">337</a> 

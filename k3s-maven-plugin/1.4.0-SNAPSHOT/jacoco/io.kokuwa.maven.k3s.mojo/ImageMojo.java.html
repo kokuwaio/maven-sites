@@ -123,7 +123,7 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 	private boolean tar(Map&lt;String, Map&lt;String, ?&gt;&gt; existingImages, Path tarFile) {
 
 <span class="pc bpc" id="L125" title="1 of 2 branches missed.">		if (!Files.isRegularFile(tarFile)) {</span>
-<span class="nc" id="L126">			log.error(&quot;Tar not found: &quot; + tarFile);</span>
+<span class="nc" id="L126">			log.error(&quot;Tar not found: {}&quot;, tarFile);</span>
 <span class="nc" id="L127">			return false;</span>
 		}
 
@@ -141,110 +141,108 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 <span class="fc" id="L141">					.map(l -&gt; l.get(labelChecksum)).filter(Objects::nonNull)</span>
 <span class="fc" id="L142">					.findAny().orElse(null);</span>
 <span class="fc bfc" id="L143" title="All 2 branches covered.">			if (oldChecksum == null) {</span>
-<span class="fc" id="L144">				log.debug(&quot;Tar &quot; + tarFile + &quot; does not exists in ctr.&quot;);</span>
+<span class="fc" id="L144">				log.debug(&quot;Tar {} does not exists in ctr.&quot;, tarFile);</span>
 <span class="fc bfc" id="L145" title="All 2 branches covered.">			} else if (oldChecksum.equals(newChecksum)) {</span>
-<span class="fc" id="L146">				log.info(&quot;Tar &quot; + tarFile + &quot; present in ctr with checksum &quot; + newChecksum + &quot;, skip.&quot;);</span>
+<span class="fc" id="L146">				log.info(&quot;Tar {} present in ctr with checksum {}, skip.&quot;, tarFile, newChecksum);</span>
 <span class="fc" id="L147">				return true;</span>
 			} else {
-<span class="fc" id="L149">				log.debug(&quot;Tar &quot; + tarFile + &quot; present in ctr with checksum &quot; + oldChecksum + &quot;, new is: &quot;</span>
-						+ newChecksum);
+<span class="fc" id="L149">				log.debug(&quot;Tar {} present in ctr with checksum {}, new is: {}&quot;, tarFile, oldChecksum, newChecksum);</span>
 			}
 
 			// import tar into ctr
 
-<span class="fc" id="L155">			var destination = &quot;/tmp/&quot; + tarFile.getFileName() + &quot;_&quot; + System.nanoTime();</span>
-<span class="fc" id="L156">			var outputPattern = Pattern.compile(&quot;^unpacking (?&lt;image&gt;.*) \\(sha256:[0-9a-f]{64}\\).*$&quot;);</span>
+<span class="fc" id="L154">			var destination = &quot;/tmp/&quot; + tarFile.getFileName() + &quot;_&quot; + System.nanoTime();</span>
+<span class="fc" id="L155">			var outputPattern = Pattern.compile(&quot;^unpacking (?&lt;image&gt;.*) \\(sha256:[0-9a-f]{64}\\).*$&quot;);</span>
 
-<span class="fc" id="L158">			getDocker().copyToContainer(tarFile, destination);</span>
-<span class="fc bfc" id="L159" title="All 2 branches covered.">			for (var output : getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString())) {</span>
-<span class="fc" id="L160">				var matcher = outputPattern.matcher(output);</span>
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">				if (matcher.matches()) {</span>
-<span class="fc" id="L162">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;), labelPath + &quot;=&quot; + tarFile);</span>
-<span class="fc" id="L163">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;),</span>
+<span class="fc" id="L157">			getDocker().copyToContainer(tarFile, destination);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">			for (var output : getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString())) {</span>
+<span class="fc" id="L159">				var matcher = outputPattern.matcher(output);</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">				if (matcher.matches()) {</span>
+<span class="fc" id="L161">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;), labelPath + &quot;=&quot; + tarFile);</span>
+<span class="fc" id="L162">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;),</span>
 							labelChecksum + &quot;=&quot; + newChecksum);
 				} else {
-<span class="nc" id="L166">					log.warn(&quot;Tar &quot; + tarFile + &quot; import output cannot be parsed: &quot; + output);</span>
+<span class="nc" id="L165">					log.warn(&quot;Tar {} import output cannot be parsed: {}&quot;, tarFile, output);</span>
 				}
-<span class="fc" id="L168">			}</span>
-<span class="nc" id="L169">		} catch (MojoExecutionException | IOException e) {</span>
-<span class="nc" id="L170">			log.error(&quot;Failed to import tar: &quot; + tarFile, e);</span>
-<span class="nc" id="L171">			return false;</span>
-<span class="fc" id="L172">		}</span>
+<span class="fc" id="L167">			}</span>
+<span class="nc" id="L168">		} catch (MojoExecutionException | IOException e) {</span>
+<span class="nc" id="L169">			log.error(&quot;Failed to import tar: {}&quot;, tarFile, e);</span>
+<span class="nc" id="L170">			return false;</span>
+<span class="fc" id="L171">		}</span>
 
-<span class="fc" id="L174">		log.info(&quot;Imported tar from &quot; + tarFile);</span>
-<span class="fc" id="L175">		return true;</span>
+<span class="fc" id="L173">		log.info(&quot;Imported tar from {}&quot;, tarFile);</span>
+<span class="fc" id="L174">		return true;</span>
 	}
 
 	private boolean ctr(Map&lt;String, Map&lt;String, ?&gt;&gt; existingImages, String image) throws MojoExecutionException {
 
-<span class="pc bpc" id="L180" title="1 of 2 branches missed.">		if (existingImages.containsKey(image)) {</span>
-<span class="nc" id="L181">			log.debug(&quot;Image &quot; + image + &quot; found in ctr, skip pulling&quot;);</span>
-<span class="nc" id="L182">			return true;</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">		if (existingImages.containsKey(image)) {</span>
+<span class="nc" id="L180">			log.debug(&quot;Image {} found in ctr, skip pulling&quot;, image);</span>
+<span class="nc" id="L181">			return true;</span>
 		}
 
-<span class="fc" id="L185">		log.info(&quot;Image &quot; + image + &quot; not found, start pulling&quot;);</span>
+<span class="fc" id="L184">		log.info(&quot;Image {} not found, start pulling&quot;, image);</span>
 		// use crictl instead of cri, because crictl honors custom registry.yaml
 		// see https://github.com/k3s-io/k3s/issues/5277
-<span class="fc" id="L188">		getDocker().exec(pullTimeout, &quot;crictl&quot;, &quot;pull&quot;, image);</span>
-<span class="fc" id="L189">		log.info(&quot;Image &quot; + image + &quot; pulled&quot;);</span>
+<span class="fc" id="L187">		getDocker().exec(pullTimeout, &quot;crictl&quot;, &quot;pull&quot;, image);</span>
+<span class="fc" id="L188">		log.info(&quot;Image {} pulled&quot;, image);</span>
 
-<span class="fc" id="L191">		return true;</span>
+<span class="fc" id="L190">		return true;</span>
 	}
 
 	private boolean docker(Map&lt;String, Map&lt;String, ?&gt;&gt; existingImages, String image) throws MojoExecutionException {
 
 		// pull image
 
-<span class="fc" id="L198">		var digest = getDocker().getImage(image).map(ContainerImage::getDigest).orElse(null);</span>
-<span class="fc bfc" id="L199" title="All 4 branches covered.">		if (dockerPullAlways || digest == null) {</span>
-<span class="fc bfc" id="L200" title="All 2 branches covered.">			if (digest != null) {</span>
-<span class="fc" id="L201">				log.debug(&quot;Image &quot; + image + &quot; found in docker, pull always ...&quot;);</span>
+<span class="fc" id="L197">		var digest = getDocker().getImage(image).map(ContainerImage::getDigest).orElse(null);</span>
+<span class="fc bfc" id="L198" title="All 4 branches covered.">		if (dockerPullAlways || digest == null) {</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">			if (digest != null) {</span>
+<span class="fc" id="L200">				log.debug(&quot;Image {} found in docker, pull always ...&quot;, image);</span>
 			} else {
-<span class="fc" id="L203">				log.debug(&quot;Image &quot; + image + &quot; not found in docker, pulling ...&quot;);</span>
+<span class="fc" id="L202">				log.debug(&quot;Image {} not found in docker, pulling ...&quot;, image);</span>
 			}
 			try {
-<span class="fc" id="L206">				getDocker().pullImage(image, pullTimeout);</span>
-<span class="nc" id="L207">			} catch (MojoExecutionException e) {</span>
-<span class="nc" id="L208">				log.error(&quot;Failed to pull docker image &quot; + image, e);</span>
-<span class="nc" id="L209">				return false;</span>
-<span class="fc" id="L210">			}</span>
-<span class="fc" id="L211">			digest = getDocker().getImage(image).map(ContainerImage::getDigest).orElse(null);</span>
+<span class="fc" id="L205">				getDocker().pullImage(image, pullTimeout);</span>
+<span class="nc" id="L206">			} catch (MojoExecutionException e) {</span>
+<span class="nc" id="L207">				log.error(&quot;Failed to pull docker image {}&quot;, image, e);</span>
+<span class="nc" id="L208">				return false;</span>
+<span class="fc" id="L209">			}</span>
+<span class="fc" id="L210">			digest = getDocker().getImage(image).map(ContainerImage::getDigest).orElse(null);</span>
 		} else {
-<span class="fc" id="L213">			log.debug(&quot;Image &quot; + image + &quot; found in docker&quot;);</span>
+<span class="fc" id="L212">			log.debug(&quot;Image {} found in docker&quot;, image);</span>
 		}
 
 		// skip if image is already present in ctr
 
-<span class="fc" id="L218">		var normalizedImage = getDocker().normalizeImage(image);</span>
-<span class="fc" id="L219">		var label = &quot;k3s-maven-digest&quot;;</span>
-<span class="fc" id="L220">		var oldDigest = existingImages.getOrDefault(normalizedImage, Map.of()).get(label);</span>
-<span class="fc bfc" id="L221" title="All 2 branches covered.">		if (oldDigest == null) {</span>
-<span class="fc" id="L222">			log.debug(&quot;Image &quot; + image + &quot; does not exists in ctr.&quot;);</span>
-<span class="fc bfc" id="L223" title="All 2 branches covered.">		} else if (oldDigest.equals(digest)) {</span>
-<span class="fc" id="L224">			log.info(&quot;Image &quot; + image + &quot; present in ctr with digest &quot; + digest + &quot;, skip.&quot;);</span>
-<span class="fc" id="L225">			return true;</span>
+<span class="fc" id="L217">		var normalizedImage = getDocker().normalizeImage(image);</span>
+<span class="fc" id="L218">		var label = &quot;k3s-maven-digest&quot;;</span>
+<span class="fc" id="L219">		var oldDigest = existingImages.getOrDefault(normalizedImage, Map.of()).get(label);</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">		if (oldDigest == null) {</span>
+<span class="fc" id="L221">			log.debug(&quot;Image {} does not exists in ctr.&quot;, image);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">		} else if (oldDigest.equals(digest)) {</span>
+<span class="fc" id="L223">			log.info(&quot;Image {} present in ctr with digest {}, skip.&quot;, image, digest);</span>
+<span class="fc" id="L224">			return true;</span>
 		} else {
-<span class="fc" id="L227">			log.debug(</span>
-					&quot;Image &quot; + image + &quot; present in ctr with digest &quot; + oldDigest + &quot;, new digest is: &quot; + digest);
+<span class="fc" id="L226">			log.debug(&quot;Image {} present in ctr with digest {}, new digest is: {}&quot;, image, oldDigest, digest);</span>
 		}
 
 		// move from docker to ctr
 
-<span class="fc" id="L233">		var filename = Paths.get(image.hashCode() + &quot;.tar&quot;);</span>
-<span class="fc" id="L234">		var source = Paths.get(System.getProperty(&quot;java.io.tmpdir&quot;)).resolve(filename);</span>
-<span class="fc" id="L235">		var destination = &quot;/tmp/&quot; + filename;</span>
+<span class="fc" id="L231">		var filename = Paths.get(image.hashCode() + &quot;.tar&quot;);</span>
+<span class="fc" id="L232">		var source = Paths.get(System.getProperty(&quot;java.io.tmpdir&quot;)).resolve(filename);</span>
+<span class="fc" id="L233">		var destination = &quot;/tmp/&quot; + filename;</span>
 		try {
-<span class="fc" id="L237">			getDocker().saveImage(image, source);</span>
-<span class="fc" id="L238">			getDocker().copyToContainer(source, destination);</span>
-<span class="fc" id="L239">			getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString());</span>
-<span class="fc" id="L240">			getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, normalizedImage, label + &quot;=&quot; + digest);</span>
-<span class="nc" id="L241">		} catch (MojoExecutionException e) {</span>
-<span class="nc" id="L242">			log.error(&quot;Failed to import tar &quot; + source, e);</span>
-<span class="nc" id="L243">			return false;</span>
-<span class="fc" id="L244">		}</span>
+<span class="fc" id="L235">			getDocker().saveImage(image, source);</span>
+<span class="fc" id="L236">			getDocker().copyToContainer(source, destination);</span>
+<span class="fc" id="L237">			getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString());</span>
+<span class="fc" id="L238">			getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, normalizedImage, label + &quot;=&quot; + digest);</span>
+<span class="nc" id="L239">		} catch (MojoExecutionException e) {</span>
+<span class="nc" id="L240">			log.error(&quot;Failed to import tar {}&quot;, source, e);</span>
+<span class="nc" id="L241">			return false;</span>
+<span class="fc" id="L242">		}</span>
 
-<span class="fc" id="L246">		log.info(&quot;Image &quot; + image + &quot; copied from docker deamon&quot;);</span>
-<span class="fc" id="L247">		return true;</span>
+<span class="fc" id="L244">		log.info(&quot;Image {} copied from docker deamon&quot;, image);</span>
+<span class="fc" id="L245">		return true;</span>
 	}
 
 	/**
@@ -253,47 +251,47 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 	 * @return Image name with labels.
 	 */
 	private Map&lt;String, Map&lt;String, ?&gt;&gt; getCtrImages() throws MojoExecutionException {
-<span class="fc" id="L256">		return getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;list&quot;).stream().map(String::strip)</span>
-<span class="fc bfc" id="L257" title="All 4 branches covered.">				.filter(row -&gt; !row.startsWith(&quot;REF&quot;) &amp;&amp; !row.startsWith(&quot;sha256:&quot;))</span>
-<span class="fc" id="L258">				.map(row -&gt; row.split(&quot;(\\s)+&quot;))</span>
-<span class="fc" id="L259">				.filter(parts -&gt; {</span>
-<span class="pc bpc" id="L260" title="1 of 2 branches missed.">					var matches = parts.length == 7;</span>
-<span class="pc bpc" id="L261" title="1 of 2 branches missed.">					if (!matches) {</span>
-<span class="nc" id="L262">						log.warn(&quot;Unexpected output of `ctr image list`: &quot; + List.of(parts));</span>
+<span class="fc" id="L254">		return getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;list&quot;).stream().map(String::strip)</span>
+<span class="fc bfc" id="L255" title="All 4 branches covered.">				.filter(row -&gt; !row.startsWith(&quot;REF&quot;) &amp;&amp; !row.startsWith(&quot;sha256:&quot;))</span>
+<span class="fc" id="L256">				.map(row -&gt; row.split(&quot;(\\s)+&quot;))</span>
+<span class="fc" id="L257">				.filter(parts -&gt; {</span>
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">					var matches = parts.length == 7;</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">					if (!matches) {</span>
+<span class="nc" id="L260">						log.warn(&quot;Unexpected output of `ctr image list`: {}&quot;, List.of(parts));</span>
 					}
-<span class="fc" id="L264">					return matches;</span>
+<span class="fc" id="L262">					return matches;</span>
 				})
-<span class="fc" id="L266">				.map(parts -&gt; Map.entry(parts[0], Stream.of(parts[6].split(&quot;,&quot;)).map(s -&gt; s.split(&quot;=&quot;))</span>
-<span class="fc bfc" id="L267" title="All 2 branches covered.">						.filter(s -&gt; !&quot;io.cri-containerd.image&quot;.equals(s[0]))</span>
-<span class="fc" id="L268">						.collect(Collectors.toMap(s -&gt; s[0], s -&gt; s[1]))))</span>
-<span class="fc" id="L269">				.peek(entry -&gt; log.debug(&quot;Found ctr image: &quot; + entry))</span>
-<span class="fc" id="L270">				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));</span>
+<span class="fc" id="L264">				.map(parts -&gt; Map.entry(parts[0], Stream.of(parts[6].split(&quot;,&quot;)).map(s -&gt; s.split(&quot;=&quot;))</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">						.filter(s -&gt; !&quot;io.cri-containerd.image&quot;.equals(s[0]))</span>
+<span class="fc" id="L266">						.collect(Collectors.toMap(s -&gt; s[0], s -&gt; s[1]))))</span>
+<span class="fc" id="L267">				.peek(entry -&gt; log.debug(&quot;Found ctr image: {}&quot;, entry))</span>
+<span class="fc" id="L268">				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));</span>
 	}
 
 	// setter
 
 	public void setCtrImages(List&lt;String&gt; ctrImages) {
-<span class="fc" id="L276">		this.ctrImages = ctrImages.stream().map(getDocker()::normalizeImage).collect(Collectors.toSet());</span>
-<span class="fc" id="L277">	}</span>
+<span class="fc" id="L274">		this.ctrImages = ctrImages.stream().map(getDocker()::normalizeImage).collect(Collectors.toSet());</span>
+<span class="fc" id="L275">	}</span>
 
 	public void setDockerImages(List&lt;String&gt; dockerImages) {
-<span class="fc" id="L280">		this.dockerImages = dockerImages.stream().collect(Collectors.toSet());</span>
-<span class="fc" id="L281">	}</span>
+<span class="fc" id="L278">		this.dockerImages = dockerImages.stream().collect(Collectors.toSet());</span>
+<span class="fc" id="L279">	}</span>
 
 	public void setTarFiles(List&lt;String&gt; tarFiles) {
-<span class="fc" id="L284">		this.tarFiles = tarFiles.stream().map(Paths::get).map(Path::toAbsolutePath).collect(Collectors.toSet());</span>
-<span class="fc" id="L285">	}</span>
+<span class="fc" id="L282">		this.tarFiles = tarFiles.stream().map(Paths::get).map(Path::toAbsolutePath).collect(Collectors.toSet());</span>
+<span class="fc" id="L283">	}</span>
 
 	public void setDockerPullAlways(boolean dockerPullAlways) {
-<span class="fc" id="L288">		this.dockerPullAlways = dockerPullAlways;</span>
-<span class="fc" id="L289">	}</span>
+<span class="fc" id="L286">		this.dockerPullAlways = dockerPullAlways;</span>
+<span class="fc" id="L287">	}</span>
 
 	public void setPullTimeout(int pullTimeout) {
-<span class="fc" id="L292">		this.pullTimeout = Duration.ofSeconds(pullTimeout);</span>
-<span class="fc" id="L293">	}</span>
+<span class="fc" id="L290">		this.pullTimeout = Duration.ofSeconds(pullTimeout);</span>
+<span class="fc" id="L291">	}</span>
 
 	public void setSkipImage(boolean skipImage) {
-<span class="fc" id="L296">		this.skipImage = skipImage;</span>
-<span class="fc" id="L297">	}</span>
+<span class="fc" id="L294">		this.skipImage = skipImage;</span>
+<span class="fc" id="L295">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
