@@ -16,7 +16,7 @@
 <a class="jxr_linenumber" name="L8" href="#L8">8</a>   
 <a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.io.IOException;
 <a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Files;
-<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Paths;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Path;
 <a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.nio.file.StandardCopyOption;
 <a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.util.List;
 <a class="jxr_linenumber" name="L14" href="#L14">14</a>  
@@ -115,14 +115,14 @@
 <a class="jxr_linenumber" name="L107" href="#L107">107</a> 	@Test
 <a class="jxr_linenumber" name="L108" href="#L108">108</a> 	<strong class="jxr_keyword">void</strong> tarFiles(RunMojo runMojo, ImageMojo imageMojo) <strong class="jxr_keyword">throws</strong> MojoExecutionException, IOException {
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> 
-<a class="jxr_linenumber" name="L110" href="#L110">110</a> 		<strong class="jxr_keyword">var</strong> tarFile = Paths.get(<span class="jxr_string">"target/test-classes/tarFile.tar"</span>);
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> 		<strong class="jxr_keyword">var</strong> tarFile = Path.of(<span class="jxr_string">"target/test-classes/tarFile.tar"</span>);
 <a class="jxr_linenumber" name="L111" href="#L111">111</a> 		imageMojo.setTarFiles(List.of(tarFile.toString()));
 <a class="jxr_linenumber" name="L112" href="#L112">112</a> 		assertDoesNotThrow(runMojo::execute);
 <a class="jxr_linenumber" name="L113" href="#L113">113</a> 
 <a class="jxr_linenumber" name="L114" href="#L114">114</a> 		<em class="jxr_comment">// import image</em>
 <a class="jxr_linenumber" name="L115" href="#L115">115</a> 
 <a class="jxr_linenumber" name="L116" href="#L116">116</a> 		assertCtrImage(helloWorld(), false);
-<a class="jxr_linenumber" name="L117" href="#L117">117</a> 		Files.copy(Paths.get(<span class="jxr_string">"src/test/resources/hello-world.tar"</span>), tarFile, StandardCopyOption.REPLACE_EXISTING);
+<a class="jxr_linenumber" name="L117" href="#L117">117</a> 		Files.copy(Path.of(<span class="jxr_string">"src/test/resources/hello-world.tar"</span>), tarFile, StandardCopyOption.REPLACE_EXISTING);
 <a class="jxr_linenumber" name="L118" href="#L118">118</a> 		assertDoesNotThrow(imageMojo::execute);
 <a class="jxr_linenumber" name="L119" href="#L119">119</a> 		assertCtrImage(helloWorld(), <strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L120" href="#L120">120</a> 
@@ -132,7 +132,7 @@
 <a class="jxr_linenumber" name="L124" href="#L124">124</a> 
 <a class="jxr_linenumber" name="L125" href="#L125">125</a> 		<em class="jxr_comment">// reimport because file changed</em>
 <a class="jxr_linenumber" name="L126" href="#L126">126</a> 
-<a class="jxr_linenumber" name="L127" href="#L127">127</a> 		Files.copy(Paths.get(<span class="jxr_string">"src/test/resources/hello-world.tar.old"</span>), tarFile, StandardCopyOption.REPLACE_EXISTING);
+<a class="jxr_linenumber" name="L127" href="#L127">127</a> 		Files.copy(Path.of(<span class="jxr_string">"src/test/resources/hello-world.tar.old"</span>), tarFile, StandardCopyOption.REPLACE_EXISTING);
 <a class="jxr_linenumber" name="L128" href="#L128">128</a> 		assertDoesNotThrow(imageMojo::execute);
 <a class="jxr_linenumber" name="L129" href="#L129">129</a> 	}
 <a class="jxr_linenumber" name="L130" href="#L130">130</a> 

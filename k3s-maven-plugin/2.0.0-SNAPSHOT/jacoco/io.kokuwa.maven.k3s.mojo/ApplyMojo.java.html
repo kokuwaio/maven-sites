@@ -3,7 +3,6 @@
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,7 @@ import io.kokuwa.maven.k3s.util.Task;
  * @since 1.0.0
  */
 @Mojo(name = &quot;apply&quot;, defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST, requiresProject = false)
-<span class="fc" id="L36">public class ApplyMojo extends K3sMojo {</span>
+<span class="fc" id="L35">public class ApplyMojo extends K3sMojo {</span>
 
 	/**
 	 * Path where to find manifest files to apply. This files are copied to docker container.
@@ -78,171 +77,171 @@ import io.kokuwa.maven.k3s.util.Task;
 	@Override
 	public void execute() throws MojoExecutionException {
 
-<span class="fc bfc" id="L81" title="All 2 branches covered.">		if (isSkip(skipApply)) {</span>
-<span class="fc" id="L82">			return;</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">		if (isSkip(skipApply)) {</span>
+<span class="fc" id="L81">			return;</span>
 		}
 
 		// verify container and copy manifests
 
-<span class="fc bfc" id="L87" title="All 2 branches covered.">		if (getDocker().getContainer().isEmpty()) {</span>
-<span class="fc" id="L88">			throw new MojoExecutionException(&quot;No k3s container found&quot;);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (getDocker().getContainer().isEmpty()) {</span>
+<span class="fc" id="L87">			throw new MojoExecutionException(&quot;No k3s container found&quot;);</span>
 		}
-<span class="fc" id="L90">		getDocker().copyToContainer(manifests, toLinuxPath(path));</span>
+<span class="fc" id="L89">		getDocker().copyToContainer(manifests, toLinuxPath(path));</span>
 
 		// wait for service account, see https://github.com/kubernetes/kubernetes/issues/66689
 
-<span class="fc" id="L94">		var serviceAccount = new String[] { &quot;kubectl&quot;, &quot;get&quot;, &quot;sa&quot;, &quot;default&quot;, &quot;--ignore-not-found&quot;, &quot;--output=name&quot; };</span>
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">		if (getDocker().exec(serviceAccount).isEmpty()) {</span>
-<span class="fc" id="L96">			log.info(&quot;&quot;);</span>
-<span class="fc" id="L97">			log.info(&quot;No service account found, waiting for sa ...&quot;);</span>
-<span class="fc bfc" id="L98" title="All 2 branches covered.">			Await.await(log, &quot;k3s service account ready&quot;).until(() -&gt; !getDocker().exec(serviceAccount).isEmpty());</span>
-<span class="fc" id="L99">			log.info(&quot;Service account found, continue ...&quot;);</span>
-<span class="fc" id="L100">			log.info(&quot;&quot;);</span>
+<span class="fc" id="L93">		var serviceAccount = new String[] { &quot;kubectl&quot;, &quot;get&quot;, &quot;sa&quot;, &quot;default&quot;, &quot;--ignore-not-found&quot;, &quot;--output=name&quot; };</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">		if (getDocker().exec(serviceAccount).isEmpty()) {</span>
+<span class="fc" id="L95">			log.info(&quot;&quot;);</span>
+<span class="fc" id="L96">			log.info(&quot;No service account found, waiting for sa ...&quot;);</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">			Await.await(log, &quot;k3s service account ready&quot;).until(() -&gt; !getDocker().exec(serviceAccount).isEmpty());</span>
+<span class="fc" id="L98">			log.info(&quot;Service account found, continue ...&quot;);</span>
+<span class="fc" id="L99">			log.info(&quot;&quot;);</span>
 		}
 
 		// wait for node getting ready
 
-<span class="fc" id="L105">		getDocker().exec(&quot;kubectl&quot;, &quot;wait&quot;, &quot;--for=condition=Ready&quot;, &quot;node&quot;, &quot;k3s&quot;);</span>
+<span class="fc" id="L104">		getDocker().exec(&quot;kubectl&quot;, &quot;wait&quot;, &quot;--for=condition=Ready&quot;, &quot;node&quot;, &quot;k3s&quot;);</span>
 
 		// execute command
 
-<span class="fc" id="L109">		var result = apply();</span>
-<span class="pc bpc" id="L110" title="1 of 4 branches missed.">		if (result.exitCode() != 0 &amp;&amp; result.output().stream().anyMatch(l -&gt; l.endsWith(&quot;CRDs are installed first&quot;))) {</span>
-<span class="fc" id="L111">			log.info(&quot;Found CRDs created, but kubectl failed. Try again ...&quot;);</span>
-<span class="fc" id="L112">			result = apply();</span>
+<span class="fc" id="L108">		var result = apply();</span>
+<span class="pc bpc" id="L109" title="1 of 4 branches missed.">		if (result.exitCode() != 0 &amp;&amp; result.output().stream().anyMatch(l -&gt; l.endsWith(&quot;CRDs are installed first&quot;))) {</span>
+<span class="fc" id="L110">			log.info(&quot;Found CRDs created, but kubectl failed. Try again ...&quot;);</span>
+<span class="fc" id="L111">			result = apply();</span>
 		}
-<span class="fc" id="L114">		result.verify();</span>
+<span class="fc" id="L113">		result.verify();</span>
 
 		// wait for stuff to be ready
 
-<span class="fc" id="L118">		var tasks = Map</span>
-<span class="fc" id="L119">				.of(</span>
-<span class="fc" id="L120">						&quot;statefulset&quot;, List.of(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;status&quot;),</span>
-<span class="fc" id="L121">						&quot;deployment&quot;, List.of(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;status&quot;),</span>
-<span class="fc" id="L122">						&quot;job&quot;, List.of(&quot;kubectl&quot;, &quot;wait&quot;, &quot;--for=condition=complete&quot;),</span>
-<span class="fc" id="L123">						&quot;pod&quot;, List.of(&quot;kubectl&quot;, &quot;wait&quot;, &quot;--for=condition=ready&quot;))</span>
-<span class="fc" id="L124">				.entrySet().stream().parallel().flatMap(this::waitFor).collect(Collectors.toSet());</span>
+<span class="fc" id="L117">		var tasks = Map</span>
+<span class="fc" id="L118">				.of(</span>
+<span class="fc" id="L119">						&quot;statefulset&quot;, List.of(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;status&quot;),</span>
+<span class="fc" id="L120">						&quot;deployment&quot;, List.of(&quot;kubectl&quot;, &quot;rollout&quot;, &quot;status&quot;),</span>
+<span class="fc" id="L121">						&quot;job&quot;, List.of(&quot;kubectl&quot;, &quot;wait&quot;, &quot;--for=condition=complete&quot;),</span>
+<span class="fc" id="L122">						&quot;pod&quot;, List.of(&quot;kubectl&quot;, &quot;wait&quot;, &quot;--for=condition=ready&quot;))</span>
+<span class="fc" id="L123">				.entrySet().stream().parallel().flatMap(this::waitFor).collect(Collectors.toSet());</span>
 		try {
-<span class="fc" id="L126">			var success = true;</span>
-<span class="fc" id="L127">			var pool = Executors.newWorkStealingPool();</span>
-<span class="fc" id="L128">			var futures = tasks.stream().collect(Collectors.toMap(Entry::getKey, e -&gt; pool.submit(e.getValue())));</span>
-<span class="fc" id="L129">			var missing = new AtomicReference&lt;&gt;(futures.keySet().stream().sorted().collect(Collectors.toList()));</span>
-<span class="fc" id="L130">			pool.submit(() -&gt; {</span>
-<span class="fc bfc" id="L131" title="All 2 branches covered.">				while (!futures.values().stream().allMatch(Future::isDone)) {</span>
-<span class="fc" id="L132">					Thread.sleep(15000);</span>
-<span class="fc" id="L133">					var newMissing = futures.entrySet().stream()</span>
-<span class="pc bpc" id="L134" title="1 of 2 branches missed.">							.filter(f -&gt; !f.getValue().isDone())</span>
-<span class="fc" id="L135">							.map(Entry::getKey).sorted().collect(Collectors.toList());</span>
-<span class="fc" id="L136">					var oldMissing = missing.getAndSet(newMissing);</span>
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">					if (!newMissing.isEmpty()) {</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">						if (oldMissing.equals(newMissing)) {</span>
-<span class="nc" id="L139">							log.debug(&quot;Still waiting for: {}&quot;, missing);</span>
+<span class="fc" id="L125">			var success = true;</span>
+<span class="fc" id="L126">			var pool = Executors.newWorkStealingPool();</span>
+<span class="fc" id="L127">			var futures = tasks.stream().collect(Collectors.toMap(Entry::getKey, e -&gt; pool.submit(e.getValue())));</span>
+<span class="fc" id="L128">			var missing = new AtomicReference&lt;&gt;(futures.keySet().stream().sorted().collect(Collectors.toList()));</span>
+<span class="fc" id="L129">			pool.submit(() -&gt; {</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">				while (!futures.values().stream().allMatch(Future::isDone)) {</span>
+<span class="fc" id="L131">					Thread.sleep(15000);</span>
+<span class="fc" id="L132">					var newMissing = futures.entrySet().stream()</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">							.filter(f -&gt; !f.getValue().isDone())</span>
+<span class="fc" id="L134">							.map(Entry::getKey).sorted().collect(Collectors.toList());</span>
+<span class="fc" id="L135">					var oldMissing = missing.getAndSet(newMissing);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">					if (!newMissing.isEmpty()) {</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">						if (oldMissing.equals(newMissing)) {</span>
+<span class="nc" id="L138">							log.debug(&quot;Still waiting for: {}&quot;, missing);</span>
 						} else {
-<span class="nc" id="L141">							log.info(&quot;Still waiting for: {}&quot;, missing);</span>
+<span class="nc" id="L140">							log.info(&quot;Still waiting for: {}&quot;, missing);</span>
 						}
 					}
-<span class="fc" id="L144">				}</span>
-<span class="fc" id="L145">				return null;</span>
+<span class="fc" id="L143">				}</span>
+<span class="fc" id="L144">				return null;</span>
 			});
 
-<span class="fc bfc" id="L148" title="All 2 branches covered.">			for (var future : futures.entrySet()) {</span>
-<span class="fc" id="L149">				success &amp;= future.getValue().get();</span>
-<span class="fc" id="L150">			}</span>
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">			if (!success) {</span>
-<span class="nc" id="L152">				throw new MojoExecutionException(&quot;Failed to wait for resources, see previous log&quot;);</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">			for (var future : futures.entrySet()) {</span>
+<span class="fc" id="L148">				success &amp;= future.getValue().get();</span>
+<span class="fc" id="L149">			}</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">			if (!success) {</span>
+<span class="nc" id="L151">				throw new MojoExecutionException(&quot;Failed to wait for resources, see previous log&quot;);</span>
 			}
-<span class="nc" id="L154">		} catch (InterruptedException | ExecutionException e) {</span>
-<span class="nc" id="L155">			throw new MojoExecutionException(&quot;Failed to wait for resources&quot;, e);</span>
-<span class="fc" id="L156">		}</span>
-<span class="fc" id="L157">	}</span>
+<span class="nc" id="L153">		} catch (InterruptedException | ExecutionException e) {</span>
+<span class="nc" id="L154">			throw new MojoExecutionException(&quot;Failed to wait for resources&quot;, e);</span>
+<span class="fc" id="L155">		}</span>
+<span class="fc" id="L156">	}</span>
 
 	private Task apply() throws MojoExecutionException {
 
-<span class="fc bfc" id="L161" title="All 2 branches covered.">		var subPath = toLinuxPath(subdir == null ? path : path.resolve(subdir));</span>
-<span class="fc bfc" id="L162" title="All 2 branches covered.">		var kustomizePath = subdir == null ? manifests : manifests.resolve(subdir);</span>
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">		var kustomize = Files.isRegularFile(kustomizePath.resolve(&quot;kustomization.yml&quot;))</span>
-<span class="fc bfc" id="L164" title="All 2 branches covered.">				|| Files.isRegularFile(kustomizePath.resolve(&quot;kustomization.yaml&quot;));</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">		var subPath = toLinuxPath(subdir == null ? path : path.resolve(subdir));</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">		var kustomizePath = subdir == null ? manifests : manifests.resolve(subdir);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">		var kustomize = Files.isRegularFile(kustomizePath.resolve(&quot;kustomization.yml&quot;))</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">				|| Files.isRegularFile(kustomizePath.resolve(&quot;kustomization.yaml&quot;));</span>
 
-<span class="fc" id="L166">		var command = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L167">		command.add(&quot;kubectl&quot;);</span>
-<span class="fc" id="L168">		command.add(&quot;apply&quot;);</span>
-<span class="fc bfc" id="L169" title="All 2 branches covered.">		if (kustomize) {</span>
-<span class="fc" id="L170">			command.add(&quot;--kustomize=&quot; + subPath);</span>
+<span class="fc" id="L165">		var command = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L166">		command.add(&quot;kubectl&quot;);</span>
+<span class="fc" id="L167">		command.add(&quot;apply&quot;);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">		if (kustomize) {</span>
+<span class="fc" id="L169">			command.add(&quot;--kustomize=&quot; + subPath);</span>
 		} else {
-<span class="fc" id="L172">			command.add(&quot;--filename=&quot; + subPath);</span>
-<span class="fc" id="L173">			command.add(&quot;--recursive&quot;);</span>
+<span class="fc" id="L171">			command.add(&quot;--filename=&quot; + subPath);</span>
+<span class="fc" id="L172">			command.add(&quot;--recursive&quot;);</span>
 		}
 
-<span class="fc" id="L176">		log.info(command.stream().collect(Collectors.joining(&quot; &quot;)));</span>
-<span class="fc" id="L177">		return getDocker().execWithoutVerify(timeout, command);</span>
+<span class="fc" id="L175">		log.info(command.stream().collect(Collectors.joining(&quot; &quot;)));</span>
+<span class="fc" id="L176">		return getDocker().execWithoutVerify(timeout, command);</span>
 	}
 
 	private Stream&lt;Entry&lt;String, Callable&lt;Boolean&gt;&gt;&gt; waitFor(Entry&lt;String, List&lt;String&gt;&gt; entry) {
 		try {
 
-<span class="fc" id="L183">			var kind = entry.getKey();</span>
-<span class="fc" id="L184">			var resources = getDocker()</span>
-<span class="fc" id="L185">					.exec(&quot;kubectl&quot;, &quot;get&quot;, kind,</span>
+<span class="fc" id="L182">			var kind = entry.getKey();</span>
+<span class="fc" id="L183">			var resources = getDocker()</span>
+<span class="fc" id="L184">					.exec(&quot;kubectl&quot;, &quot;get&quot;, kind,</span>
 							&quot;--all-namespaces&quot;,
 							&quot;--no-headers&quot;,
 							&quot;--output=custom-columns=:.metadata.namespace,:.metadata.name&quot;)
-<span class="fc" id="L189">					.stream().map(resource -&gt; resource.split(&quot;\\s+&quot;)).collect(Collectors.toList());</span>
+<span class="fc" id="L188">					.stream().map(resource -&gt; resource.split(&quot;\\s+&quot;)).collect(Collectors.toList());</span>
 
-<span class="fc bfc" id="L191" title="All 2 branches covered.">			if (&quot;pod&quot;.equals(kind)) {</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">			if (&quot;pod&quot;.equals(kind)) {</span>
 				// remove pods from local storage provider
-<span class="pc bpc" id="L193" title="1 of 4 branches missed.">				resources.removeIf(r -&gt; &quot;kube-system&quot;.equals(r[0]) &amp;&amp; r[1].startsWith(&quot;helper-pod-create-pvc-&quot;));</span>
+<span class="pc bpc" id="L192" title="1 of 4 branches missed.">				resources.removeIf(r -&gt; &quot;kube-system&quot;.equals(r[0]) &amp;&amp; r[1].startsWith(&quot;helper-pod-create-pvc-&quot;));</span>
 				// remove managed pods from deployments/statefulsets
-<span class="fc" id="L195">				resources.removeIf(r -&gt; Pattern.matches(&quot;.*-[0-9]+&quot;, r[1]));</span>
-<span class="fc" id="L196">				resources.removeIf(r -&gt; Pattern.matches(&quot;.*(-[a-z0-9]{8,10})?-[a-z0-9]{5}&quot;, r[1]));</span>
+<span class="fc" id="L194">				resources.removeIf(r -&gt; Pattern.matches(&quot;.*-[0-9]+&quot;, r[1]));</span>
+<span class="fc" id="L195">				resources.removeIf(r -&gt; Pattern.matches(&quot;.*(-[a-z0-9]{8,10})?-[a-z0-9]{5}&quot;, r[1]));</span>
 			}
 
-<span class="fc" id="L199">			return resources.stream().map(resource -&gt; {</span>
-<span class="fc" id="L200">				var namespace = resource[0];</span>
-<span class="fc" id="L201">				var name = resource[1];</span>
-<span class="fc" id="L202">				var tmp = new ArrayList&lt;&gt;(entry.getValue());</span>
-<span class="fc" id="L203">				tmp.add(kind);</span>
-<span class="fc" id="L204">				tmp.add(name);</span>
-<span class="fc" id="L205">				tmp.add(&quot;--namespace=&quot; + namespace);</span>
-<span class="fc" id="L206">				tmp.add(&quot;--timeout=&quot; + timeout.getSeconds() + &quot;s&quot;);</span>
-<span class="fc bfc" id="L207" title="All 2 branches covered.">				var representation = &quot;default&quot;.equals(namespace) ? name : namespace + &quot;/&quot; + name;</span>
-<span class="fc" id="L208">				return Map.entry(representation, (Callable&lt;Boolean&gt;) () -&gt; {</span>
+<span class="fc" id="L198">			return resources.stream().map(resource -&gt; {</span>
+<span class="fc" id="L199">				var namespace = resource[0];</span>
+<span class="fc" id="L200">				var name = resource[1];</span>
+<span class="fc" id="L201">				var tmp = new ArrayList&lt;&gt;(entry.getValue());</span>
+<span class="fc" id="L202">				tmp.add(kind);</span>
+<span class="fc" id="L203">				tmp.add(name);</span>
+<span class="fc" id="L204">				tmp.add(&quot;--namespace=&quot; + namespace);</span>
+<span class="fc" id="L205">				tmp.add(&quot;--timeout=&quot; + timeout.getSeconds() + &quot;s&quot;);</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">				var representation = &quot;default&quot;.equals(namespace) ? name : namespace + &quot;/&quot; + name;</span>
+<span class="fc" id="L207">				return Map.entry(representation, (Callable&lt;Boolean&gt;) () -&gt; {</span>
 					try {
-<span class="fc" id="L210">						log.debug(&quot;{} {} ... waiting&quot;, kind, representation);</span>
-<span class="fc" id="L211">						getDocker().exec(timeout.plusSeconds(10), tmp);</span>
-<span class="fc" id="L212">						log.info(&quot;{} {} ... ready&quot;, kind, representation);</span>
-<span class="fc" id="L213">						return true;</span>
-<span class="nc" id="L214">					} catch (MojoExecutionException e) {</span>
-<span class="nc" id="L215">						getDocker().exec(&quot;kubectl&quot;, &quot;get&quot;, &quot;--output=yaml&quot;, &quot;--namespace=&quot; + namespace, kind, name);</span>
-<span class="nc" id="L216">						return false;</span>
+<span class="fc" id="L209">						log.debug(&quot;{} {} ... waiting&quot;, kind, representation);</span>
+<span class="fc" id="L210">						getDocker().exec(timeout.plusSeconds(10), tmp);</span>
+<span class="fc" id="L211">						log.info(&quot;{} {} ... ready&quot;, kind, representation);</span>
+<span class="fc" id="L212">						return true;</span>
+<span class="nc" id="L213">					} catch (MojoExecutionException e) {</span>
+<span class="nc" id="L214">						getDocker().exec(&quot;kubectl&quot;, &quot;get&quot;, &quot;--output=yaml&quot;, &quot;--namespace=&quot; + namespace, kind, name);</span>
+<span class="nc" id="L215">						return false;</span>
 					}
 				});
 			});
 
-<span class="nc" id="L221">		} catch (MojoExecutionException e) {</span>
-<span class="nc" id="L222">			return Stream.of(Map.entry(&quot;exception&quot;, () -&gt; false));</span>
+<span class="nc" id="L220">		} catch (MojoExecutionException e) {</span>
+<span class="nc" id="L221">			return Stream.of(Map.entry(&quot;exception&quot;, () -&gt; false));</span>
 		}
 	}
 
 	// setter
 
 	public void setManifests(File manifests) {
-<span class="fc" id="L229">		this.manifests = manifests.toPath().toAbsolutePath();</span>
-<span class="fc" id="L230">	}</span>
+<span class="fc" id="L228">		this.manifests = manifests.toPath().toAbsolutePath();</span>
+<span class="fc" id="L229">	}</span>
 
 	public void setPath(String path) {
-<span class="fc" id="L233">		this.path = Paths.get(path);</span>
-<span class="fc" id="L234">	}</span>
+<span class="fc" id="L232">		this.path = Path.of(path);</span>
+<span class="fc" id="L233">	}</span>
 
 	public void setSubdir(String subdir) {
-<span class="pc bpc" id="L237" title="1 of 2 branches missed.">		this.subdir = subdir == null ? null : Paths.get(subdir);</span>
-<span class="fc" id="L238">	}</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">		this.subdir = subdir == null ? null : Path.of(subdir);</span>
+<span class="fc" id="L237">	}</span>
 
 	public void setTimeout(int timeout) {
-<span class="fc" id="L241">		this.timeout = Duration.ofSeconds(timeout);</span>
-<span class="fc" id="L242">	}</span>
+<span class="fc" id="L240">		this.timeout = Duration.ofSeconds(timeout);</span>
+<span class="fc" id="L241">	}</span>
 
 	public void setSkipApply(boolean skipApply) {
-<span class="fc" id="L245">		this.skipApply = skipApply;</span>
-<span class="fc" id="L246">	}</span>
+<span class="fc" id="L244">		this.skipApply = skipApply;</span>
+<span class="fc" id="L245">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
