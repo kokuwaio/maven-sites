@@ -18,51 +18,51 @@
 <a class="jxr_linenumber" name="L10" href="#L10">10</a>  
 <a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> org.apache.maven.plugin.descriptor.MojoDescriptor;
 <a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> org.apache.maven.plugin.descriptor.PluginDescriptorBuilder;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> org.apache.maven.plugin.logging.Log;
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.InterpolationFilterReader;
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.ReflectionUtils;
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.xml.XmlStreamReader;
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.BeforeAllCallback;
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ExtensionContext;
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ParameterContext;
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ParameterResolutionException;
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ParameterResolver;
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.k3s.mojo.K3sMojo;
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.k3s.util.Docker;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment"> * JUnit extension to provide prepared mojos as test parameter.</em>
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment"> *</em>
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_javadoccomment"> * @author stephan.schnabel@posteo.de</em>
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="MojoExtension" href="../../../../../io/kokuwa/maven/k3s/test/MojoExtension.html#MojoExtension">MojoExtension</a> <strong class="jxr_keyword">implements</strong> ParameterResolver, BeforeAllCallback {
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String containerName = <span class="jxr_string">"k3s-maven-plugin"</span>;
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String volumeName = <span class="jxr_string">"k3s-maven-plugin-junit"</span>;
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="TestLog" href="../../../../../io/kokuwa/maven/k3s/test/TestLog.html#TestLog">TestLog</a> log = <strong class="jxr_keyword">new</strong> <a name="TestLog" href="../../../../../io/kokuwa/maven/k3s/test/TestLog.html#TestLog">TestLog</a>(false);
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Docker docker = <strong class="jxr_keyword">new</strong> Docker(containerName, volumeName, log);
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Set&lt;MojoDescriptor&gt; mojos = <strong class="jxr_keyword">new</strong> HashSet&lt;&gt;();
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>  
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>  	@Override
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> beforeAll(ExtensionContext context) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>  		<strong class="jxr_keyword">if</strong> (mojos.isEmpty()) {
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>  			<strong class="jxr_keyword">var</strong> inputStream = K3sMojo.<strong class="jxr_keyword">class</strong>.getResourceAsStream(<span class="jxr_string">"/META-INF/maven/plugin.xml"</span>);
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>  			assertNotNull(inputStream, <span class="jxr_string">"Plugin descriptor for not found, run 'mvn plugin:descriptor'."</span>);
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>  			<strong class="jxr_keyword">new</strong> PluginDescriptorBuilder()
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>  					.build(<strong class="jxr_keyword">new</strong> InterpolationFilterReader(<strong class="jxr_keyword">new</strong> XmlStreamReader(inputStream),
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>  							Map.of(<span class="jxr_string">"project.build.directory"</span>, <span class="jxr_string">"target"</span>, <span class="jxr_string">"project.basedir"</span>, <span class="jxr_string">"."</span>)))
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>  					.getMojos()
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>  					.forEach(mojos::add);
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>  		}
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>  	}
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>  
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>  	@Override
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>  		<strong class="jxr_keyword">var</strong> type = parameterContext.getParameter().getType();
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>  		<strong class="jxr_keyword">return</strong> mojos.stream().map(MojoDescriptor::getImplementation).anyMatch(type.getName()::equals)
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>  				|| type.equals(Log.<strong class="jxr_keyword">class</strong>)
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>  				|| type.equals(TestLog.<strong class="jxr_keyword">class</strong>)
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.InterpolationFilterReader;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.ReflectionUtils;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> org.codehaus.plexus.util.xml.XmlStreamReader;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.BeforeAllCallback;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ExtensionContext;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ParameterContext;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ParameterResolutionException;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ParameterResolver;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.k3s.mojo.K3sMojo;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> io.kokuwa.maven.k3s.util.Docker;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment"> * JUnit extension to provide prepared mojos as test parameter.</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_javadoccomment"> * @author stephan.schnabel@posteo.de</em>
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="MojoExtension" href="../../../../../io/kokuwa/maven/k3s/test/MojoExtension.html#MojoExtension">MojoExtension</a> <strong class="jxr_keyword">implements</strong> ParameterResolver, BeforeAllCallback {
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String containerName = <span class="jxr_string">"k3s-maven-plugin"</span>;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String volumeName = <span class="jxr_string">"k3s-maven-plugin-junit"</span>;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger log = LoggerFactory.getLogger(MojoExtension.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Docker docker = <strong class="jxr_keyword">new</strong> Docker(containerName, volumeName, log);
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Set&lt;MojoDescriptor&gt; mojos = <strong class="jxr_keyword">new</strong> HashSet&lt;&gt;();
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  	@Override
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> beforeAll(ExtensionContext context) <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  		<strong class="jxr_keyword">if</strong> (mojos.isEmpty()) {
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  			<strong class="jxr_keyword">var</strong> inputStream = K3sMojo.<strong class="jxr_keyword">class</strong>.getResourceAsStream(<span class="jxr_string">"/META-INF/maven/plugin.xml"</span>);
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  			assertNotNull(inputStream, <span class="jxr_string">"Plugin descriptor for not found, run 'mvn plugin:descriptor'."</span>);
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  			<strong class="jxr_keyword">new</strong> PluginDescriptorBuilder()
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  					.build(<strong class="jxr_keyword">new</strong> InterpolationFilterReader(<strong class="jxr_keyword">new</strong> XmlStreamReader(inputStream),
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  							Map.of(<span class="jxr_string">"project.build.directory"</span>, <span class="jxr_string">"target"</span>, <span class="jxr_string">"project.basedir"</span>, <span class="jxr_string">"."</span>)))
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  					.getMojos()
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  					.forEach(mojos::add);
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  		}
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  	}
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  	@Override
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  		<strong class="jxr_keyword">var</strong> type = parameterContext.getParameter().getType();
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  		<strong class="jxr_keyword">return</strong> mojos.stream().map(MojoDescriptor::getImplementation).anyMatch(type.getName()::equals)
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  				|| type.equals(Logger.<strong class="jxr_keyword">class</strong>)
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>  				|| type.equals(Docker.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>  	}
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>  
@@ -70,7 +70,7 @@
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>  	<strong class="jxr_keyword">public</strong> Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>  
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>  		<strong class="jxr_keyword">var</strong> type = parameterContext.getParameter().getType();
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>  		<strong class="jxr_keyword">if</strong> (type.equals(Log.<strong class="jxr_keyword">class</strong>) || type.equals(TestLog.<strong class="jxr_keyword">class</strong>)) {
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  		<strong class="jxr_keyword">if</strong> (type.equals(Logger.<strong class="jxr_keyword">class</strong>)) {
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  			<strong class="jxr_keyword">return</strong> log;
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  		}
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>  		<strong class="jxr_keyword">if</strong> (type.equals(Docker.<strong class="jxr_keyword">class</strong>)) {
@@ -97,15 +97,14 @@
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>  					}
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>  				}
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>  			}
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>  			mojo.setLog(log);
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>  			mojo.setContainerName(containerName);
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>  			mojo.setVolumeName(volumeName);
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  			<strong class="jxr_keyword">return</strong> mojo;
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  		} <strong class="jxr_keyword">catch</strong> (ReflectiveOperationException e) {
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>  			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> ParameterResolutionException(<span class="jxr_string">"Failed to setup mojo "</span> + descriptor + <span class="jxr_string">"."</span>, e);
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>  		}
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>  	}
-<a class="jxr_linenumber" name="L100" href="#L100">100</a> }
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  			mojo.setContainerName(containerName);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  			mojo.setVolumeName(volumeName);
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  			<strong class="jxr_keyword">return</strong> mojo;
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		} <strong class="jxr_keyword">catch</strong> (ReflectiveOperationException e) {
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> ParameterResolutionException(<span class="jxr_string">"Failed to setup mojo "</span> + descriptor + <span class="jxr_string">"."</span>, e);
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  		}
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  	}
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  }
 </pre>
 <hr/>
 <div id="footer">© 2022–2024 <a href="http://kokuwa.io">Kokuwa.io</a></div>

@@ -39,7 +39,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 <span class="fc" id="L39">		getDocker().removeContainer();</span>
 <span class="fc bfc" id="L40" title="All 2 branches covered.">		if (includeCache) {</span>
 <span class="fc" id="L41">			getDocker().removeVolume();</span>
-<span class="fc" id="L42">			getLog().info(&quot;Deleted cache volume.&quot;);</span>
+<span class="fc" id="L42">			log.info(&quot;Deleted cache volume.&quot;);</span>
 		}
 <span class="fc" id="L44">	}</span>
 
