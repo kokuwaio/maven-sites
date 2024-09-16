@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Task.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">k3s Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.k3s.util</a> &gt; <span class="el_source">Task.java</span></div><h1>Task.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.k3s.util;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.slf4j.Logger;
+
+/**
+ * Wrapper for process with handling.
+ *
+ * @author stephan.schnabel@posteo.de
+ * @since 1.0.0
+ */
+public class Task {
+
+	private final Logger log;
+	private final List&lt;String&gt; command;
+<span class="fc" id="L27">	private Duration timeout = Duration.ofSeconds(30);</span>
+
+	private Process process;
+<span class="fc" id="L30">	private final List&lt;String&gt; output = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L31">	private final List&lt;Thread&gt; threads = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L33">	private Task(Logger log, List&lt;String&gt; command) {</span>
+<span class="fc" id="L34">		this.log = log;</span>
+<span class="fc" id="L35">		this.command = command;</span>
+<span class="fc" id="L36">	}</span>
+
+	// config
+
+	public static Task of(Logger log, String... command) {
+<span class="fc" id="L41">		return new Task(log, List.of(command));</span>
+	}
+
+	public static Task of(Logger log, List&lt;String&gt; command) {
+<span class="fc" id="L45">		return new Task(log, command);</span>
+	}
+
+	public List&lt;String&gt; command() {
+<span class="nc" id="L49">		return command;</span>
+	}
+
+	public Duration timeout() {
+<span class="nc" id="L53">		return timeout;</span>
+	}
+
+	public Task timeout(Duration newTimeout) {
+<span class="fc" id="L57">		this.timeout = newTimeout;</span>
+<span class="fc" id="L58">		return this;</span>
+	}
+
+	@Override
+	public String toString() {
+<span class="fc" id="L63">		return command.stream().collect(Collectors.joining(&quot; &quot;)) + &quot; (timeout: &quot; + timeout + &quot;)&quot;;</span>
+	}
+
+	// execute
+
+	public List&lt;String&gt; run() throws MojoExecutionException {
+<span class="fc" id="L69">		return start().waitFor().verify().output();</span>
+	}
+
+	public Task start() throws MojoExecutionException {
+
+<span class="fc" id="L74">		log.debug(&quot;&gt;&gt;&gt; {}&quot;, this);</span>
+
+		try {
+<span class="fc" id="L77">			var builder = new ProcessBuilder(command);</span>
+<span class="fc" id="L78">			process = builder.start();</span>
+<span class="fc" id="L79">			collectLogs(&quot;stdout&quot;, process.getInputStream());</span>
+<span class="fc" id="L80">			collectLogs(&quot;stderr&quot;, process.getErrorStream());</span>
+<span class="nc" id="L81">		} catch (IOException e) {</span>
+<span class="nc" id="L82">			throw new MojoExecutionException(&quot;Command failed: &quot; + this, e);</span>
+<span class="fc" id="L83">		}</span>
+
+<span class="fc" id="L85">		return this;</span>
+	}
+
+	public Task waitFor() throws MojoExecutionException {
+		try {
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">			if (!process.waitFor(timeout.getSeconds(), TimeUnit.SECONDS)) {</span>
+<span class="nc" id="L91">				throw new MojoExecutionException(&quot;Timeout failed: &quot; + this);</span>
+			}
+<span class="nc" id="L93">		} catch (InterruptedException e) {</span>
+<span class="nc" id="L94">			throw new MojoExecutionException(&quot;Command failed: &quot; + this, e);</span>
+		} finally {
+<span class="fc" id="L96">			Await.await(log, &quot;threads finished&quot;).until(() -&gt; threads.stream().noneMatch(Thread::isAlive));</span>
+<span class="fc" id="L97">			close();</span>
+		}
+<span class="fc" id="L99">		return this;</span>
+	}
+
+	public Task verify() throws MojoExecutionException {
+<span class="fc" id="L103">		var exitCode = process.exitValue();</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">		if (exitCode != 0) {</span>
+<span class="fc" id="L105">			log.error(&quot;&gt;&gt;&gt; {}&quot;, this);</span>
+<span class="fc" id="L106">			output.forEach(line -&gt; log.error(&quot;&lt;&lt;&lt; {}&quot;, line));</span>
+<span class="fc" id="L107">			throw new MojoExecutionException(&quot;Command failed with exit code &quot; + exitCode + &quot;: &quot; + this);</span>
+		}
+<span class="fc" id="L109">		return this;</span>
+	}
+
+	public int exitCode() {
+<span class="fc" id="L113">		return process.exitValue();</span>
+	}
+
+	public List&lt;String&gt; output() {
+<span class="fc" id="L117">		return output;</span>
+	}
+
+	public void close() {
+<span class="fc" id="L121">		process.destroyForcibly();</span>
+<span class="fc" id="L122">		threads.forEach(Thread::interrupt);</span>
+<span class="fc" id="L123">	}</span>
+
+	private void collectLogs(String stream, InputStream inputStream) {
+<span class="fc" id="L126">		var thread = new Thread(() -&gt; {</span>
+<span class="fc" id="L127">			try (var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {</span>
+				String line;
+<span class="fc bfc" id="L129" title="All 2 branches covered.">				while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L130">					output.add(line);</span>
+<span class="fc" id="L131">					log.debug(&quot;&lt;&lt;&lt; [{}] {}&quot;, stream, line);</span>
+				}
+<span class="nc" id="L133">			} catch (IOException e) {</span>
+<span class="nc" id="L134">				log.debug(&quot;Stream {} closed unexpected: {}&quot;, stream, e.getMessage());</span>
+<span class="fc" id="L135">			}</span>
+<span class="fc" id="L136">		});</span>
+<span class="fc" id="L137">		thread.start();</span>
+<span class="fc" id="L138">		threads.add(thread);</span>
+<span class="fc" id="L139">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
