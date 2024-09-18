@@ -80,15 +80,25 @@
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>  		generate(configurator(<span class="jxr_string">"src/test/resources/openapi/issue-372.yaml"</span>, <span class="jxr_string">"issue._372"</span>));
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  	}
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  	<strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> generate(CodegenConfigurator configurator) {
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>  		<strong class="jxr_keyword">var</strong> gen = <strong class="jxr_keyword">new</strong> DefaultGenerator();
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		gen.setGenerateMetadata(false);
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>  		gen.setGeneratorPropertyDefault(CodegenConstants.SUPPORTING_FILES, <span class="jxr_string">"false"</span>);
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  		gen.setGeneratorPropertyDefault(CodegenConstants.APIS, <span class="jxr_string">"true"</span>);
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>  		gen.setGeneratorPropertyDefault(CodegenConstants.MODELS, <span class="jxr_string">"true"</span>);
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  		gen.opts(configurator.toClientOptInput()).generate();
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>  	}
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>  }
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  	@DisplayName(<span class="jxr_string">"model with prefix"</span>)
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  	@Test
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  	<strong class="jxr_keyword">void</strong> modelWithPrefix() {
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  		generate(configurator(<span class="jxr_string">"src/test/resources/openapi/issue-414.yaml"</span>, <span class="jxr_string">"issue._414"</span>)
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  				.addAdditionalProperty(CodegenConstants.API_NAME_PREFIX, <span class="jxr_string">"ApiPrefix"</span>)
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  				.addAdditionalProperty(CodegenConstants.API_NAME_SUFFIX, <span class="jxr_string">"ApiSuffix"</span>)
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  				.addAdditionalProperty(CodegenConstants.MODEL_NAME_PREFIX, <span class="jxr_string">"ModelPrefix"</span>)
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  				.addAdditionalProperty(CodegenConstants.MODEL_NAME_SUFFIX, <span class="jxr_string">"ModelSuffix"</span>));
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  	}
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  	<strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> generate(CodegenConfigurator configurator) {
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  		<strong class="jxr_keyword">var</strong> gen = <strong class="jxr_keyword">new</strong> DefaultGenerator();
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  		gen.setGenerateMetadata(false);
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		gen.setGeneratorPropertyDefault(CodegenConstants.SUPPORTING_FILES, <span class="jxr_string">"false"</span>);
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  		gen.setGeneratorPropertyDefault(CodegenConstants.APIS, <span class="jxr_string">"true"</span>);
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>  		gen.setGeneratorPropertyDefault(CodegenConstants.MODELS, <span class="jxr_string">"true"</span>);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  		gen.opts(configurator.toClientOptInput()).generate();
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  	}
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  }
 </pre>
 <hr/>
 <div id="footer">© 2019–2024 <a href="http://kokuwa.io">Kokuwa.io</a></div>
