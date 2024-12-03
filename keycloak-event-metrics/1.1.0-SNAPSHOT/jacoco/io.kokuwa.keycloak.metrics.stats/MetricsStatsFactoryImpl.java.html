@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MetricsStatsFactoryImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Keycloak Metrics</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.keycloak.metrics.stats</a> &gt; <span class="el_source">MetricsStatsFactoryImpl.java</span></div><h1>MetricsStatsFactoryImpl.java</h1><pre class="source lang-java linenums">package io.kokuwa.keycloak.metrics.stats;
+
+import java.time.Duration;
+import java.util.Optional;
+
+import org.jboss.logging.Logger;
+import org.keycloak.Config.Scope;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.timer.TimerProvider;
+
+/**
+ * Implementation of {@link MetricsStatsFactory}.
+ *
+ * @author Stephan Schnabel
+ */
+<span class="fc" id="L18">public class MetricsStatsFactoryImpl implements MetricsStatsFactory {</span>
+
+<span class="fc" id="L20">	private static final Logger log = Logger.getLogger(MetricsStatsFactory.class);</span>
+
+	@Override
+	public String getId() {
+<span class="fc" id="L24">		return &quot;default&quot;;</span>
+	}
+
+	@Override
+<span class="fc" id="L28">	public void init(Scope config) {}</span>
+
+	@Override
+	public void postInit(KeycloakSessionFactory factory) {
+
+<span class="fc bfc" id="L33" title="All 2 branches covered.">		if (!&quot;true&quot;.equals(getenv(&quot;KC_METRICS_STATS_ENABLED&quot;))) {</span>
+<span class="fc" id="L34">			log.infov(&quot;Keycloak stats not enabled.&quot;);</span>
+<span class="fc" id="L35">			return;</span>
+		}
+
+<span class="fc" id="L38">		var intervalDuration = Optional</span>
+<span class="fc" id="L39">				.ofNullable(getenv(&quot;KC_METRICS_STATS_INTERVAL&quot;))</span>
+<span class="fc" id="L40">				.map(Duration::parse)</span>
+<span class="fc" id="L41">				.orElse(Duration.ofSeconds(60));</span>
+<span class="fc" id="L42">		var infoThreshold = Optional</span>
+<span class="fc" id="L43">				.ofNullable(getenv(&quot;KC_METRICS_STATS_INFO_THRESHOLD&quot;))</span>
+<span class="fc" id="L44">				.map(Duration::parse)</span>
+<span class="fc" id="L45">				.orElse(Duration.ofMillis(Double.valueOf(intervalDuration.toMillis() * 0.5).longValue()));</span>
+<span class="fc" id="L46">		var warnThreshold = Optional</span>
+<span class="fc" id="L47">				.ofNullable(getenv(&quot;KC_METRICS_STATS_WARN_THRESHOLD&quot;))</span>
+<span class="fc" id="L48">				.map(Duration::parse)</span>
+<span class="fc" id="L49">				.orElse(Duration.ofMillis(Double.valueOf(intervalDuration.toMillis() * 0.75).longValue()));</span>
+<span class="fc" id="L50">		log.infov(&quot;Keycloak stats enabled with interval of {0} and info/warn after {1}/{2}.&quot;,</span>
+				intervalDuration, infoThreshold, warnThreshold);
+
+<span class="fc" id="L53">		var interval = intervalDuration.toMillis();</span>
+<span class="fc" id="L54">		var task = new MetricsStatsTask(intervalDuration, infoThreshold, warnThreshold);</span>
+<span class="fc" id="L55">		KeycloakModelUtils.runJobInTransaction(factory, session -&gt; session</span>
+<span class="fc" id="L56">				.getProvider(TimerProvider.class)</span>
+<span class="fc" id="L57">				.scheduleTask(task, interval, &quot;metrics&quot;));</span>
+<span class="fc" id="L58">	}</span>
+
+	@Override
+	public MetricsStatsTask create(KeycloakSession session) {
+<span class="fc" id="L62">		return null;</span>
+	}
+
+	@Override
+<span class="fc" id="L66">	public void close() {}</span>
+
+	String getenv(String key) {
+<span class="fc" id="L69">		return System.getenv().get(key);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
