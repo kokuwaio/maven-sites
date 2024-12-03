@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractChartDirectoryMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">AbstractChartDirectoryMojo.java</span></div><h1>AbstractChartDirectoryMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.MatchPatterns;
+
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Base Mojo for operating on Chart directory.
+ */
+@Getter
+@Setter
+<span class="fc" id="L29">public abstract class AbstractChartDirectoryMojo extends AbstractMojo {</span>
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip all goals.
+	 *
+	 * @since 3.2
+	 */
+	@Parameter(property = &quot;helm.skip&quot;, defaultValue = &quot;false&quot;)
+	protected boolean skip;
+
+	/**
+	 * List of chart directories to exclude.
+	 *
+	 * @since 1.0
+	 */
+	@Parameter(property = &quot;helm.excludes&quot;)
+	private String[] excludes;
+
+	/**
+	 * Root directory of your charts.
+	 *
+	 * @since 1.0
+	 */
+	@Parameter(property = &quot;helm.chartDirectory&quot;, required = true)
+	private File chartDirectory;
+
+	List&lt;Path&gt; getChartDirectories() throws MojoExecutionException {
+
+<span class="fc" id="L57">		List&lt;String&gt; exclusions = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		if (excludes != null) {</span>
+<span class="fc" id="L59">			exclusions.addAll(Arrays.asList(excludes));</span>
+		}
+<span class="fc" id="L61">		exclusions.addAll(FileUtils.getDefaultExcludesAsList());</span>
+<span class="fc" id="L62">		MatchPatterns exclusionPatterns = MatchPatterns.from(exclusions);</span>
+
+<span class="fc" id="L64">		try (Stream&lt;Path&gt; files = Files.walk(chartDirectory.toPath(), FileVisitOption.FOLLOW_LINKS)) {</span>
+<span class="fc" id="L65">			List&lt;Path&gt; chartDirectories = files</span>
+<span class="fc" id="L66">					.filter(p -&gt; p.getFileName().toString().equalsIgnoreCase(&quot;chart.yaml&quot;))</span>
+<span class="fc" id="L67">					.map(Path::getParent)</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">					.filter(p -&gt; !exclusionPatterns.matches(p.toString(), false))</span>
+<span class="fc" id="L69">					.sorted(Comparator.reverseOrder())</span>
+<span class="fc" id="L70">					.collect(Collectors.toList());</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">			if (chartDirectories.isEmpty()) {</span>
+<span class="nc" id="L72">				getLog().warn(&quot;No Charts detected - no Chart.yaml files found below &quot; + chartDirectory);</span>
+			}
+<span class="fc" id="L74">			return chartDirectories;</span>
+<span class="nc" id="L75">		} catch (IOException e) {</span>
+<span class="nc" id="L76">			throw new MojoExecutionException(&quot;Unable to scan chart directory at &quot; + chartDirectory, e);</span>
+		}
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
