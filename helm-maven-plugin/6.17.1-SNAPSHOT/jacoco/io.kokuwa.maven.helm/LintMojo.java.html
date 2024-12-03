@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LintMojo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Helm Maven Plugin</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.maven.helm</a> &gt; <span class="el_source">LintMojo.java</span></div><h1>LintMojo.java</h1><pre class="source lang-java linenums">package io.kokuwa.maven.helm;
+
+import java.nio.file.Path;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import lombok.Setter;
+
+/**
+ * Mojo for executing &quot;helm lint&quot;.
+ *
+ * @author Fabian Schlegel
+ * @see &lt;a href=&quot;https://helm.sh/docs/helm/helm_lint&quot;&gt;helm lint&lt;/a&gt;
+ * @since 1.0
+ */
+@Mojo(name = &quot;lint&quot;, defaultPhase = LifecyclePhase.TEST, threadSafe = true)
+@Setter
+<span class="fc" id="L21">public class LintMojo extends AbstractHelmWithValueOverrideMojo {</span>
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to skip invoking lint goal.
+	 *
+	 * @since 3.3
+	 */
+	@Parameter(property = &quot;helm.lint.skip&quot;, defaultValue = &quot;false&quot;)
+	private boolean skipLint;
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to fail on lint warnings.
+	 *
+	 * @since 5.0
+	 */
+	@Parameter(property = &quot;helm.lint.strict&quot;, defaultValue = &quot;false&quot;)
+	private boolean lintStrict;
+
+	/**
+	 * Set this to &lt;code&gt;true&lt;/code&gt; to print only warnings and errors.
+	 *
+	 * @since 6.6
+	 */
+	@Parameter(property = &quot;helm.lint.quiet&quot;, defaultValue = &quot;false&quot;)
+	private boolean lintQuiet;
+
+	@Override
+	public void execute() throws MojoExecutionException {
+
+<span class="fc bfc" id="L50" title="All 4 branches covered.">		if (skip || skipLint) {</span>
+<span class="fc" id="L51">			getLog().info(&quot;Skip lint&quot;);</span>
+<span class="fc" id="L52">			return;</span>
+		}
+
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		for (Path chartDirectory : getChartDirectories()) {</span>
+<span class="fc" id="L56">			getLog().info(&quot;\n\nTesting chart &quot; + chartDirectory + &quot;...&quot;);</span>
+<span class="fc" id="L57">			helm()</span>
+<span class="fc" id="L58">					.arguments(&quot;lint&quot;, chartDirectory)</span>
+<span class="fc" id="L59">					.flag(&quot;strict&quot;, lintStrict)</span>
+<span class="fc" id="L60">					.flag(&quot;quiet&quot;, lintQuiet)</span>
+<span class="fc" id="L61">					.execute(&quot;There are linting issues&quot;);</span>
+<span class="fc" id="L62">		}</span>
+<span class="fc" id="L63">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
