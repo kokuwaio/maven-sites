@@ -9,7 +9,7 @@ Logging Support for Micronaut,io.kokuwa.micronaut.logging.http,AbstractMdcFilter
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.configurator,RootAutoSelectAppenderAction,73,133,8,6,20,38,10,7,2,7
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.configurator,DefaultConfigurator,14,31,2,2,6,10,2,2,0,2
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.configurator,MicronautJoranConfigurator,0,18,0,0,0,4,0,3,0,3
-Logging Support for Micronaut,io.kokuwa.micronaut.logging.layout,JsonLayout,321,0,34,0,91,0,40,0,23,0
+Logging Support for Micronaut,io.kokuwa.micronaut.logging.layout,JsonLayout,323,0,34,0,91,0,40,0,23,0
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.layout,GcpJsonLayout,147,0,12,0,26,0,11,0,5,0
 Logging Support for Micronaut,io.kokuwa.micronaut.logging,LogbackUtil,0,61,0,0,0,13,0,5,0,5
 Logging Support for Micronaut,io.kokuwa.micronaut.logging.mdc,MDCTurboFilterConfigurer,3,134,1,5,1,30,1,7,0,5
