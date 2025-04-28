@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MetricsEventListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Keycloak Metrics</a> &gt; <a href="index.source.html" class="el_package">io.kokuwa.keycloak.metrics.event</a> &gt; <span class="el_source">MetricsEventListener.java</span></div><h1>MetricsEventListener.java</h1><pre class="source lang-java linenums">package io.kokuwa.keycloak.metrics.event;
+
+import java.util.Objects;
+import java.util.Optional;
+
+import org.jboss.logging.Logger;
+import org.keycloak.events.Event;
+import org.keycloak.events.EventListenerProvider;
+import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.models.ClientModel;
+import org.keycloak.models.KeycloakContext;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+
+import io.micrometer.core.instrument.Metrics;
+
+/**
+ * Listener for {@link Event} and {@link AdminEvent}.
+ *
+ * @author Stephan Schnabel
+ */
+public class MetricsEventListener implements EventListenerProvider, AutoCloseable {
+
+<span class="fc" id="L24">	private static final Logger log = Logger.getLogger(MetricsEventListener.class);</span>
+	private final boolean replaceIds;
+	private final KeycloakSession session;
+
+<span class="fc" id="L28">	MetricsEventListener(boolean replaceIds, KeycloakSession session) {</span>
+<span class="fc" id="L29">		this.replaceIds = replaceIds;</span>
+<span class="fc" id="L30">		this.session = session;</span>
+<span class="fc" id="L31">	}</span>
+
+	@Override
+	public void onEvent(Event event) {
+<span class="fc" id="L35">		Metrics.counter(&quot;keycloak_event_user&quot;,</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">				&quot;realm&quot;, toBlank(replaceIds ? getRealmName(event.getRealmId()) : event.getRealmId()),</span>
+<span class="fc" id="L37">				&quot;type&quot;, toBlank(event.getType()),</span>
+<span class="fc" id="L38">				&quot;client&quot;, getClientId(event.getClientId()),</span>
+<span class="fc" id="L39">				&quot;error&quot;, toBlank(event.getError()))</span>
+<span class="fc" id="L40">				.increment();</span>
+<span class="fc" id="L41">	}</span>
+
+	@Override
+	public void onEvent(AdminEvent event, boolean includeRepresentation) {
+<span class="fc" id="L45">		Metrics.counter(&quot;keycloak_event_admin&quot;,</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">				&quot;realm&quot;, toBlank(replaceIds ? getRealmName(event.getRealmId()) : event.getRealmId()),</span>
+<span class="fc" id="L47">				&quot;resource&quot;, toBlank(event.getResourceType()),</span>
+<span class="fc" id="L48">				&quot;operation&quot;, toBlank(event.getOperationType()),</span>
+<span class="fc" id="L49">				&quot;error&quot;, toBlank(event.getError()))</span>
+<span class="fc" id="L50">				.increment();</span>
+<span class="fc" id="L51">	}</span>
+
+	@Override
+<span class="nc" id="L54">	public void close() {}</span>
+
+	private String getRealmName(String id) {
+<span class="fc" id="L57">		return Optional.ofNullable(session.getContext()).map(KeycloakContext::getRealm)</span>
+<span class="fc bfc" id="L58" title="All 4 branches covered.">				.filter(realm -&gt; id == null || id.equals(realm.getId()))</span>
+<span class="fc" id="L59">				.or(() -&gt; {</span>
+<span class="fc" id="L60">					log.tracev(&quot;Context realm was empty with id {0}&quot;, id);</span>
+<span class="fc" id="L61">					return Optional.ofNullable(id).map(session.realms()::getRealm);</span>
+				})
+<span class="fc" id="L63">				.map(RealmModel::getName)</span>
+<span class="fc" id="L64">				.orElseGet(() -&gt; {</span>
+<span class="fc" id="L65">					log.warnv(&quot;Failed to find realm with id {0}&quot;, id);</span>
+<span class="fc" id="L66">					return id;</span>
+				});
+	}
+
+	private String getClientId(String clientId) {
+<span class="fc" id="L71">		return Optional.ofNullable(session.getContext())</span>
+<span class="fc" id="L72">				.map(KeycloakContext::getClient)</span>
+<span class="fc" id="L73">				.filter(model -&gt; Objects.equals(model.getClientId(), clientId))</span>
+<span class="fc" id="L74">				.map(ClientModel::getClientId)</span>
+<span class="fc" id="L75">				.orElseGet(() -&gt; {</span>
+<span class="fc" id="L76">					log.tracev(&quot;Client for id {0} is unknown&quot;, clientId);</span>
+<span class="fc" id="L77">					return &quot;UNKNOWN&quot;;</span>
+				});
+	}
+
+	private String toBlank(Object value) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">		return value == null ? &quot;&quot; : value.toString();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
