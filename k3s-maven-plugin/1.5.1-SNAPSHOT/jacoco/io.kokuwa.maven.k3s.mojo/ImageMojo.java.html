@@ -154,15 +154,15 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 <span class="fc" id="L154">			var newChecksum = &quot;adler32:&quot; + checksum.getValue();</span>
 <span class="fc" id="L155">			var oldChecksum = existingImages.values().stream()</span>
 <span class="fc" id="L156">					.filter(l -&gt; Optional.ofNullable(l.get(labelPath)).map(tarFile.toString()::equals).orElse(false))</span>
-<span class="fc" id="L157">					.map(l -&gt; l.get(labelChecksum)).filter(Objects::nonNull)</span>
+<span class="pc" id="L157">					.map(l -&gt; l.get(labelChecksum)).filter(Objects::nonNull)</span>
 <span class="fc" id="L158">					.findAny().orElse(null);</span>
-<span class="fc bfc" id="L159" title="All 2 branches covered.">			if (oldChecksum == null) {</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">			if (oldChecksum == null) {</span>
 <span class="fc" id="L160">				log.debug(&quot;Tar {} does not exists in ctr.&quot;, tarFile);</span>
-<span class="fc bfc" id="L161" title="All 2 branches covered.">			} else if (oldChecksum.equals(newChecksum)) {</span>
-<span class="fc" id="L162">				log.info(&quot;Tar {} present in ctr with checksum {}, skip.&quot;, tarFile, newChecksum);</span>
-<span class="fc" id="L163">				return true;</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">			} else if (oldChecksum.equals(newChecksum)) {</span>
+<span class="nc" id="L162">				log.info(&quot;Tar {} present in ctr with checksum {}, skip.&quot;, tarFile, newChecksum);</span>
+<span class="nc" id="L163">				return true;</span>
 			} else {
-<span class="fc" id="L165">				log.debug(&quot;Tar {} present in ctr with checksum {}, new is: {}&quot;, tarFile, oldChecksum, newChecksum);</span>
+<span class="nc" id="L165">				log.debug(&quot;Tar {} present in ctr with checksum {}, new is: {}&quot;, tarFile, oldChecksum, newChecksum);</span>
 			}
 
 			// import tar into ctr
@@ -174,11 +174,11 @@ import io.kokuwa.maven.k3s.util.Docker.ContainerImage;
 <span class="fc bfc" id="L174" title="All 2 branches covered.">			for (var output : getDocker().exec(pullTimeout, &quot;ctr&quot;, &quot;image&quot;, &quot;import&quot;, destination.toString())) {</span>
 <span class="fc" id="L175">				var matcher = outputPattern.matcher(output);</span>
 <span class="pc bpc" id="L176" title="1 of 2 branches missed.">				if (matcher.matches()) {</span>
-<span class="fc" id="L177">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;), labelPath + &quot;=&quot; + tarFile);</span>
-<span class="fc" id="L178">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;),</span>
+<span class="nc" id="L177">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;), labelPath + &quot;=&quot; + tarFile);</span>
+<span class="nc" id="L178">					getDocker().exec(&quot;ctr&quot;, &quot;image&quot;, &quot;label&quot;, matcher.group(&quot;image&quot;),</span>
 							labelChecksum + &quot;=&quot; + newChecksum);
 				} else {
-<span class="nc" id="L181">					log.warn(&quot;Tar {} import output cannot be parsed: {}&quot;, tarFile, output);</span>
+<span class="fc" id="L181">					log.warn(&quot;Tar {} import output cannot be parsed: {}&quot;, tarFile, output);</span>
 				}
 <span class="fc" id="L183">			}</span>
 <span class="nc" id="L184">		} catch (MojoExecutionException | IOException e) {</span>

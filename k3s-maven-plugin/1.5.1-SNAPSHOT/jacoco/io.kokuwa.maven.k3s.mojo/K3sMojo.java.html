@@ -77,39 +77,40 @@ import io.kokuwa.maven.k3s.util.Marker;
 	}
 
 	public Docker getDocker() {
-<span class="pc bpc" id="L80" title="1 of 4 branches missed.">		if (docker == null &amp;&amp; taskTimeout == null) throw new NullPointerException();</span>
-<span class="fc bfc" id="L81" title="All 2 branches covered.">		return docker == null ? docker = new Docker(containerName, volumeName, log, taskTimeout) : docker;</span>
+<span class="pc bpc" id="L80" title="1 of 4 branches missed.">		if (docker == null &amp;&amp; taskTimeout == null)</span>
+<span class="nc" id="L81">			throw new NullPointerException();</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">		return docker == null ? docker = new Docker(containerName, volumeName, log, taskTimeout) : docker;</span>
 	}
 
 	public String toLinuxPath(Path path) {
 		// ugly hack for windows - docker path inside k3s needs to be a kinux path
-<span class="fc" id="L86">		return path.toString().replace(&quot;\\&quot;, &quot;/&quot;);</span>
+<span class="fc" id="L87">		return path.toString().replace(&quot;\\&quot;, &quot;/&quot;);</span>
 	}
 
 	// setter
 
 	public void setMarker(File directory) {
-<span class="fc" id="L92">		this.marker = new Marker(directory);</span>
-<span class="fc" id="L93">	}</span>
+<span class="fc" id="L93">		this.marker = new Marker(directory);</span>
+<span class="fc" id="L94">	}</span>
 
 	public void setDebug(boolean debug) {
-<span class="fc" id="L96">		this.debug = debug;</span>
-<span class="fc" id="L97">	}</span>
+<span class="fc" id="L97">		this.debug = debug;</span>
+<span class="fc" id="L98">	}</span>
 
 	public void setTaskTimeout(int taskTimeout) {
-<span class="fc" id="L100">		this.taskTimeout = Duration.ofSeconds(taskTimeout);</span>
-<span class="fc" id="L101">	}</span>
+<span class="fc" id="L101">		this.taskTimeout = Duration.ofSeconds(taskTimeout);</span>
+<span class="fc" id="L102">	}</span>
 
 	public void setSkip(boolean skip) {
-<span class="fc" id="L104">		this.skip = skip;</span>
-<span class="fc" id="L105">	}</span>
+<span class="fc" id="L105">		this.skip = skip;</span>
+<span class="fc" id="L106">	}</span>
 
 	public void setContainerName(String containerName) {
-<span class="fc" id="L108">		this.containerName = containerName;</span>
-<span class="fc" id="L109">	}</span>
+<span class="fc" id="L109">		this.containerName = containerName;</span>
+<span class="fc" id="L110">	}</span>
 
 	public void setVolumeName(String volumeName) {
-<span class="fc" id="L112">		this.volumeName = volumeName;</span>
-<span class="fc" id="L113">	}</span>
+<span class="fc" id="L113">		this.volumeName = volumeName;</span>
+<span class="fc" id="L114">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
